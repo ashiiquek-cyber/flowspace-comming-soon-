@@ -1,206 +1,192 @@
 ---
 name: Flowspace
-description: Architecture and interiors studio; space composed with colour.
+description: A dark room for an architecture and interiors studio, lit by one slot of daylight.
 colors:
-  chalk: "#DCDDD9"
-  ink-dark: "#1C1C1A"
-  outremer: "#34427A"
-  ocre: "#C9963E"
-  vermillon: "#9E3A27"
-  vert: "#3D5A47"
-  terre: "#4E3A30"
+  ground: "#0D0D0C"
+  text: "#E8E7E3"
+  muted: "#8E8D88"
+  rule: "#2A2A28"
+  daylight: "#ECE9E2"
 typography:
   display:
     fontFamily: "Archivo, Helvetica Neue, Arial, sans-serif"
-    fontSize: "8.4vw"
-    fontWeight: 700
-    lineHeight: 0.74
-    letterSpacing: "-0.035em"
-    fontVariation: "\"wdth\" 125"
-  headline:
+    fontSize: "clamp(30px, 6.4vw, 96px)"
+    fontWeight: 200
+    lineHeight: 1
+    letterSpacing: "0.42em"
+    fontVariation: "'wdth' 125"
+  title:
     fontFamily: "Archivo, Helvetica Neue, Arial, sans-serif"
-    fontSize: "clamp(20px, 1.9vw, 30px)"
-    fontWeight: 600
-    lineHeight: 1.15
-    letterSpacing: "-0.01em"
-    fontVariation: "\"wdth\" 112"
+    fontSize: "clamp(15px, 1.2vw, 18px)"
+    fontWeight: 300
+    letterSpacing: "0.02em"
   body:
     fontFamily: "Archivo, Helvetica Neue, Arial, sans-serif"
     fontSize: "14px"
     fontWeight: 400
-    lineHeight: 1.5
-    fontVariation: "\"wdth\" 100"
+    lineHeight: 1.6
+    letterSpacing: "normal"
+  body-sm:
+    fontFamily: "Archivo, Helvetica Neue, Arial, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.6
+    letterSpacing: "normal"
   label:
     fontFamily: "Archivo, Helvetica Neue, Arial, sans-serif"
-    fontSize: "12px"
-    fontWeight: 500
-    letterSpacing: "0.08em"
-    fontVariation: "\"wdth\" 100"
-  label-sm:
+    fontSize: "11px"
+    fontWeight: 400
+    lineHeight: 1.6
+    letterSpacing: "0.24em"
+  label-wide:
     fontFamily: "Archivo, Helvetica Neue, Arial, sans-serif"
     fontSize: "11px"
-    fontWeight: 500
-    letterSpacing: "0.08em"
-    fontFeature: "\"tnum\" 1"
-    fontVariation: "\"wdth\" 100"
-rounded:
-  none: "0px"
+    fontWeight: 400
+    lineHeight: 1.6
+    letterSpacing: "0.5em"
 spacing:
-  gutter: "clamp(16px, 2.8vw, 40px)"
-  stack: "14px"
-  inline: "20px"
+  gutter: "clamp(20px, 3.4vw, 56px)"
+  rail-y: "clamp(22px, 2.6vw, 36px)"
+  stage-gap: "clamp(20px, 2.4vw, 34px)"
+  inline-gap: "24px"
+  social-gap: "28px"
 components:
-  rail:
-    textColor: "{colors.ink-dark}"
+  wordmark:
+    textColor: "{colors.text}"
+    typography: "{typography.display}"
+  status:
+    textColor: "{colors.muted}"
+    typography: "{typography.label-wide}"
+  rail-top:
+    textColor: "{colors.muted}"
     typography: "{typography.label}"
-    height: "64px"
-    padding: "0 clamp(16px, 2.8vw, 40px)"
-  field-label:
-    typography: "{typography.label-sm}"
-  frame-tag:
-    backgroundColor: "{colors.ink-dark}"
-    textColor: "{colors.chalk}"
-    typography: "{typography.label-sm}"
-    rounded: "{rounded.none}"
-    padding: "7px 10px 6px"
+    padding: "{spacing.rail-y} {spacing.gutter}"
+  rail-bottom:
+    textColor: "{colors.muted}"
+    typography: "{typography.body-sm}"
+    padding: "{spacing.rail-y} 0"
   email-link:
-    textColor: "{colors.ink-dark}"
-    typography: "{typography.headline}"
-    rounded: "{rounded.none}"
-    padding: "2px 0 4px"
-  email-link-hover:
-    backgroundColor: "{colors.outremer}"
-    textColor: "{colors.chalk}"
+    textColor: "{colors.text}"
+    typography: "{typography.title}"
+    padding: "0 0 6px"
   social-link:
-    textColor: "{colors.ink-dark}"
+    textColor: "{colors.muted}"
     typography: "{typography.label}"
+  social-link-hover:
+    textColor: "{colors.text}"
 ---
 
 # Design System: Flowspace
 
 ## Overview
 
-**Creative North Star: "The Colour Keyboard"**
+**Creative North Star: "The Dark Room With One Window"**
 
-Flowspace composes space with colour. The system is a wall-scale architectural colour keyboard in the tradition of Polychromie architecturale: flat matte pigment fields set on a cool chalk ground, measured by hairline rules and labelled like a pigment sample card. Nothing is lit, glossy or photographic; the pigments themselves carry the atmosphere, and a heavy black viewing frame isolates one combination at a time.
+Flowspace is presented as an unlit room. The ground is a warm near-black, the type is thin and quiet, and the only event in the space is a soft blade of daylight falling through an unseen slot window onto the floor. With no photography or portfolio to show, light itself stands in for architecture: the page is about proportion, restraint and one carefully placed source of illumination.
 
-Density is low and the measure is strict. Everything sits on a fourteen-module grid between two gutters. Pigment fields snap to whole modules, the frame spans exactly four, the wordmark fills nine on the chalk beneath the fields, and contact lives in the last four. Type is one family, Archivo, used for its width axis: very wide and heavy for the wordmark, normal width for text, small tracked capitals for sample-card labelling.
+Density is minimal. One full-height viewport holds three bands: a top rail of small spaced caps, a centred stage with the wordmark and a single line of status, and a bottom rail sitting above one hairline. Everything is achromatic and warm-neutral; the email address is the only element drawn at full text brightness outside the wordmark, because writing to the studio is the only action.
 
-Motion is architectural, not decorative: fields rise into place once, staggered, and the frame glides on a long ease-out. The one live colour on the chalk ground, the email underline, is borrowed from whatever pigment the frame holds.
+Motion is slow and atmospheric, never decorative. The light fades in like dawn, the wordmark and status settle out of blur once, and the light blade drifts across the room on a long sine sweep while leaning gently toward the pointer. All of it stops under reduced motion.
 
 **Key Characteristics:**
-- Flat matte pigment fields; no tints, gradient colour transitions, shadows or opacity.
-- Fourteen-module grid; every field, frame and text block snaps to whole modules.
-- Hairline ink rules (1px) and one heavy ink frame (6px) are the only line weights.
-- Archivo alone, varied by its width axis (wdth 100 / 112 / 125).
-- Square corners everywhere.
-- The accent is not fixed; it follows the framed pigment.
+- Warm near-black ground with warm off-white and muted grey type; no hue.
+- Archivo only, weights 200 to 400, the wordmark in the widest cut (wdth 125).
+- Generous letter-spacing on every uppercase line, optically balanced when centred.
+- One 1px hairline rule as the only drawn line.
+- One light effect: a translucent, blurred, skewed blade of daylight.
+- Square, unbordered, unshadowed; nothing is a card.
 
 ## Colors
 
-Five earthy architectural pigments, a cool chalk ground and a warm near-black ink, all used flat at full strength.
+A warm achromatic palette: four greys from near-black to paper, plus one translucent daylight used only as light.
 
 ### Primary
-- **Outremer** (ultramarine): the first pigment on the keyboard and the default accent, so it is the colour of the email underline and hover fill at rest.
-
-### Secondary
-- **Ocre** (yellow ochre): the one light pigment; its field label is set in ink rather than chalk because chalk text fails on it.
-- **Vermillon** (earth vermilion red): the widest warm field.
-
-### Tertiary
-- **Vert** (vert anglais, deep English green) and **Terre** (terre d'ombre, raw umber): the quiet closing pair of the keyboard.
+- **Paper White** (text): The wordmark, the email address and focus outlines. It is the brightest element on the page and marks what matters; selection inverts to it.
 
 ### Neutral
-- **Chalk** (cool pale grey): the page ground, the empty void field, selection text, and text on dark pigments and on the frame tag.
-- **Ink** (warm near-black): all body text, hairline rules, the viewing frame, the frame tag fill, focus outlines and text selection fill. The rule colour is the same ink, not a separate grey.
+- **Unlit Room** (ground): The whole page background and `theme-color`. Never interrupted by panels or tints.
+- **Dusk Grey** (muted): Rail labels, status line, statement and social links at rest. Reads at about 5.8:1 on the ground, so it stays legible at 11px.
+- **Hairline** (rule): The single 1px rule above the bottom rail. Too low in contrast for text; it is a line colour only.
+- **Daylight** (daylight): The light blade and its floor patch, only ever at 0.02 to 0.16 alpha, always as a gradient. Never a fill, never a text colour.
 
 ### Named Rules
-**The Full-Strength Rule.** Pigments are applied flat and opaque at their exact value. No tints, shades, transparency or blended transitions between them; to vary colour, choose a different pigment.
+**The One Light Rule.** The daylight blade is the world's single light effect. Translucent gradients and blur belong to it and to nothing else on the page; no other element glows, tints or blurs at rest.
 
-**The Accent Follows the Frame Rule.** The accent is a binding, not a colour: it takes the dominant pigment inside the viewing frame (Outremer at rest). It appears only on the primary action's underline and hover fill, never as a decorative fill elsewhere.
-
-**The Sample Card Rule.** Each pigment field carries its number and name in small tracked capitals at the bottom-left (for example "32020 Outremer"), in chalk on dark pigments and ink on Ocre. Exactly one field is left empty, chalk-filled and unlabelled.
+**The Bright-Means-Act Rule.** Outside the wordmark, only the actionable thing (the email, and a social link on hover) is drawn in Paper White. Everything informational stays in Dusk Grey.
 
 ## Typography
 
-**Display Font:** Archivo, wide cut (wdth 125), with Helvetica Neue, Arial fallback
-**Body Font:** Archivo, normal cut (wdth 100)
-**Label Font:** Archivo, normal cut, tracked capitals
+**Display Font:** Archivo (with Helvetica Neue, Arial, sans-serif), variable width and weight
+**Body Font:** Archivo (same stack)
 
-**Character:** One grotesque stretched across its width axis. The wide, heavy cut reads as a built thing; the normal cut stays plain and precise.
+**Character:** One family carrying the whole system through width and weight alone: a thin, extra-wide wordmark for presence, light regular text for the rails, and generous tracking on caps to make small type feel architectural rather than loud.
 
 ### Hierarchy
-- **Display** (700, wdth 125, fitted to the module span; 8.4vw before fitting, line-height 0.74, -0.035em, uppercase): the FLOWSPACE wordmark only. Script fits its width to nine modules on desktop and the full keyboard width at 760px and below.
-- **Headline** (600, wdth 112, clamp(20px, 1.9vw, 30px), line-height 1.15, -0.01em): the primary action, the email address.
-- **Body** (400, 14px desktop / 16px mobile, line-height 1.5, max 40ch): the single statement paragraph.
-- **Label** (500, 12px, 0.08em, uppercase): rails and social links. Rails drop to 11px on small screens.
-- **Label small** (500, 11px, 0.08em, uppercase, tabular numerals): pigment field labels and the frame tag.
+- **Display** (200, clamp(30px, 6.4vw, 96px), line-height 1, 0.42em tracking, wdth 125, uppercase): The FLOWSPACE wordmark only. On screens up to 720px it drops to 8.4vw with 0.28em tracking.
+- **Title** (300, clamp(15px, 1.2vw, 18px), 0.02em tracking): The email address, the primary action. 18px on small screens.
+- **Body** (400, 14px, line-height 1.6): Base text size.
+- **Body small** (400, 13px, line-height 1.6): The bottom-rail statement, held to 30ch.
+- **Label** (400, 11px, 0.24em tracking, uppercase): Top rail and social links. Tightens to 0.14em on small screens.
+- **Label wide** (400, 11px, 0.5em tracking, uppercase): The status line beneath the wordmark.
 
 ### Named Rules
-**The One Family Rule.** Archivo is the only typeface. Hierarchy comes from the width axis, weight and case, never from a second family.
+**The Thin Voice Rule.** Weights stay between 200 and 400. Nothing on the page is bold; emphasis comes from size, width and brightness.
 
-**The Width Is the Voice Rule.** Only the wordmark uses the widest cut (wdth 125); the primary action uses the intermediate cut (wdth 112); all other text stays at normal width.
+**The Balanced Tracking Rule.** Any centred tracked line carries a negative right margin equal to its letter-spacing (-0.42em on the wordmark, -0.5em on the status), so the trailing space does not push it off centre.
 
 ## Layout
 
-A fourteen-column module grid spans the viewport between gutters of clamp(16px, 2.8vw, 40px). The page is a three-row full-height grid: top rail (64px, 52px on small screens), the keyboard taking the remaining height (min 320px, 300px on small screens), and the close below.
+The page is a single full-viewport grid (`min-height: 100svh`, rows auto / 1fr / auto) with overflow hidden: top rail, centred stage, bottom rail. Horizontal margins use one fluid gutter (clamp(20px, 3.4vw, 56px)); rails use a fluid vertical padding (clamp(22px, 2.6vw, 36px)).
 
-- **Top rail:** practice at modules 1 to 4, location at 7 to 10, status right-aligned at 11 to 14. At 760px and below the status item is removed and location right-aligns.
-- **Keyboard:** pigment fields span whole modules (4, 2, 3, 1 void, 2, 2 = 14). Hairline rules run above and below.
-- **Close:** the wordmark spans modules 1 to 9 on the chalk ground beneath the fields, bottom-aligned with contact at modules 11 to 14 (14px stack gap, 20px between social links). At 760px and below both stack full-width with 28px between them.
-- **Breakpoint:** a single breakpoint at 760px. On small screens field labels rotate -90deg to read up the field.
-
-### Named Rules
-**The Whole Module Rule.** Every field, frame position and block placement snaps to a whole module of the fourteen. No half modules, no free positioning.
+The top rail is justified space-between: practice label left, location right. The stage centres the wordmark and status with a fluid gap (clamp(20px, 2.4vw, 34px)). The bottom rail is inset by the gutter so its hairline stops short of the viewport edges, and aligns three items to the baseline: statement left, email centre, socials right, 24px apart. At 720px and below the bottom rail stacks into a left-aligned column with 22px gaps.
 
 ## Elevation & Depth
 
-The system is completely flat. There are no shadows, no blur and no tonal layering. Depth is conveyed only by overlap: the viewing frame sits over the fields and overhangs them by 10px top and bottom (8px on small screens), and its tag hangs below the keyboard on the chalk.
+The system is flat. There are no box-shadows anywhere. Depth comes from light only: the layered daylight blade (a vertical shaft blurred 18px, a skewed floor patch blurred 6px with a 1px brighter leading edge) sits behind the content, and all content sits on z-index 1 above it. Do not add shadows or raised surfaces; if something needs separation, it gets space or the hairline.
 
 ### Named Rules
-**The Flat Wall Rule.** Surfaces never lift. Emphasis is made with ink weight (1px hairline versus 6px frame) and with colour, never with shadow.
+**The Light-Is-Depth Rule.** The only sense of volume on the page comes from the daylight falling into the room. Surfaces never lift.
 
 ## Shapes
 
-Square corners throughout (0px radius); every surface is a rectangle. Lines come in two weights only: the 1px ink hairline (keyboard top and bottom, the void field's sides) and the 6px ink frame border (4px on small screens). Fields enter with a bottom-to-top clip reveal rather than a fade.
+Every edge is square and nothing is boxed. There are no radii, no borders except the single hairline top rule on the bottom rail, and no containers. The only non-orthogonal geometry is the light: the shaft skews -8deg and the floor patch skews -38deg, which reads as sunlight raking across a floor.
 
 ## Components
 
-### Pigment Field
-Flat, full-height rectangle of one pigment spanning whole modules, labelled per the Sample Card Rule. Rises in once from the bottom (clip-path, 1.4s, ease cubic-bezier(0.16, 1, 0.3, 1)), staggered by 0.06s per field. The void field is chalk, bordered by hairlines on both sides, unlabelled and hidden from assistive tech.
-
-### Viewing Frame (signature)
-A four-module rectangle with a 6px ink border and no fill, overhanging the keyboard by 10px. It is a slider: drag it, tap the keyboard to move it, or use arrow, Home and End keys. Moves glide over 1.1s on the house ease; while dragging, transitions are off. Its tag (ink fill, chalk label-small text, 7px 10px 6px padding) hangs flush below the frame's left edge and names the framed pigments ("Outremer / Ocre"). On load it glides once from module 0 to its resting position to show it can move.
-
-### Rails
-Plain rows of label-style text on chalk, placed on the module grid. No background, border or divider.
-
 ### Email Link (primary action)
-- **Shape:** square, 2px 0 4px padding.
-- **Default:** ink headline text with a 4px solid accent underline drawn as a background fill.
-- **Hover / Focus:** the accent fill rises to cover the full text box over 0.5s on the house ease and the text turns chalk.
+Quiet but unmistakably the action.
+- **Rest:** Paper White, title type, 6px bottom padding, with a 1px Paper White underline drawn as a background gradient across the full width.
+- **Hover / Focus:** The underline withdraws to the right (background-size to 0%) while tracking opens from 0.02em to 0.06em, both over 0.6s on the standard ease. Focus also shows the global 1px outline at 6px offset.
 
 ### Social Links
-Label-style tracked capitals, 20px apart. Hover draws a 1px current-colour underline (0.3s).
+- **Rest:** Dusk Grey, label type (11px caps, 0.24em), 28px apart, no underline.
+- **Hover:** Colour rises to Paper White over 0.3s.
 
-### Focus
-All focusable elements use a 2px ink outline offset 4px (6px on the frame). Reduced motion disables the field rise and all transitions.
+### Rails
+- **Top rail:** Dusk Grey label caps, space-between, practice name left and location right. Meta information only, never a heading label.
+- **Bottom rail:** Dusk Grey 13px sentence case, sitting above the 1px hairline, statement / email / socials.
+
+### Wordmark and Status
+- **Wordmark:** Display type in Paper White; settles from 6px blur and zero opacity over 2.4s after 0.4s, once.
+- **Status:** Label-wide caps in Dusk Grey beneath; the same settle at 0.9s.
+
+### Light Blade (signature)
+A shaft of daylight through an unseen slot window: a vertical gradient (0.10 to 0 alpha) clamp(90px, 11vw, 180px) wide, skewed -8deg, blurred 18px, ending at 78% height where a skewed floor patch (0.07 to 0.02 alpha, 1px 0.16-alpha leading edge, blurred 6px) takes over. The whole light fades in over 3.2s. Its horizontal position is driven by one custom property that drifts plus or minus 10% around 62% on a roughly 90-second sine sweep and leans up to 3% toward the pointer with heavy easing. It never receives pointer events and is hidden from assistive technology. Under reduced motion it is static.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** apply pigments flat and opaque at their exact token values.
-- **Do** snap every field and block to whole modules of the fourteen-column grid.
-- **Do** label pigment fields with number and name in 11px tracked capitals, chalk on dark pigments and ink on Ocre.
-- **Do** bind the accent to the framed pigment and use it only on the primary action.
-- **Do** keep Archivo as the only family and vary it by width axis: wdth 125 for the wordmark, 112 for the primary action, 100 for everything else.
-- **Do** use only two line weights: 1px ink hairlines and the 6px ink frame.
-- **Do** use the house ease cubic-bezier(0.16, 1, 0.3, 1) for reveals and glides, and honour reduced motion.
+- **Do** keep the ground Unlit Room edge to edge and let content sit directly on it.
+- **Do** keep type in Archivo between weights 200 and 400, using the wdth axis for the wordmark.
+- **Do** track uppercase lines generously (0.24em for labels, 0.5em for status) and balance centred tracking with a matching negative right margin.
+- **Do** reserve Paper White for the wordmark and the actionable element.
+- **Do** use the standard ease (cubic-bezier(0.16, 1, 0.3, 1)) and long, slow durations (0.3s to 3.2s); remove all of it under prefers-reduced-motion.
+- **Do** use the daylight blade, with its translucent gradients and blur, as the single light effect.
 
 ### Don't:
-- **Don't** use tints, opacity, or gradient colour transitions between pigments. A solid single-colour background fill used to draw an underline is allowed.
-- **Don't** add shadows, blur or glows; the wall is flat.
-- **Don't** round corners.
-- **Don't** introduce a second typeface or a grey that is not chalk or ink.
-- **Don't** use the accent as a decorative fill outside the primary action.
-- **Don't** label the void field or add a second empty field.
+- **Don't** add a second light, glow, tint or blur; the One Light Rule allows exactly one.
+- **Don't** add shadows, cards, rounded corners or borders beyond the single hairline rule.
+- **Don't** introduce hue; the palette is warm achromatic.
+- **Don't** use bold weights or a second typeface.
+- **Don't** set small caps labels above headings as kickers; tracked caps live in the rails and the status line only.
+- **Don't** use the Hairline grey or Daylight for text.
