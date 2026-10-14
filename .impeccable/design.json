@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-14T20:10:00Z",
+  "title": "Design System: Flowspace",
+  "extensions": {
+    "colorMeta": {
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "oklch(89.6% 0.005 117.9)",
+        "tonalRamp": [
+          "#0B0B09",
+          "#242421",
+          "#3F403D",
+          "#5D5E5B",
+          "#7D7E7A",
+          "#9E9F9B",
+          "#C4C5C1",
+          "#EEEFEB"
+        ]
+      },
+      "ink-dark": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(22.6% 0.004 106.7)",
+        "tonalRamp": [
+          "#0B0B09",
+          "#242422",
+          "#40403E",
+          "#5E5E5B",
+          "#7D7D7B",
+          "#9E9E9C",
+          "#C4C4C1",
+          "#EFEFEC"
+        ]
+      },
+      "outremer": {
+        "role": "primary",
+        "displayName": "32020 Outremer",
+        "canonical": "oklch(39.7% 0.096 270.9)",
+        "tonalRamp": [
+          "#040032",
+          "#141D51",
+          "#2D3B72",
+          "#4A5994",
+          "#687AB7",
+          "#889BDB",
+          "#AFC2FD",
+          "#E9EEFE"
+        ]
+      },
+      "ocre": {
+        "role": "secondary",
+        "displayName": "32081 Ocre",
+        "canonical": "oklch(70.6% 0.120 78.0)",
+        "tonalRamp": [
+          "#120900",
+          "#322001",
+          "#553A02",
+          "#7B5505",
+          "#A4730B",
+          "#C7943C",
+          "#EFBA64",
+          "#FFECCF"
+        ]
+      },
+      "vermillon": {
+        "role": "secondary",
+        "displayName": "32090 Vermillon",
+        "canonical": "oklch(48.6% 0.137 32.8)",
+        "tonalRamp": [
+          "#1E0100",
+          "#480800",
+          "#781300",
+          "#9C3825",
+          "#C15A45",
+          "#E77B65",
+          "#FEAC9A",
+          "#FEE9E4"
+        ]
+      },
+      "vert": {
+        "role": "tertiary",
+        "displayName": "32040 Vert anglais",
+        "canonical": "oklch(43.9% 0.047 155.3)",
+        "tonalRamp": [
+          "#001005",
+          "#0E2B1A",
+          "#2B4735",
+          "#486652",
+          "#678671",
+          "#88A792",
+          "#ADCEB7",
+          "#D7F8E1"
+        ]
+      },
+      "terre": {
+        "role": "tertiary",
+        "displayName": "32110 Terre d'ombre",
+        "canonical": "oklch(36.8% 0.033 47.8)",
+        "tonalRamp": [
+          "#160702",
+          "#311F16",
+          "#4F3B31",
+          "#6E584E",
+          "#8E786D",
+          "#B1998D",
+          "#D7BEB2",
+          "#FFEADF"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display (wordmark)",
+        "purpose": "FLOWSPACE wordmark only, uppercase, width fitted by script to nine modules (full width at 760px and below)."
+      },
+      "headline": {
+        "displayName": "Headline (primary action)",
+        "purpose": "The email address, the one primary action."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "The statement paragraph, max 40ch; 16px at 760px and below."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rails and social links, uppercase; 11px rails on small screens."
+      },
+      "label-sm": {
+        "displayName": "Label small",
+        "purpose": "Pigment field labels and the frame tag, uppercase, tabular numerals."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "ease-house",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All reveals and glides."
+      },
+      {
+        "name": "field-rise",
+        "value": "clip-path inset(100% 0 0 0) to inset(0) 1.4s, stagger 0.06s",
+        "purpose": "Pigment fields rise in once on load."
+      },
+      {
+        "name": "frame-glide",
+        "value": "left 1.1s",
+        "purpose": "Viewing frame moves between module positions; off while dragging."
+      },
+      {
+        "name": "action-fill",
+        "value": "background-size, color 0.5s",
+        "purpose": "Email underline rises to a full accent fill on hover and focus."
+      },
+      {
+        "name": "link-underline",
+        "value": "border-color 0.3s",
+        "purpose": "Social link hover underline."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "small",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Pigment Keyboard",
+      "kind": "custom",
+      "refersTo": "field-label",
+      "description": "Flat pigment fields on whole modules with sample-card labels and one empty chalk field.",
+      "html": "<div class=\"ds-keyboard\"><div class=\"ds-field\" style=\"--span:4;--c:var(--outremer);--ink:var(--chalk)\"><span class=\"ds-field-label\">32020 Outremer</span></div><div class=\"ds-field\" style=\"--span:2;--c:var(--ocre);--ink:var(--ink-dark)\"><span class=\"ds-field-label\">32081 Ocre</span></div><div class=\"ds-field\" style=\"--span:3;--c:var(--vermillon);--ink:var(--chalk)\"><span class=\"ds-field-label\">32090 Vermillon</span></div><div class=\"ds-field ds-field--void\" style=\"--span:1;--c:var(--chalk)\"></div><div class=\"ds-field\" style=\"--span:2;--c:var(--vert);--ink:var(--chalk)\"><span class=\"ds-field-label\">32040 Vert anglais</span></div><div class=\"ds-field\" style=\"--span:2;--c:var(--terre);--ink:var(--chalk)\"><span class=\"ds-field-label\">32110 Terre d'ombre</span></div></div>",
+      "css": ".ds-keyboard { display: grid; grid-template-columns: repeat(14, 1fr); height: 220px; border-top: 1px solid var(--ink-dark, #1C1C1A); border-bottom: 1px solid var(--ink-dark, #1C1C1A); } .ds-field { grid-column: span var(--span); position: relative; background: var(--c); animation: ds-rise 1.4s cubic-bezier(0.16, 1, 0.3, 1) both; } .ds-field--void { border-left: 1px solid var(--ink-dark, #1C1C1A); border-right: 1px solid var(--ink-dark, #1C1C1A); } .ds-field-label { position: absolute; left: 14px; bottom: 12px; color: var(--ink); font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; font-variant-numeric: tabular-nums; white-space: nowrap; } @keyframes ds-rise { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }"
+    },
+    {
+      "name": "Viewing Frame",
+      "kind": "custom",
+      "refersTo": "frame-tag",
+      "description": "Signature slider: a 6px ink frame over the fields with a hanging tag naming the framed pigments.",
+      "html": "<div class=\"ds-frame-stage\"><div class=\"ds-frame-fields\"><i style=\"background:#34427A\"></i><i style=\"background:#C9963E\"></i></div><div class=\"ds-frame\" tabindex=\"0\" role=\"slider\" aria-label=\"Viewing frame\" aria-valuenow=\"0\"><span class=\"ds-frame-tag\">Outremer / Ocre</span></div></div>",
+      "css": ".ds-frame-stage { position: relative; width: 280px; height: 180px; margin-bottom: 40px; } .ds-frame-fields { display: grid; grid-template-columns: 1fr 1fr; height: 100%; } .ds-frame { position: absolute; top: -10px; bottom: -10px; left: 0; right: 0; border: 6px solid var(--ink-dark, #1C1C1A); cursor: grab; transition: left 1.1s cubic-bezier(0.16, 1, 0.3, 1); } .ds-frame:focus-visible { outline: 2px solid var(--ink-dark, #1C1C1A); outline-offset: 6px; } .ds-frame-tag { position: absolute; left: -6px; top: 100%; padding: 7px 10px 6px; background: var(--ink-dark, #1C1C1A); color: var(--chalk, #DCDDD9); font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }"
+    },
+    {
+      "name": "Email Link",
+      "kind": "button",
+      "refersTo": "email-link",
+      "description": "The primary action: headline-weight email with an accent underline that rises to a full fill on hover and focus.",
+      "html": "<a class=\"ds-email\" href=\"#\">hello@flowspace.studio</a>",
+      "css": ".ds-email { --accent: var(--outremer, #34427A); font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; font-size: clamp(20px, 1.9vw, 30px); font-variation-settings: 'wdth' 112; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; padding: 2px 0 4px; color: var(--ink-dark, #1C1C1A); text-decoration: none; background: linear-gradient(var(--accent), var(--accent)) left bottom / 100% 4px no-repeat; transition: background-size 0.5s cubic-bezier(0.16, 1, 0.3, 1), color 0.5s cubic-bezier(0.16, 1, 0.3, 1); } .ds-email:hover, .ds-email:focus-visible { background-size: 100% 100%; color: var(--chalk, #DCDDD9); } .ds-email:focus-visible { outline: 2px solid var(--ink-dark, #1C1C1A); outline-offset: 4px; }"
+    },
+    {
+      "name": "Rail",
+      "kind": "nav",
+      "refersTo": "rail",
+      "description": "Top rail of tracked-capital metadata placed on the fourteen-module grid.",
+      "html": "<header class=\"ds-rail\"><span class=\"ds-rail-a\">Architecture &amp; Interiors</span><span class=\"ds-rail-b\">City, Country</span><span class=\"ds-rail-c\">Website in preparation</span></header>",
+      "css": ".ds-rail { display: grid; grid-template-columns: repeat(14, 1fr); align-items: center; height: 64px; color: var(--ink-dark, #1C1C1A); font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; } .ds-rail-a { grid-column: 1 / span 4; } .ds-rail-b { grid-column: 7 / span 4; } .ds-rail-c { grid-column: 11 / -1; justify-self: end; }"
+    },
+    {
+      "name": "Social Links",
+      "kind": "nav",
+      "refersTo": "social-link",
+      "description": "Tracked-capital links with a 1px underline drawn on hover.",
+      "html": "<ul class=\"ds-social\"><li><a href=\"#\">Instagram</a></li><li><a href=\"#\">LinkedIn</a></li></ul>",
+      "css": ".ds-social { display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; } .ds-social a { color: var(--ink-dark, #1C1C1A); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-social a:hover { border-color: currentColor; } .ds-social a:focus-visible { outline: 2px solid var(--ink-dark, #1C1C1A); outline-offset: 4px; }"
+    },
+    {
+      "name": "Wordmark",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "FLOWSPACE in Archivo's widest heavy cut, fitted to its module span on the chalk ground.",
+      "html": "<h1 class=\"ds-wordmark\">Flowspace</h1>",
+      "css": ".ds-wordmark { margin: 0; color: var(--ink-dark, #1C1C1A); font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; font-size: 96px; font-variation-settings: 'wdth' 125; font-weight: 700; line-height: 0.74; letter-spacing: -0.035em; text-transform: uppercase; white-space: nowrap; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Colour Keyboard",
+    "overview": "Flowspace composes space with colour. The system is a wall-scale architectural colour keyboard in the tradition of Polychromie architecturale: flat matte pigment fields set on a cool chalk ground, measured by hairline rules and labelled like a pigment sample card. Nothing is lit, glossy or photographic; the pigments themselves carry the atmosphere, and a heavy black viewing frame isolates one combination at a time.\n\nDensity is low and the measure is strict. Everything sits on a fourteen-module grid between two gutters. Pigment fields snap to whole modules, the frame spans exactly four, the wordmark fills nine on the chalk beneath the fields, and contact lives in the last four. Type is one family, Archivo, used for its width axis: very wide and heavy for the wordmark, normal width for text, small tracked capitals for sample-card labelling.\n\nMotion is architectural, not decorative: fields rise into place once, staggered, and the frame glides on a long ease-out. The one live colour on the chalk ground, the email underline, is borrowed from whatever pigment the frame holds.",
+    "keyCharacteristics": [
+      "Flat matte pigment fields; no tints, gradient colour transitions, shadows or opacity.",
+      "Fourteen-module grid; every field, frame and text block snaps to whole modules.",
+      "Hairline ink rules (1px) and one heavy ink frame (6px) are the only line weights.",
+      "Archivo alone, varied by its width axis (wdth 100 / 112 / 125).",
+      "Square corners everywhere.",
+      "The accent is not fixed; it follows the framed pigment."
+    ],
+    "rules": [
+      {
+        "name": "The Full-Strength Rule",
+        "body": "Pigments are applied flat and opaque at their exact value. No tints, shades, transparency or blended transitions between them; to vary colour, choose a different pigment.",
+        "section": "colors"
+      },
+      {
+        "name": "The Accent Follows the Frame Rule",
+        "body": "The accent is a binding, not a colour: it takes the dominant pigment inside the viewing frame (Outremer at rest). It appears only on the primary action's underline and hover fill, never as a decorative fill elsewhere.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sample Card Rule",
+        "body": "Each pigment field carries its number and name in small tracked capitals at the bottom-left (for example \"32020 Outremer\"), in chalk on dark pigments and ink on Ocre. Exactly one field is left empty, chalk-filled and unlabelled.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Archivo is the only typeface. Hierarchy comes from the width axis, weight and case, never from a second family.",
+        "section": "typography"
+      },
+      {
+        "name": "The Width Is the Voice Rule",
+        "body": "Only the wordmark uses the widest cut (wdth 125); the primary action uses the intermediate cut (wdth 112); all other text stays at normal width.",
+        "section": "typography"
+      },
+      {
+        "name": "The Whole Module Rule",
+        "body": "Every field, frame position and block placement snaps to a whole module of the fourteen. No half modules, no free positioning.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Wall Rule",
+        "body": "Surfaces never lift. Emphasis is made with ink weight (1px hairline versus 6px frame) and with colour, never with shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do apply pigments flat and opaque at their exact token values.",
+      "Do snap every field and block to whole modules of the fourteen-column grid.",
+      "Do label pigment fields with number and name in 11px tracked capitals, chalk on dark pigments and ink on Ocre.",
+      "Do bind the accent to the framed pigment and use it only on the primary action.",
+      "Do keep Archivo as the only family and vary it by width axis: wdth 125 for the wordmark, 112 for the primary action, 100 for everything else.",
+      "Do use only two line weights: 1px ink hairlines and the 6px ink frame.",
+      "Do use the house ease cubic-bezier(0.16, 1, 0.3, 1) for reveals and glides, and honour reduced motion."
+    ],
+    "donts": [
+      "Don't use tints, opacity, or gradient colour transitions between pigments. A solid single-colour background fill used to draw an underline is allowed.",
+      "Don't add shadows, blur or glows; the wall is flat.",
+      "Don't round corners.",
+      "Don't introduce a second typeface or a grey that is not chalk or ink.",
+      "Don't use the accent as a decorative fill outside the primary action.",
+      "Don't label the void field or add a second empty field."
+    ]
+  }
+}

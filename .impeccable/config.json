@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-14T14:30:06.732Z",
+        "reason": "Claude triage: .field labels are absolutely positioned with 12-24px insets; detector reads flush edges on the colour-field divs. Confirmed in desktop/mobile captures."
+      }
+    ]
+  }
+}
