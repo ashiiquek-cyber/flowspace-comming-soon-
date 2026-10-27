@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #ffffff;
+  --color-ink: #0b0b0b;
+  --color-ink-muted: #737373;
+  --color-stone-1: #f4f4f2;
+  --color-stone-2: #bdbdb9;
+  --color-line: #e3e3e0;
+  --color-accent: #e8461e;
+  --color-surface: #f3f3f1;
+  --color-on-ink: #ffffff;
+}
+
+html {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Lenis smooth scroll foundation */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f4f4f2;
+}
+::-webkit-scrollbar-thumb {
+  background: #bdbdb9;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #737373;
+}
+
+/* Stacking cards styles */
+.sticky-card {
+  position: sticky;
+  top: 96px;
+}
+
+/* Image comparison container */
+.comparison-container {
+  user-select: none;
+  touch-action: pan-y;
+}
