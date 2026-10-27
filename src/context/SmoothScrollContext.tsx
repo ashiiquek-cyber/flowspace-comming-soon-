@@ -13,7 +13,7 @@ interface SmoothScrollContextType {
   isScrolled: boolean;
   /** 1 when scrolling down, -1 when scrolling up */
   direction: number;
-  scrollTo: (target: number | string | HTMLElement, options?: { immediate?: boolean; offset?: number; duration?: number }) => void;
+  scrollTo: (target: number | string | HTMLElement, options?: { immediate?: boolean; offset?: number; duration?: number; force?: boolean }) => void;
 }
 
 const SmoothScrollContext = createContext<SmoothScrollContextType | null>(null);
@@ -23,7 +23,7 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [isScrolled, setIsScrolled] = useState(false);
   const [direction, setDirection] = useState(0);
 
-  const scrollTo = useCallback((target: number | string | HTMLElement, options?: { immediate?: boolean; offset?: number; duration?: number }) => {
+  const scrollTo = useCallback((target: number | string | HTMLElement, options?: { immediate?: boolean; offset?: number; duration?: number; force?: boolean }) => {
     if (lenisInstance) {
       lenisInstance.scrollTo(target, options);
       return;

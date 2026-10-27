@@ -4,6 +4,8 @@ import { ASSETS } from '../constants/assets';
 import { Aperture } from '../components/Aperture';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
+import { Emblem } from '../components/Brand';
+import { setHeroState } from '../lib/heroSignal';
 
 interface LandingPageProps {
   onNavigate: (target: NavigateTarget) => void;
@@ -71,29 +73,85 @@ const Hero: React.FC = () => {
 
   useLayoutEffect(() => {
     if (reduced || !rootRef.current) return;
-    const ctx = gsap.context(() => {
-      // Entrance: headline lines rise out of their masks
-      gsap.from('[data-hero-line]', { yPercent: 105, duration: 1.1, ease: 'expo.out', stagger: 0.08, delay: 0.15 });
-      gsap.from('[data-hero-fade]', { opacity: 0, duration: 1, ease: 'power2.out', delay: 0.6 });
-      gsap.from('[data-hero-frame]', { clipPath: 'inset(100% 0% 0% 0%)', duration: 1.4, ease: 'expo.out', delay: 0.25 });
+    const root = rootRef.current;
+    const navEmblem = document.querySelector<HTMLElement>('[data-nav-emblem]');
+    const navWordmark = document.querySelector<HTMLElement>('[data-nav-wordmark]');
+    const header = document.querySelector<HTMLElement>('header');
 
-      // Scroll: the courtyard opening widens to the full sky
+    // Before first paint: the emblem is centre stage, the navbar waits for it
+    setHeroState({ docked: false }, false);
+
+    const ctx = gsap.context(() => {
+      gsap.from('[data-hero-emblem]', { autoAlpha: 0, scale: 0.94, duration: 1.4, ease: 'expo.out', delay: 0.1 });
+
+      // Where the navbar's emblem sits, relative to the centre of the (unscrolled) hero
+      const dock = () => {
+        const nav = navEmblem!.getBoundingClientRect();
+        const top = header ? header.getBoundingClientRect().top : 0;
+        const big = root.querySelector<HTMLElement>('[data-hero-emblem]')!;
+        return {
+          x: nav.left + nav.width / 2 - root.clientWidth / 2,
+          y: nav.top - top + nav.height / 2 - root.clientHeight / 2,
+          scale: nav.width / big.offsetWidth,
+        };
+      };
+
       const mm = gsap.matchMedia();
       mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
         const { desktop } = c.conditions as { desktop: boolean };
-        const start = desktop ? 'inset(12% 11% 38% 61% round 0px)' : 'inset(57% 6% 7% 36% round 0px)';
-        gsap.set('[data-hero-aperture]', { clipPath: start });
+        const opening = desktop ? 'inset(12% 11% 38% 61% round 0px)' : 'inset(57% 6% 7% 36% round 0px)';
+        gsap.set('[data-hero-aperture]', { clipPath: opening });
+        if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { autoAlpha: 0 });
+
+        // Timeline units: 0–1 emblem docks, 0.7–1.5 headline and window arrive, 1.6–2.6 window opens
+        const DOCKED_AT = 1;
         const tl = gsap.timeline({
-          scrollTrigger: { trigger: rootRef.current, start: 'top top', end: '+=140%', scrub: 0.8, pin: true, pinSpacing: true },
+          scrollTrigger: {
+            trigger: root,
+            start: 'top top',
+            end: '+=260%',
+            scrub: 0.8,
+            pin: true,
+            pinSpacing: true,
+            invalidateOnRefresh: true,
+            onToggle: (self) => setHeroState({ active: self.isActive }),
+            onUpdate: (self) => setHeroState({ docked: self.progress * tl.duration() >= DOCKED_AT - 0.02 }),
+          },
         });
-        tl.to('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut', duration: 1 }, 0)
-          .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1, ease: 'power2.inOut', duration: 1 }, 0)
-          .to('[data-hero-copy]', { yPercent: -40, opacity: 0, ease: 'power1.in', duration: 0.45 }, 0)
-          .to('[data-hero-pre]', { opacity: 0, duration: 0.2 }, 0)
-          .fromTo('[data-hero-post]', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25 }, 0.75);
+
+        // Stage 1: the emblem leaves centre stage and settles into the navbar
+        tl.to('[data-hero-emblem]', { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, ease: 'power2.inOut', duration: DOCKED_AT }, 0)
+          .to('[data-hero-hint]', { autoAlpha: 0, duration: 0.2 }, 0);
+        if (navEmblem && navWordmark) {
+          tl.set('[data-hero-emblem]', { autoAlpha: 0 }, DOCKED_AT)
+            .set(navEmblem, { autoAlpha: 1 }, DOCKED_AT)
+            .fromTo(navWordmark, { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, duration: 0.3 }, DOCKED_AT);
+        }
+
+        // The statement and the small courtyard window arrive behind it
+        tl.fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0.7)
+          .fromTo('[data-hero-fade]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, 0.9)
+          .fromTo('[data-hero-frame]', { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'power3.out', duration: 0.6 }, 0.85)
+          .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 1.2);
+
+        // Stage 2: the courtyard opening widens to the full sky
+        const S2 = 1.6;
+        tl.to('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut', duration: 1 }, S2)
+          .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1, ease: 'power2.inOut', duration: 1 }, S2)
+          .to('[data-hero-copy]', { yPercent: -40, autoAlpha: 0, ease: 'power1.in', duration: 0.45 }, S2)
+          .to('[data-hero-pre]', { autoAlpha: 0, duration: 0.2 }, S2)
+          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.25 }, S2 + 0.75);
+
+        return () => {
+          if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { clearProps: 'all' });
+        };
       });
     }, rootRef);
-    return () => ctx.revert();
+
+    return () => {
+      ctx.revert();
+      setHeroState({ active: false, docked: true }, false);
+    };
   }, [reduced]);
 
   if (reduced) {
@@ -150,6 +208,14 @@ const Hero: React.FC = () => {
       <p data-hero-pre className="hidden md:block absolute z-10 left-[61%] top-[calc(62%+0.75rem)] label">
         Courtyard residence, Wayanad
       </p>
+
+      {/* The emblem, centre stage until it docks in the navbar */}
+      <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" aria-hidden="true">
+        <span data-hero-emblem className="block text-ink will-change-transform">
+          <Emblem className="size-[min(38svh,64vw)]" />
+        </span>
+      </div>
+      <p data-hero-hint className="absolute z-20 inset-x-0 bottom-8 text-center label" aria-hidden="true">Scroll</p>
     </section>
   );
 };

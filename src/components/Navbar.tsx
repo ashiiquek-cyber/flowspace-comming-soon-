@@ -1,7 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Emblem, Wordmark } from './Brand';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { Flip } from 'gsap/Flip';
+import { MovingEmblem, Wordmark } from './Brand';
 import { useSmoothScroll } from '../context/SmoothScrollContext';
+import { HERO_EVENT, getHeroState } from '../lib/heroSignal';
 import type { NavigateTarget, Page } from '../data/projects';
+
+gsap.registerPlugin(Flip);
 
 interface NavbarProps {
   currentPage: Page;
@@ -19,8 +24,35 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isScrolled, direction, lenis } = useSmoothScroll();
   const firstLinkRef = useRef<HTMLButtonElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const flipState = useRef<Flip.FlipState | null>(null);
+  const [hero, setHero] = useState(getHeroState);
 
-  const hidden = isScrolled && direction === 1 && !menuOpen;
+  // The home hero tells us when its emblem has docked; links gather with a FLIP move.
+  // Layout effect so the listener exists before the hero's own first-paint signal.
+  useLayoutEffect(() => {
+    setHero(getHeroState());
+    const onHero = (e: Event) => {
+      const next = getHeroState();
+      const animate = (e as CustomEvent<{ animate: boolean }>).detail?.animate;
+      if (animate && navRef.current && next.docked !== hero.docked) {
+        flipState.current = Flip.getState(navRef.current.children);
+      }
+      setHero(next);
+    };
+    window.addEventListener(HERO_EVENT, onHero);
+    return () => window.removeEventListener(HERO_EVENT, onHero);
+  }, [hero.docked]);
+
+  const spread = currentPage === 'home' && !hero.docked;
+
+  useLayoutEffect(() => {
+    if (!flipState.current) return;
+    Flip.from(flipState.current, { duration: 0.9, ease: 'expo.out' });
+    flipState.current = null;
+  }, [spread]);
+
+  const hidden = isScrolled && direction === 1 && !menuOpen && !hero.active;
 
   // Sticky sub-bars (e.g. project filters) dock under the header while it is showing
   useEffect(() => {
@@ -51,19 +83,30 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-[transform,background-color,border-color] duration-500 ease-out-expo ${
           hidden ? '-translate-y-full' : 'translate-y-0'
-        } ${isScrolled && !menuOpen ? 'bg-lime border-b border-line' : 'bg-transparent border-b border-transparent'}`}
+        } ${
+          // Stay see-through while the hero emblem is still flying up into the bar
+          isScrolled && !menuOpen && !(hero.active && !hero.docked) ? 'bg-lime border-b border-line' : 'bg-transparent border-b border-transparent'
+        }`}
       >
-        <div className="page-x h-[68px] md:h-[76px] flex items-center justify-between">
+        <div className="relative page-x h-[68px] md:h-[76px] flex items-center justify-between">
           <button
             onClick={() => go('home')}
             className="flex items-center gap-3 text-ink"
             aria-label="Flowspace Architects, home"
           >
-            <Emblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
-            <Wordmark />
+            <span data-nav-emblem className="block">
+              <MovingEmblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
+            </span>
+            <span data-nav-wordmark className="block"><Wordmark /></span>
           </button>
 
-          <nav aria-label="Primary" className="hidden lg:flex items-center gap-9 text-[15px]">
+          <nav
+            ref={navRef}
+            aria-label="Primary"
+            className={`hidden lg:flex items-center text-[15px] ${
+              spread ? 'absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] justify-between' : 'gap-9'
+            }`}
+          >
             {NAV_LINKS.map((link) => {
               const active = link.match.includes(currentPage);
               return (

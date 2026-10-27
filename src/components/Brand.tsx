@@ -1,4 +1,6 @@
 import React from 'react';
+import { prefersReducedMotion } from '../context/SmoothScrollContext';
+import { EMBLEM_BOXES, EMBLEM_LINES, EMBLEM_SWAY } from './emblemMotion';
 
 /** The Flowspace emblem: a site plan of contour lines with buildings placed on the slope. */
 export const Emblem: React.FC<{ className?: string }> = ({ className = 'size-8' }) => (
@@ -25,6 +27,40 @@ export const Emblem: React.FC<{ className?: string }> = ({ className = 'size-8' 
     </g>
   </svg>
 );
+
+/**
+ * The emblem in motion: each contour line keeps its shape and sways gently sideways,
+ * neighbours slightly out of step, and the buildings ride their slope.
+ * Falls back to the still emblem when the visitor prefers reduced motion.
+ */
+export const MovingEmblem: React.FC<{ className?: string }> = ({ className = 'size-8' }) => {
+  const clipId = `emblem-clip-${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  if (prefersReducedMotion()) return <Emblem className={className} />;
+  return (
+    <svg viewBox="0 0 36 36" fill="none" className={className} aria-hidden="true">
+      <defs>
+        <clipPath id={clipId}><circle cx="17.98" cy="17.89" r="16.06" /></clipPath>
+      </defs>
+      <circle cx="17.98" cy="17.89" r="16.06" stroke="currentColor" strokeWidth="0.9" />
+      <g clipPath={`url(#${clipId})`}>
+        <g stroke="currentColor" strokeWidth="0.56">
+          {EMBLEM_LINES.map(({ d, dur }) => (
+            <path key={d} d={d}>
+              <animateTransform attributeName="transform" type="translate" dur={`${dur}s`} repeatCount="indefinite" values={EMBLEM_SWAY} />
+            </path>
+          ))}
+        </g>
+      </g>
+      <g fill="currentColor">
+        {EMBLEM_BOXES.map(({ x, y, w, h, dur, values }) => (
+          <rect key={`${x},${y}`} x={x} y={y} width={w} height={h}>
+            <animate attributeName="y" dur={`${dur}s`} repeatCount="indefinite" values={values} />
+          </rect>
+        ))}
+      </g>
+    </svg>
+  );
+};
 
 export const Wordmark: React.FC<{ className?: string }> = ({ className = '' }) => (
   <span className={`font-didact text-[14px] tracking-[0.3em] uppercase ${className}`}>Flowspace</span>

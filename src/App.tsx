@@ -60,7 +60,9 @@ function AppContent() {
   useEffect(() => {
     const project = route.projectId ? PROJECTS_DATA.find((p) => p.id === route.projectId) : undefined;
     document.title = project ? `${project.title} — Flowspace Architects` : TITLES[route.page];
-    scrollTo(0, { immediate: true });
+    // Native reset too: keyboard scrolling can leave Lenis thinking it is already at the top
+    window.scrollTo(0, 0);
+    scrollTo(0, { immediate: true, force: true });
     const id = window.setTimeout(() => {
       ScrollTrigger.refresh();
       if (route.section) {
