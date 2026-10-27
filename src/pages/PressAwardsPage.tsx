@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import type { NavigateTarget } from "../data/projects";
 import { ASSETS } from '../constants/assets';
 import { X, Download, ExternalLink, Check, FileText, Image as ImageIcon, Sparkles } from 'lucide-react';
 
 interface PressAwardsPageProps {
-  onNavigate: (page: 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'press') => void;
+  onNavigate: (target: NavigateTarget) => void;
 }
 
 interface AwardItem {
@@ -31,6 +32,20 @@ interface FeatureItem {
 }
 
 const AWARDS_DATA: AwardItem[] = [
+  {
+    id: 'design-vision-firm-2026',
+    targetYear: 2026,
+    name: 'Innovative & Most Futuristic Architecture, Landscape & Interior Design Firm of the Year 2026, South India',
+    organization: 'Design & Vision Built Environment Awards, Panaji, Goa',
+    recipient: 'Flowspace Architects, for residential and commercial projects',
+  },
+  {
+    id: 'design-vision-honour-2026',
+    targetYear: 2026,
+    name: 'Special Honour: Trusted & Creative Architect & Designer of the Year 2026, South India',
+    organization: 'Design & Vision Built Environment Awards, Panaji, Goa',
+    recipient: 'Ar. Rashid Ali',
+  },
   {
     id: 'young-architect-2024',
     targetYear: 2024,
@@ -116,10 +131,6 @@ export const PressAwardsPage: React.FC<PressAwardsPageProps> = ({ onNavigate }) 
   const [titleRevealed, setTitleRevealed] = useState(false);
 
   // Motion annotation 2: Staggered award rows + Year counting in
-  const [displayYears, setDisplayYears] = useState<{ [id: string]: number }>({
-    'young-architect-2024': 2000,
-    'foaid-2023': 2000,
-  });
 
   // Motion annotation 4: Button magnet (eases 4px toward cursor)
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -131,31 +142,6 @@ export const PressAwardsPage: React.FC<PressAwardsPageProps> = ({ onNavigate }) 
       setTitleRevealed(true);
     }, 100);
     return () => clearTimeout(timer);
-  }, []);
-
-  // 2. Year Count-in animation on mount
-  useEffect(() => {
-    let startTimestamp: number | null = null;
-    const duration = 1200; // ms
-
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      // Ease out cubic
-      const ease = 1 - Math.pow(1 - progress, 3);
-
-      setDisplayYears({
-        'young-architect-2024': Math.round(2000 + (2024 - 2000) * ease),
-        'foaid-2023': Math.round(2000 + (2023 - 2000) * ease),
-      });
-
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-
-    const frameId = window.requestAnimationFrame(step);
-    return () => window.cancelAnimationFrame(frameId);
   }, []);
 
   // 4. Button Magnet effect (eases up to 4px toward cursor on hover)
@@ -222,14 +208,14 @@ Thank you for featuring Flowspace Architects.`;
   };
 
   return (
-    <div className="bg-white text-ink flex flex-col items-start w-full relative selection:bg-ink selection:text-white">
+    <div className="bg-lime text-ink flex flex-col items-start w-full relative selection:bg-ink selection:text-lime">
       {/* 1. HEADER SECTION (Figma: Header / node 42:1543) */}
       <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-16 md:pb-24">
         <div className="flex flex-col gap-8 md:gap-10">
           {/* Title Mask Reveal (700ms animation from Figma annotation) */}
           <div className="overflow-hidden">
             <h1
-              className={`font-dm-sans font-medium text-5xl sm:text-7xl md:text-9xl lg:text-[180px] xl:text-[200px] leading-[0.86] tracking-[-4px] sm:tracking-[-8px] lg:tracking-[-12px] text-ink transition-all duration-700 ease-out ${
+              className={`display text-5xl sm:text-7xl md:text-9xl lg:text-[180px] xl:text-[200px] leading-[0.86] text-ink transition-all duration-700 ease-out ${
                 titleRevealed
                   ? 'translate-y-0 opacity-100'
                   : 'translate-y-full opacity-0'
@@ -252,15 +238,15 @@ Thank you for featuring Flowspace Architects.`;
           <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-none tracking-[-1.68px] text-ink">
             Awards
           </h2>
-          <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
-            (02)
+          <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
+            ({String(AWARDS_DATA.length).padStart(2, '0')})
           </span>
         </div>
 
         {/* Awards Rows (Staggered fade up + counting year) */}
         <div className="flex flex-col border-b border-line">
           {AWARDS_DATA.map((award, index) => {
-            const currentYear = displayYears[award.id] || award.targetYear;
+            const currentYear = award.targetYear;
             return (
               <div
                 key={award.id}
@@ -268,12 +254,12 @@ Thank you for featuring Flowspace Architects.`;
                 className="border-t border-line py-7 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 group hover:bg-stone-1/40 px-2 sm:px-3 -mx-2 sm:-mx-3 transition-colors duration-200 animate-in fade-in slide-in-from-bottom-2"
               >
                 {/* Year (Animated Count) */}
-                <span className="font-dm-sans font-normal text-[16px] leading-[1.5] text-ink-muted md:w-[120px] shrink-0 font-mono sm:font-sans">
+                <span className="font-dm-sans font-normal text-[16px] leading-[1.5] text-ink-muted md:w-[120px] shrink-0 tabular-nums">
                   {currentYear}
                 </span>
 
                 {/* Award Title */}
-                <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink md:w-[520px] shrink-0 group-hover:text-neutral-700 transition-colors">
+                <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink md:w-[520px] shrink-0 group-hover:text-accent transition-colors">
                   {award.name}
                 </h3>
 
@@ -299,7 +285,7 @@ Thank you for featuring Flowspace Architects.`;
           <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-none tracking-[-1.68px] text-ink">
             Featured in
           </h2>
-          <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+          <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
             (03)
           </span>
         </div>
@@ -323,13 +309,13 @@ Thank you for featuring Flowspace Architects.`;
                       src={item.image}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 pointer-events-none" />
-                    <span className="relative z-10 font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-white">
+                    <span className="relative z-10 font-dm-sans font-medium text-[12px] text-lime">
                       {item.imageCaption}
                     </span>
                   </>
                 ) : (
                   <div className="size-full flex flex-col justify-end">
-                    <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-[#8c8c88]">
+                    <span className="font-dm-sans font-medium text-[12px] text-[#8c8c88]">
                       {item.imageCaption}
                     </span>
                   </div>
@@ -337,12 +323,12 @@ Thank you for featuring Flowspace Architects.`;
               </div>
 
               {/* Metadata */}
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
                 {item.meta}
               </span>
 
               {/* Headline */}
-              <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-neutral-700 transition-colors">
+              <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-accent transition-colors">
                 {item.title}
               </h3>
 
@@ -390,7 +376,7 @@ Thank you for featuring Flowspace Architects.`;
               transform: `translate3d(${buttonOffset.x}px, ${buttonOffset.y}px, 0)`,
               transition: buttonOffset.x === 0 ? 'transform 0.3s ease-out' : 'transform 0.1s ease-out',
             }}
-            className="inline-flex items-center gap-3.5 px-7 py-4.5 bg-ink text-white text-[15px] font-medium tracking-[-0.075px] hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center gap-3.5 px-7 py-4.5 bg-ink text-lime text-[15px] font-medium tracking-[-0.075px] hover:bg-accent transition-colors cursor-pointer shrink-0"
           >
             <span>Download press kit</span>
             <img alt="" className="size-4" src={ASSETS.iconArrowRightWhite} />
@@ -403,7 +389,7 @@ Thank you for featuring Flowspace Architects.`;
         href="https://wa.me/919447000000"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-8 right-6 md:right-10 z-40 bg-ink text-white flex items-center gap-2.5 pl-4 pr-5 py-3 rounded-full shadow-[0px_8px_24px_0px_rgba(0,0,0,0.22)] hover:bg-neutral-800 transition-all duration-300 hover:scale-105 group"
+        className="fixed bottom-8 right-6 md:right-10 z-40 bg-ink text-lime flex items-center gap-2.5 pl-4 pr-5 py-3 hover:bg-accent transition-all duration-300 group"
         aria-label="Chat on WhatsApp"
       >
         <img alt="WhatsApp" className="size-5 shrink-0" src={ASSETS.iconWhatsapp} />
@@ -415,7 +401,7 @@ Thank you for featuring Flowspace Architects.`;
       {/* 6. FEATURE MODAL READER */}
       {activeFeature && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-2xl my-8 p-6 sm:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-plaster w-full max-w-2xl my-8 p-6 sm:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setActiveFeature(null)}
               className="absolute top-6 right-6 p-2 rounded-full hover:bg-stone-1 text-ink transition-colors cursor-pointer"
@@ -424,7 +410,7 @@ Thank you for featuring Flowspace Architects.`;
               <X size={22} />
             </button>
 
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
               {activeFeature.meta}
             </span>
 
@@ -476,13 +462,9 @@ Thank you for featuring Flowspace Architects.`;
               <button
                 onClick={() => {
                   setActiveFeature(null);
-                  onNavigate('studio');
-                  setTimeout(() => {
-                    const el = document.getElementById('contact-section');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
+                  onNavigate('contact');
                 }}
-                className="px-6 py-2.5 bg-ink text-white text-[14px] font-medium hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="px-6 py-2.5 bg-ink text-lime text-[14px] font-medium hover:bg-accent transition-colors cursor-pointer"
               >
                 Contact studio
               </button>
@@ -494,7 +476,7 @@ Thank you for featuring Flowspace Architects.`;
       {/* 7. PRESS KIT MODAL */}
       {isPressKitOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg p-6 sm:p-8 shadow-2xl relative">
+          <div className="bg-plaster w-full max-w-lg p-6 sm:p-8 shadow-2xl relative">
             <button
               onClick={() => setIsPressKitOpen(false)}
               className="absolute top-6 right-6 p-2 rounded-full hover:bg-stone-1 text-ink transition-colors cursor-pointer"
@@ -503,8 +485,8 @@ Thank you for featuring Flowspace Architects.`;
               <X size={20} />
             </button>
 
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
-              (Media Assets)
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
+              Media Assets
             </span>
             <h3 className="font-dm-sans font-medium text-2xl sm:text-3xl tracking-tight text-ink mt-1 mb-2">
               Flowspace Press Kit
@@ -545,7 +527,7 @@ Thank you for featuring Flowspace Architects.`;
             ) : (
               <button
                 onClick={handleDownloadPressKit}
-                className="w-full py-4 bg-ink text-white font-medium text-[15px] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2.5 cursor-pointer"
+                className="w-full py-4 bg-ink text-lime font-medium text-[15px] hover:bg-accent transition-colors flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 <span>Download Media Package</span>
                 <Download size={16} />

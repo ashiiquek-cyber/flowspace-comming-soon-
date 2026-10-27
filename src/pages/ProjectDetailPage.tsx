@@ -1,321 +1,160 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { ASSETS } from '../constants/assets';
+import React, { useState } from 'react';
+import { Aperture } from '../components/Aperture';
+import { getNextProject, getProject, type NavigateTarget } from '../data/projects';
 
 interface ProjectDetailPageProps {
-  onNavigate: (page: 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'press') => void;
+  onNavigate: (target: NavigateTarget) => void;
+  onOpenProject: (id: string) => void;
   projectId?: string;
 }
 
-export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate }) => {
-  // Interactive Design vs Built slider position (percentage 0 - 100)
-  const [sliderPosition, setSliderPosition] = useState<number>(50);
-  const isDraggingRef = useRef<boolean>(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate, projectId }) => {
+  const project = getProject(projectId);
+  const next = getNextProject(project.id);
 
-  const handleMove = useCallback((clientX: number) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const clampedPercentage = Math.min(Math.max((x / rect.width) * 100, 5), 95);
-    setSliderPosition(clampedPercentage);
-  }, []);
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length > 0) {
-      handleMove(e.touches[0].clientX);
-    }
-  };
-
-  const handleMouseDown = () => {
-    isDraggingRef.current = true;
-  };
-
-  const handleMouseUp = () => {
-    isDraggingRef.current = false;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDraggingRef.current) {
-      handleMove(e.clientX);
-    }
-  };
+  const specs: [string, string][] = [
+    ['Location', project.location],
+    ['Year', project.year],
+    ['Client', project.client ?? 'Private client'],
+    ['Area', project.area],
+    ['Status', project.status],
+    ['Scope', project.discipline],
+  ];
 
   return (
-    <div
-      className="bg-white text-ink flex flex-col items-start w-full relative"
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-    >
-      {/* 1. TOP BREADCRUMB & HEADER */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pt-10 md:pt-16 pb-8">
-        {/* Back Link */}
-        <button
-          onClick={() => onNavigate('projects')}
-          className="group inline-flex items-center gap-2 text-[15px] font-medium text-ink-muted hover:text-ink transition-colors mb-8 cursor-pointer"
-        >
-          <span>←</span>
-          <span>Projects / Residential</span>
-        </button>
-
-        {/* Project Title */}
-        <h1 className="font-dm-sans font-medium text-5xl sm:text-7xl md:text-9xl tracking-[-3px] md:tracking-[-6px] text-ink mb-12">
-          The Cloud House
-        </h1>
-
-        {/* Specifications Meta Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 pt-6 border-t border-ink">
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-1.5">
-              Location
-            </p>
-            <p className="text-[16px] font-medium text-ink">
-              Kalpetta, Wayanad
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-1.5">
-              Year
-            </p>
-            <p className="text-[16px] font-medium text-ink">
-              2024
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-1.5">
-              Client
-            </p>
-            <p className="text-[16px] font-medium text-ink">
-              Private client
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-1.5">
-              Area
-            </p>
-            <p className="text-[16px] font-medium text-ink">
-              4,800 sq.ft
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-1.5">
-              Status
-            </p>
-            <p className="text-[16px] font-medium text-ink">
-              Completed
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-1.5">
-              Scope
-            </p>
-            <p className="text-[16px] font-medium text-ink">
-              Architecture + Landscape
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. MAIN HERO PHOTOGRAPHY */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-20 md:pb-32">
-        <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-surface rounded-[2px]">
-          <img
-            alt="The Cloud House Exterior"
-            className="size-full object-cover"
-            src={ASSETS.projectCloudHouse}
-          />
-        </div>
-        <p className="text-[13px] text-ink-muted mt-3">
-          Exterior — design visualisation and site integration
-        </p>
-      </section>
-
-      {/* 3. EDITORIAL OVERVIEW */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-24 md:pb-36">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 border-t border-ink pt-8">
-          <div className="lg:col-span-4">
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-              (Overview)
-            </p>
-          </div>
-
-          <div className="lg:col-span-8 flex flex-col gap-6">
-            <h2 className="font-dm-sans font-medium text-2xl sm:text-4xl md:text-5xl tracking-tight leading-tight text-ink">
-              A hillside family sanctuary shaped by the slopes, mist, and monsoon of the Western Ghats.
-            </h2>
-            <p className="text-lg md:text-[20px] text-ink-muted leading-relaxed font-light">
-              The site is a steep contour in Kalpetta, blessed with dense vegetation and panoramic views toward the Chembra peak. Rather than flattening the terrain with massive retaining walls, the residence steps down naturally through three terraced levels.
-            </p>
-            <p className="text-lg md:text-[20px] text-ink-muted leading-relaxed font-light">
-              Utilizing locally quarried laterite stone, reclaimed timber screens, and deeply cantilevered clay-tiled overhangs, the architecture establishes a perpetual dialogue between sheltered internal spaces and the lush, rain-washed landscape outside.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. THE CHALLENGE & THE SOLUTION SPLIT */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-24 md:pb-36">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border-t border-line pt-12">
-          {/* The Challenge */}
-          <div className="flex flex-col gap-4">
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-              (The challenge)
-            </p>
-            <h3 className="font-dm-sans font-medium text-2xl sm:text-3xl tracking-tight text-ink">
-              A 40-degree gradient facing 3,000mm of annual rainfall
-            </h3>
-            <p className="text-[16px] text-ink-muted leading-relaxed">
-              Managing torrential tropical monsoon water flow while preserving mature jackfruit and teak trees on the slope. The home needed to stay completely dry during months of non-stop monsoon downpours while avoiding mechanical air conditioning.
-            </p>
-          </div>
-
-          {/* The Solution */}
-          <div className="flex flex-col gap-4">
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-              (The solution)
-            </p>
-            <h3 className="font-dm-sans font-medium text-2xl sm:text-3xl tracking-tight text-ink">
-              Cantilevered pavilions and passive courtyard wind towers
-            </h3>
-            <p className="text-[16px] text-ink-muted leading-relaxed">
-              We engineered deep roof canopies that deflect heavy wind-driven rain into sub-surface rainwater harvesting swales. A central open courtyard acts as a thermal chimney, drawing cool mountain air continuously through all bedrooms and living pavilions.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. IMAGE PAIR GALLERY */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-24 md:pb-36">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface rounded-[2px]">
-              <img
-                alt="Courtyard"
-                className="size-full object-cover"
-                src={ASSETS.projectHover}
-              />
-            </div>
-            <p className="text-[13px] text-ink-muted mt-3">
-              Courtyard — design visualisation
-            </p>
-          </div>
-
-          <div>
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface rounded-[2px]">
-              <img
-                alt="Bedroom"
-                className="size-full object-cover"
-                src={ASSETS.projectTerraVilla}
-              />
-            </div>
-            <p className="text-[13px] text-ink-muted mt-3">
-              Bedroom & Veranda — design visualisation
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. DESIGN VS BUILT INTERACTIVE COMPARISON SLIDER */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        <div className="border-t border-ink pt-8 flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-dm-sans font-medium text-3xl sm:text-4xl text-ink tracking-tight">
-                Design vs built
-              </h2>
-              <p className="text-[13px] text-ink-muted mt-1">
-                The same view as designed in 3D and as completed on site.
-              </p>
-            </div>
-            <span className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-              (Drag slider to compare)
-            </span>
-          </div>
-
-          {/* Comparison Container */}
-          <div
-            ref={containerRef}
-            onMouseMove={handleMouseMove}
-            onTouchMove={handleTouchMove}
-            className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-[4px] cursor-ew-resize select-none comparison-container"
-          >
-            {/* Background Image: Built Photo */}
-            <img
-              alt="Built photography"
-              className="absolute inset-0 size-full object-cover pointer-events-none"
-              src={ASSETS.projectCloudHouse}
-            />
-            <div className="absolute top-6 right-6 z-10 px-3 py-1 bg-ink/75 backdrop-blur-sm text-white text-[12px] font-medium uppercase tracking-wider rounded">
-              Built — Photo
-            </div>
-
-            {/* Foreground Image: Design Visualisation (Clipped) */}
-            <div
-              className="absolute inset-0 overflow-hidden pointer-events-none"
-              style={{ width: `${sliderPosition}%` }}
-            >
-              <img
-                alt="Design 3D Visualisation"
-                className="absolute inset-0 max-w-none h-full object-cover"
-                style={{ width: containerRef.current ? containerRef.current.clientWidth : '100%' }}
-                src={ASSETS.heroBg}
-              />
-              <div className="absolute top-6 left-6 z-10 px-3 py-1 bg-ink/75 backdrop-blur-sm text-white text-[12px] font-medium uppercase tracking-wider rounded">
-                Design — 3D Visualisation
-              </div>
-            </div>
-
-            {/* Drag Handle Bar */}
-            <div
-              onMouseDown={handleMouseDown}
-              className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize flex items-center justify-center z-20 shadow-xl"
-              style={{ left: `calc(${sliderPosition}% - 2px)` }}
-            >
-              <div className="size-10 rounded-full bg-white text-ink shadow-2xl flex items-center justify-center text-[12px] font-bold border border-ink/20">
-                ↔
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. ARCHITECT STATEMENT QUOTE */}
-      <section className="w-full bg-surface py-20 md:py-28 px-6 md:px-10">
-        <div className="max-w-[960px] mx-auto text-center flex flex-col items-center gap-6">
-          <blockquote className="font-dm-sans font-medium text-3xl sm:text-5xl leading-snug tracking-[-1.5px] text-ink">
-            “A space should speak for itself — without any description.”
-          </blockquote>
-          <p className="text-[15px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-            Ar. Rashid Ali · Chief Architect
+    <article className="flex flex-col">
+      <header className="page-x pt-12 md:pt-20 pb-12 md:pb-16">
+        <a href="#/projects" className="label hover:text-ink transition-colors">Projects, {project.category.toLowerCase()}</a>
+        <h1 className="display text-[15vw] md:text-[10vw] lg:text-[8.6vw] mt-6 md:mt-8 max-w-[14ch]">{project.title}</h1>
+        <div className="grid-page gap-y-10 mt-10 md:mt-16">
+          <p className="col-span-12 md:col-span-6 prose-serif text-[24px] sm:text-[30px] leading-[1.18] max-w-[30ch]">
+            {project.lead ?? project.description}
           </p>
+          <dl className="col-span-12 md:col-start-8 md:col-span-5 grid grid-cols-2 gap-x-6 text-[15px]">
+            {specs.map(([k, v]) => (
+              <div key={k} className="border-t border-line py-3">
+                <dt className="text-ink-muted">{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
+      </header>
+
+      <figure className="pb-24 md:pb-36">
+        <Aperture src={project.image} alt={`${project.title}, exterior`} focus={project.focus} eager className="w-full aspect-[4/3] md:aspect-[21/9]" />
+        <figcaption className="page-x label mt-3">{project.title}, design visualisation and site integration</figcaption>
+      </figure>
+
+      {project.overview && (
+        <section className="page-x pb-24 md:pb-36" aria-labelledby="overview-heading">
+          <div className="grid-page gap-y-6">
+            <h2 id="overview-heading" className="col-span-12 md:col-span-3 label pt-1.5">Overview</h2>
+            <div className="col-span-12 md:col-span-8 lg:col-span-7 flex flex-col gap-6">
+              {project.overview.map((p) => (
+                <p key={p.slice(0, 24)} className="prose-serif text-[20px] md:text-[23px] leading-[1.5]">{p}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {project.challenge && project.solution && (
+        <section className="page-x pb-24 md:pb-36">
+          <div className="grid-page gap-y-12">
+            {[['The challenge', project.challenge], ['Our response', project.solution]].map(([label, block], i) => {
+              const b = block as { title: string; body: string };
+              return (
+                <div key={label as string} className={`col-span-12 md:col-span-5 border-t border-ink pt-5 ${i === 0 ? 'md:col-start-4' : 'md:col-start-9 md:col-span-4'}`}>
+                  <h2 className="label">{label as string}</h2>
+                  <h3 className="text-[22px] md:text-[26px] leading-tight tracking-tight mt-3">{b.title}</h3>
+                  <p className="text-[16px] leading-relaxed text-ink-muted mt-4">{b.body}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {project.gallery && (
+        <section className="page-x pb-24 md:pb-36">
+          <div className="grid-page gap-y-12 items-start">
+            {project.gallery.map((g, i) => (
+              <figure key={g.caption} className={i === 0 ? 'col-span-12 md:col-span-7' : 'col-span-12 md:col-start-9 md:col-span-4 md:mt-48'}>
+                <Aperture src={g.src} alt={g.caption} className={i === 0 ? 'aspect-[4/3]' : 'aspect-[3/4]'} />
+                <figcaption className="label mt-3">{g.caption}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {project.comparison && <Comparison {...project.comparison} />}
+
+      <section className="bg-plaster page-x py-24 md:py-36">
+        <figure className="grid-page gap-y-6">
+          <blockquote className="col-span-12 md:col-start-4 md:col-span-8 prose-serif text-[30px] sm:text-[44px] leading-[1.12]">
+            “A space should speak for itself, without any description.”
+          </blockquote>
+          <figcaption className="col-span-12 md:col-start-4 md:col-span-8 label">Ar. Rashid Ali, Chief Architect</figcaption>
+        </figure>
       </section>
 
-      {/* 8. NEXT PROJECT NAVIGATION */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 py-20 md:py-32">
-        <div
-          onClick={() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          className="border-t border-ink pt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 group cursor-pointer"
-        >
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-2">
-              Next project
-            </p>
-            <h3 className="font-dm-sans font-medium text-4xl sm:text-6xl text-ink tracking-tight group-hover:text-accent transition-colors">
-              Terra Villa →
-            </h3>
+      <section className="page-x py-24 md:py-36">
+        <a href={`#/project/${next.id}`} className="group grid-page gap-y-6 items-end">
+          <div className="col-span-12 md:col-span-8">
+            <p className="label">Next project</p>
+            <p className="display text-[13vw] md:text-[7.5vw] mt-3 group-hover:text-accent transition-colors">{next.title}</p>
+            <p className="label mt-3">{next.location}, {next.year}</p>
           </div>
-          <span className="text-[16px] text-ink-muted">
-            Jayanagar, Bengaluru · 2025
+          <Aperture src={next.image} alt="" focus={next.focus} className="col-span-12 md:col-start-10 md:col-span-3 aspect-[4/5]" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.04]" />
+        </a>
+        <div className="mt-16 flex flex-wrap gap-8 text-[15px]">
+          <a href="#/projects" className="text-link">All projects</a>
+          <button onClick={() => onNavigate('contact')} className="text-link">Discuss a similar project</button>
+        </div>
+      </section>
+    </article>
+  );
+};
+
+/** Design visualisation against built photograph, driven by a native range input for keyboard and touch. */
+const Comparison: React.FC<{ design: string; built: string }> = ({ design, built }) => {
+  const [pos, setPos] = useState(50);
+
+  return (
+    <section className="page-x pb-24 md:pb-36" aria-labelledby="compare-heading">
+      <div className="grid-page gap-y-4 mb-8">
+        <h2 id="compare-heading" className="col-span-12 md:col-span-6 text-[32px] md:text-[44px] tracking-tight font-light">Design and built</h2>
+        <p className="col-span-12 md:col-start-8 md:col-span-5 md:self-end text-[15px] text-ink-muted max-w-[40ch]">
+          The same house as designed in 3D and as completed on site. Drag, or use the arrow keys, to compare.
+        </p>
+      </div>
+      <div className="relative w-full aspect-[4/3] md:aspect-[21/9] overflow-hidden comparison-container bg-stone-1 outline-offset-4 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent">
+        <img src={built} alt="Built photograph" className="absolute inset-0 size-full object-cover" />
+        <img
+          src={design}
+          alt="Design visualisation"
+          className="absolute inset-0 size-full object-cover"
+          style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
+        />
+        <div className="absolute inset-y-0 w-px bg-lime pointer-events-none" style={{ left: `${pos}%` }}>
+          <span className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-11 rounded-full bg-lime text-ink flex items-center justify-center text-[13px]" aria-hidden="true">
+            ⇆
           </span>
         </div>
-      </section>
-    </div>
+        <span className="absolute left-4 bottom-4 text-[13px] text-lime [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">Design</span>
+        <span className="absolute right-4 bottom-4 text-[13px] text-lime [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">Built</span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={pos}
+          onChange={(e) => setPos(Number(e.target.value))}
+          aria-label="Reveal the design visualisation"
+          className="absolute inset-0 size-full opacity-0 cursor-ew-resize"
+        />
+      </div>
+    </section>
   );
 };

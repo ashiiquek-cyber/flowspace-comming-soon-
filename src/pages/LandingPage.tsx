@@ -1,706 +1,377 @@
-import React, { useState, useEffect } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
 import { ASSETS } from '../constants/assets';
-import { LagItem } from '../components/ParallaxLag';
+import { Aperture } from '../components/Aperture';
+import { prefersReducedMotion } from '../context/SmoothScrollContext';
+import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
 
 interface LandingPageProps {
-  onNavigate: (page: 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'press') => void;
+  onNavigate: (target: NavigateTarget) => void;
+  onOpenProject: (id: string) => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
-  // FAQ accordion state
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+const TESTIMONIALS = [
+  {
+    quote: 'A space that feels completely natural to the Wayanad hillside. Rashid and his team understood the light and monsoon winds like no one else.',
+    author: 'K. N. Chandran',
+    role: 'Homeowner, Kalpetta',
+  },
+  {
+    quote: 'Flowspace transformed our tight urban plot in Bengaluru into a tranquil sanctuary filled with courtyards and skylights. Exceptional detailing.',
+    author: 'Pooja and Sameer Reddy',
+    role: 'Residents, Jayanagar',
+  },
+  {
+    quote: 'Their commitment to honest materials, local laterite, and climate responsiveness sets them apart. They delivered beyond our expectations.',
+    author: 'Mathews Varghese',
+    role: 'Estate owner, Vythiri',
+  },
+  {
+    quote: 'Working with Rashid was a collaborative joy. The house breathes and stays cool even in peak summer without active cooling.',
+    author: 'Ananya Swaminathan',
+    role: 'Homeowner, Bengaluru',
+  },
+];
 
-  // Testimonials carousel state
-  const testimonials = [
-    {
-      quote: "A space that feels completely natural to the Wayanad hillside. Rashid and his team understood the light and monsoon winds like no one else.",
-      author: "K. N. Chandran",
-      role: "Homeowner, Kalpetta"
-    },
-    {
-      quote: "Flowspace transformed our tight urban plot in Bengaluru into a tranquil sanctuary filled with courtyards and skylights. Exceptional detailing.",
-      author: "Pooja & Sameer Reddy",
-      role: "Residents, Jayanagar"
-    },
-    {
-      quote: "Their commitment to honest materials, local laterite, and climate responsiveness sets them apart. They delivered beyond our expectations.",
-      author: "Mathews Varghese",
-      role: "Estate Owner, Vythiri"
-    },
-    {
-      quote: "Working with Rashid was a collaborative joy. The house breathes and stays cool even in peak summer without active cooling.",
-      author: "Ananya Swaminathan",
-      role: "Homeowner, Bengaluru"
-    }
-  ];
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+// Durations on a shared axis, in months from the first site visit
+const PROCESS = [
+  { title: 'Site visit and brief', body: 'We walk the plot with you, listen to how your family lives, and agree a budget before a single line is drawn.', duration: 'Weeks 1–2', start: 0, end: 0.5 },
+  { title: 'Concept and form', body: 'Climate orientation, spatial flow diagrams, and 3D massing presented with tangible material samples.', duration: 'Weeks 3–6', start: 0.5, end: 1.5 },
+  { title: 'Detailing and approvals', body: 'Complete structural, electrical, and plumbing documentation alongside municipality clearances in Kerala and Karnataka.', duration: 'Months 2–3', start: 1.5, end: 3 },
+  { title: 'Realization', body: 'Periodic on-site supervision, artisan collaboration, and handover with full post-occupancy care.', duration: 'Months 4–14', start: 3, end: 14 },
+];
+const PROCESS_SPAN = 14;
 
-  // Philosophy scroll highlight progress
-  const [scrollProgress, setScrollProgress] = useState(0.4);
+const FAQS = [
+  { q: 'How long does it take to design and build a house?', a: 'Typically 12 to 18 months depending on scale. Concept and approvals take 3–4 months, with 9–14 months of supervised construction.' },
+  { q: 'What are your architectural design fees?', a: 'Our fee structure is transparent, calculated either as a percentage of construction cost (typically 7–10%) or a fixed square-foot rate based on project complexity.' },
+  { q: 'Do you handle construction supervision?', a: 'Yes, we offer comprehensive site supervision and periodic inspection to ensure that materials, tolerances, and design intent are executed faithfully.' },
+  { q: 'Can you work on projects outside Wayanad and Bengaluru?', a: 'Yes, we undertake select residential and hospitality projects across Kerala, Karnataka, and Tamil Nadu when the site and vision align.' },
+];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const philosophyEl = document.getElementById('philosophy-section');
-      if (philosophyEl) {
-        const rect = philosophyEl.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        // calculate progress as element passes through viewport
-        const progress = Math.min(Math.max((windowHeight - rect.top) / (windowHeight + rect.height), 0), 1);
-        setScrollProgress(progress);
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+const JOURNAL = [
+  { title: 'How much does it cost to build a house in Wayanad in 2026?', date: 'Oct 2026', target: 'article' as NavigateTarget },
+  { title: 'Designing a Kerala home for the monsoon: slope, roof overhangs and stone', date: 'Sep 2026', target: 'journal' as NavigateTarget },
+  { title: 'Building permits in Kerala, step by step: from panchayat to occupancy', date: 'Aug 2026', target: 'journal' as NavigateTarget },
+];
 
-  const faqs = [
-    {
-      q: "How long does it take to design and build a house?",
-      a: "Typically 12 to 18 months depending on scale. Concept and approvals take 3–4 months, with 9–14 months of supervised construction."
-    },
-    {
-      q: "What are your architectural design fees?",
-      a: "Our fee structure is transparent, calculated either as a percentage of construction cost (typically 7–10%) or a fixed square-foot rate based on project complexity."
-    },
-    {
-      q: "Do you handle construction supervision?",
-      a: "Yes, we offer comprehensive site supervision and periodic inspection to ensure that materials, tolerances, and design intent are executed faithfully."
-    },
-    {
-      q: "Can you work on projects outside Wayanad and Bengaluru?",
-      a: "Yes, we undertake select residential and hospitality projects across Kerala, Karnataka, and Tamil Nadu when the site and vision align."
-    }
-  ];
+const PLACES = {
+  wayanad: ['Kalpetta', 'Meppadi', 'Vythiri', 'Sulthan Bathery', 'Mananthavady', 'Panamaram', 'Ambalavayal', 'Pulpally', 'Meenangadi'],
+  bengaluru: ['Jayanagar', 'JP Nagar', 'Basavanagudi', 'Banashankari', 'BTM Layout', 'HSR Layout', 'Koramangala'],
+};
+
+const HEADLINE = ['Spaces that speak', 'for themselves.'];
+const HEADLINE_NARROW = ['Spaces that', 'speak for', 'themselves.'];
+
+/* -------------------------------------------------------------------------- */
+
+const Hero: React.FC = () => {
+  const rootRef = useRef<HTMLElement>(null);
+  const [reduced] = useState(prefersReducedMotion);
+
+  useLayoutEffect(() => {
+    if (reduced || !rootRef.current) return;
+    const ctx = gsap.context(() => {
+      // Entrance: headline lines rise out of their masks
+      gsap.from('[data-hero-line]', { yPercent: 105, duration: 1.1, ease: 'expo.out', stagger: 0.08, delay: 0.15 });
+      gsap.from('[data-hero-fade]', { opacity: 0, duration: 1, ease: 'power2.out', delay: 0.6 });
+      gsap.from('[data-hero-frame]', { clipPath: 'inset(100% 0% 0% 0%)', duration: 1.4, ease: 'expo.out', delay: 0.25 });
+
+      // Scroll: the courtyard opening widens to the full sky
+      const mm = gsap.matchMedia();
+      mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
+        const { desktop } = c.conditions as { desktop: boolean };
+        const start = desktop ? 'inset(12% 11% 38% 61% round 0px)' : 'inset(57% 6% 7% 36% round 0px)';
+        gsap.set('[data-hero-aperture]', { clipPath: start });
+        const tl = gsap.timeline({
+          scrollTrigger: { trigger: rootRef.current, start: 'top top', end: '+=140%', scrub: 0.8, pin: true, pinSpacing: true },
+        });
+        tl.to('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut', duration: 1 }, 0)
+          .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1, ease: 'power2.inOut', duration: 1 }, 0)
+          .to('[data-hero-copy]', { yPercent: -40, opacity: 0, ease: 'power1.in', duration: 0.45 }, 0)
+          .to('[data-hero-pre]', { opacity: 0, duration: 0.2 }, 0)
+          .fromTo('[data-hero-post]', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25 }, 0.75);
+      });
+    }, rootRef);
+    return () => ctx.revert();
+  }, [reduced]);
+
+  if (reduced) {
+    return (
+      <section className="pt-[120px] md:pt-[140px]">
+        <div className="page-x grid-page gap-y-8 pb-10">
+          <p className="col-span-12 md:col-span-4 label max-w-[30ch]">
+            Architecture, interiors and landscape from Kalpetta, Wayanad and Jayanagar, Bengaluru.
+          </p>
+          <h1 className="col-span-12 display text-[15vw] md:text-[9.5vw]">
+            {HEADLINE.map((l) => <span key={l} className="block">{l}</span>)}
+          </h1>
+        </div>
+        <div className="relative h-[80svh]">
+          <img src={ASSETS.heroBg} alt="Double-height living room opening onto a garden courtyard" className="absolute inset-0 size-full object-cover" />
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <div className="bg-white text-ink flex flex-col items-start w-full relative">
-      {/* 1. HERO SECTION */}
-      <section className="relative w-full h-screen h-[100dvh] max-h-screen flex flex-col justify-between pt-24 sm:pt-28 md:pt-32 pb-6 sm:pb-8 md:pb-10 px-6 md:px-10 overflow-hidden box-border">
-        {/* Background image with gentle depth lag & dual gradient overlays */}
-        <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
-          <LagItem
-            lag={-0.12}
-            wrapperClassName="absolute -top-[10%] -bottom-[10%] inset-x-0 w-full h-[120%]"
-            className="size-full"
-          >
-            <img
-              alt="Flowspace Hero Architecture"
-              className="size-full object-cover object-center scale-105"
-              src={ASSETS.heroBg}
-            />
-          </LagItem>
-          <div
-            className="absolute inset-0 z-1"
-            style={{
-              backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.68) 100%), linear-gradient(90deg, rgba(10, 10, 10, 0.42) 0%, rgba(10, 10, 10, 0.42) 100%)"
-            }}
+    <section ref={rootRef} className="relative h-[100svh] overflow-hidden bg-lime" aria-label="Introduction">
+      {/* Aperture: the full-bleed image, clipped to a small opening at first */}
+      <div data-hero-aperture className="absolute inset-0 will-change-[clip-path]">
+        <div data-hero-frame className="absolute inset-0 overflow-hidden">
+          <img
+            data-hero-image
+            src={ASSETS.heroBg}
+            alt="Double-height living room opening onto a garden courtyard"
+            {...{ fetchpriority: 'high' }}
+            className="absolute left-0 top-0 w-[112%] h-[112%] max-w-none object-cover origin-top-left"
           />
         </div>
+        <p data-hero-post className="absolute left-[var(--gutter)] bottom-6 md:bottom-8 text-[13px] text-lime opacity-0 [text-shadow:0_1px_12px_rgba(0,0,0,0.35)]">
+          Courtyard residence, Wayanad. Design visualisation.
+        </p>
+      </div>
 
-        {/* Top Eyebrows */}
-        <div className="relative z-10 w-full flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] sm:text-[12px] font-medium tracking-[0.48px] uppercase text-white/90 gap-1 sm:gap-2">
-          <p className="opacity-85">Architecture · Interiors · Sustainable design</p>
-          <p className="opacity-85">Wayanad — Bengaluru</p>
-        </div>
-
-        {/* Hero Title with Subtle Floating Lag */}
-        <div className="relative z-10 my-auto py-2 sm:py-4 flex items-center">
-          <LagItem lag={0.06} inertia className="max-w-[1360px]">
-            <h1 className="font-dm-sans font-medium text-[clamp(2.75rem,7.5vw,9.5rem)] leading-[0.88] tracking-[-2px] sm:tracking-[-5px] md:tracking-[-7px] lg:tracking-[-9px] text-accent">
-              Spaces that speak for themselves.
-            </h1>
-          </LagItem>
-        </div>
-
-        {/* Hero Intro & CTA (Standard scroll - "goes") */}
-        <div className="relative z-10 w-full flex flex-col md:flex-row items-start md:items-end justify-between gap-4 md:gap-6 pt-4 sm:pt-6 border-t border-white/20">
-          <p className="font-normal text-sm sm:text-base md:text-lg lg:text-[20px] leading-[1.35] text-white tracking-[-0.2px] max-w-[580px]">
-            Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali — designing homes, workplaces and interiors from Wayanad and Bengaluru.
-          </p>
-
-          <button
-            onClick={() => onNavigate('projects')}
-            className="group shrink-0 inline-flex items-center gap-3 border-b border-white pb-1.5 text-[14px] sm:text-[15px] font-medium text-white tracking-[-0.075px] hover:text-white/80 transition-colors cursor-pointer"
-          >
-            <span>View all projects</span>
-            <img alt="" className="size-4 transition-transform duration-200 group-hover:translate-x-1" src={ASSETS.iconArrowRightWhite} />
-          </button>
-        </div>
-      </section>
-
-      {/* 2. PHILOSOPHY SECTION */}
-      <section id="philosophy-section" className="relative w-full max-w-[1440px] mx-auto px-6 md:px-10 py-24 md:py-40 overflow-hidden">
-        {/* Background typographic watermark that lags with deep architectural inertia */}
-        <LagItem
-          lag={0.24}
-          wrapperClassName="absolute -top-10 right-4 md:right-16 pointer-events-none select-none z-0 opacity-[0.04]"
-        >
-          <span className="font-dm-sans font-bold text-[120px] sm:text-[180px] md:text-[260px] tracking-tighter text-ink leading-none">
-            SPACE
-          </span>
-        </LagItem>
-
-        <div className="relative z-10 flex flex-col gap-10 md:gap-14">
-          <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-            (Our philosophy)
-          </p>
-
-          <div className="font-dm-sans font-medium text-3xl sm:text-5xl md:text-7xl lg:text-[84px] xl:text-[96px] leading-[1.04] tracking-[-2px] md:tracking-[-3.84px] max-w-[1280px]">
-            <span
-              className="transition-colors duration-300"
-              style={{
-                color: scrollProgress > 0.3 ? '#0b0b0b' : '#bdbdb9'
-              }}
-            >
-              A space should speak for itself — without any description.{" "}
-            </span>
-            <span
-              className="transition-colors duration-300"
-              style={{
-                color: scrollProgress > 0.6 ? '#0b0b0b' : '#bdbdb9'
-              }}
-            >
-              We let form follow function, and function follow the people who live in it.
-            </span>
-          </div>
-
-          <button
-            onClick={() => onNavigate('studio')}
-            className="group self-start inline-flex items-center gap-3 border-b border-ink pb-1.5 text-[15px] font-medium text-ink hover:text-accent transition-colors"
-          >
-            <span>About the studio</span>
-            <img alt="" className="size-4 transition-transform duration-200 group-hover:translate-x-1" src={ASSETS.iconArrowRightDark} />
-          </button>
-        </div>
-      </section>
-
-      {/* 3. STATS SECTION (Differential scroll: alternating stats lag behind while companion stats go at standard speed) */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-6 items-start">
-          {/* Stat 1: Standard speed ("goes") */}
-          <LagItem lag={0} wrapperClassName="h-full" className="border-t border-ink pt-6 flex flex-col gap-3">
-            <span className="font-dm-sans font-medium text-6xl md:text-8xl tracking-[-3.84px] text-ink">
-              02
-            </span>
-            <p className="text-[12px] uppercase tracking-[0.48px] font-medium text-ink">
-              Studios
-            </p>
-            <p className="text-[16px] leading-relaxed text-ink-muted">
-              Kalpetta, Wayanad and Jayanagar, Bengaluru.
-            </p>
-          </LagItem>
-
-          {/* Stat 2: Lags behind ("section lag") */}
-          <LagItem lag={0.14} inertia wrapperClassName="h-full" className="border-t border-ink pt-6 flex flex-col gap-3">
-            <span className="font-dm-sans font-medium text-6xl md:text-8xl tracking-[-3.84px] text-ink">
-              20+
-            </span>
-            <p className="text-[12px] uppercase tracking-[0.48px] font-medium text-ink">
-              Design services
-            </p>
-            <p className="text-[16px] leading-relaxed text-ink-muted">
-              From house plans to conservation and urban work.
-            </p>
-          </LagItem>
-
-          {/* Stat 3: Standard speed ("goes") */}
-          <LagItem lag={0} wrapperClassName="h-full" className="border-t border-ink pt-6 flex flex-col gap-3">
-            <span className="font-dm-sans font-medium text-6xl md:text-8xl tracking-[-3.84px] text-ink">
-              06
-            </span>
-            <p className="text-[12px] uppercase tracking-[0.48px] font-medium text-ink">
-              Project categories
-            </p>
-            <p className="text-[16px] leading-relaxed text-ink-muted">
-              Homes, apartments, commercial, retail, interiors, furniture.
-            </p>
-          </LagItem>
-
-          {/* Stat 4: Lags behind with extra inertia ("section lag") */}
-          <LagItem
-            lag={0.18}
-            inertia
-            wrapperClassName="h-full"
-            className="border-t border-ink pt-6 flex flex-col gap-3 cursor-pointer group hover:opacity-85 transition-opacity"
-            onClick={() => onNavigate('press')}
-          >
-            <span className="font-dm-sans font-medium text-6xl md:text-8xl tracking-[-3.84px] text-ink">
-              02
-            </span>
-            <p className="text-[12px] uppercase tracking-[0.48px] font-medium text-ink flex items-center justify-between">
-              <span>Honours</span>
-              <span className="text-sm opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-            </p>
-            <p className="text-[16px] leading-relaxed text-ink-muted">
-              Vanitha Veedu Young Architect, FOAID Design Week.
-            </p>
-          </LagItem>
-        </div>
-      </section>
-
-      {/* 4. SELECTED WORK (STICKY STACKING CARDS) */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        {/* Section Header */}
-        <div className="border-t border-ink pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6 pb-12">
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-3">
-              (Selected work)
-            </p>
-            <div className="flex items-baseline gap-3">
-              <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-6xl tracking-[-1.68px] text-ink">
-                Projects
-              </h2>
-              <span className="text-[13px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-                (03)
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <p className="text-lg md:text-[22px] leading-[1.4] text-ink-muted tracking-[-0.22px] max-w-[440px]">
-              Homes, interiors and spaces from our studios in Wayanad and Bengaluru.
-            </p>
-            <button
-              onClick={() => onNavigate('projects')}
-              className="group self-start inline-flex items-center gap-3 border-b border-ink pb-1.5 text-[15px] font-medium text-ink hover:text-accent transition-colors"
-            >
-              <span>All projects</span>
-              <img alt="" className="size-4 transition-transform duration-200 group-hover:translate-x-1" src={ASSETS.iconArrowRightDark} />
-            </button>
-          </div>
-        </div>
-
-        {/* Stack of Cards */}
-        <div className="flex flex-col gap-8 md:gap-12">
-          {/* Card 1 */}
-          <div
-            onClick={() => onNavigate('project-detail')}
-            className="sticky top-24 md:top-28 w-full h-[540px] md:h-[680px] rounded-lg overflow-hidden p-8 md:p-12 flex flex-col justify-between text-white cursor-pointer group shadow-2xl transition-transform duration-500"
-            style={{
-              backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.1) 25%, rgba(0, 0, 0, 0.8) 100%)",
-            }}
-          >
-            <div className="absolute inset-0 size-full overflow-hidden -z-10">
-              <LagItem lag={-0.08} wrapperClassName="absolute -top-[10%] -bottom-[10%] inset-x-0 w-full h-[120%]" className="size-full">
-                <img
-                  alt="The Cloud House"
-                  className="size-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  src={ASSETS.projectCloudHouse}
-                />
-              </LagItem>
-            </div>
-
-            <div className="flex items-center justify-between w-full">
-              <span className="text-[12px] uppercase tracking-[0.48px] font-medium text-white/90">
-                (01)
-              </span>
-              <span className="px-3.5 py-1.5 rounded-full border border-white/60 text-[14px] text-white backdrop-blur-sm group-hover:bg-white group-hover:text-ink transition-colors">
-                View project ↗
-              </span>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <p className="text-[12px] uppercase tracking-[0.48px] font-medium text-white/70 mb-2">
-                  Completed 2024 · Kalpetta, Wayanad
-                </p>
-                <h3 className="font-dm-sans font-medium text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-[-3px] text-white">
-                  The Cloud House
-                </h3>
-              </div>
-              <p className="text-[15px] md:text-[16px] text-white/80 max-w-[420px] leading-relaxed">
-                A family residence crafted into the contour of the Western Ghats, utilizing local laterite and open breezy verandas.
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2 */}
-          <div
-            onClick={() => onNavigate('project-detail')}
-            className="sticky top-28 md:top-36 w-full h-[540px] md:h-[680px] rounded-lg overflow-hidden p-8 md:p-12 flex flex-col justify-between text-white cursor-pointer group shadow-2xl transition-transform duration-500"
-            style={{
-              backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.1) 25%, rgba(0, 0, 0, 0.8) 100%)",
-            }}
-          >
-            <div className="absolute inset-0 size-full overflow-hidden -z-10">
-              <LagItem lag={-0.08} wrapperClassName="absolute -top-[10%] -bottom-[10%] inset-x-0 w-full h-[120%]" className="size-full">
-                <img
-                  alt="Terra Villa"
-                  className="size-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  src={ASSETS.projectTerraVilla}
-                />
-              </LagItem>
-            </div>
-
-            <div className="flex items-center justify-between w-full">
-              <span className="text-[12px] uppercase tracking-[0.48px] font-medium text-white/90">
-                (02)
-              </span>
-              <span className="px-3.5 py-1.5 rounded-full border border-white/60 text-[14px] text-white backdrop-blur-sm group-hover:bg-white group-hover:text-ink transition-colors">
-                View project ↗
-              </span>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <p className="text-[12px] uppercase tracking-[0.48px] font-medium text-white/70 mb-2">
-                  Completed 2025 · Jayanagar, Bengaluru
-                </p>
-                <h3 className="font-dm-sans font-medium text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-[-3px] text-white">
-                  Terra Villa
-                </h3>
-              </div>
-              <p className="text-[15px] md:text-[16px] text-white/80 max-w-[420px] leading-relaxed">
-                An urban biophilic courtyard home balancing high-density living with private internal botanical gardens.
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div
-            onClick={() => onNavigate('project-detail')}
-            className="sticky top-32 md:top-44 w-full h-[540px] md:h-[680px] rounded-lg overflow-hidden p-8 md:p-12 flex flex-col justify-between text-white cursor-pointer group shadow-2xl transition-transform duration-500"
-            style={{
-              backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.1) 25%, rgba(0, 0, 0, 0.8) 100%)",
-            }}
-          >
-            <div className="absolute inset-0 size-full overflow-hidden -z-10">
-              <LagItem lag={-0.08} wrapperClassName="absolute -top-[10%] -bottom-[10%] inset-x-0 w-full h-[120%]" className="size-full">
-                <img
-                  alt="The Courtyard Studio"
-                  className="size-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  src={ASSETS.projectHover}
-                />
-              </LagItem>
-            </div>
-
-            <div className="flex items-center justify-between w-full">
-              <span className="text-[12px] uppercase tracking-[0.48px] font-medium text-white/90">
-                (03)
-              </span>
-              <span className="px-3.5 py-1.5 rounded-full border border-white/60 text-[14px] text-white backdrop-blur-sm group-hover:bg-white group-hover:text-ink transition-colors">
-                View project ↗
-              </span>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <p className="text-[12px] uppercase tracking-[0.48px] font-medium text-white/70 mb-2">
-                  Completed 2026 · Wayanad
-                </p>
-                <h3 className="font-dm-sans font-medium text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-[-3px] text-white">
-                  The Courtyard Studio
-                </h3>
-              </div>
-              <p className="text-[15px] md:text-[16px] text-white/80 max-w-[420px] leading-relaxed">
-                Adaptive reuse workspace blending industrial timber trusses with earthy rammed earth walls.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. PROCESS SECTION */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        <div className="border-t border-ink pt-6 mb-12 flex items-baseline justify-between">
-          <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-6xl tracking-[-1.68px] text-ink">
-            Our Process
-          </h2>
-          <span className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-            (From idea to built form)
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-          {[
-            {
-              step: "(01)",
-              title: "Site visit & brief",
-              body: "We walk the plot with you, listen to how your family lives, and agree a budget before a single line is drawn.",
-              duration: "Week 1–2",
-              lag: 0
-            },
-            {
-              step: "(02)",
-              title: "Concept & Form",
-              body: "Climate orientation, spatial flow diagrams, and 3D architectural massing presented with tangible material samples.",
-              duration: "Week 3–6",
-              lag: 0.14
-            },
-            {
-              step: "(03)",
-              title: "Detailing & Approvals",
-              body: "Complete structural, electrical, and plumbing documentation alongside municipality clearances in Kerala & Karnataka.",
-              duration: "Month 2–3",
-              lag: 0
-            },
-            {
-              step: "(04)",
-              title: "Realization",
-              body: "Strict periodic on-site supervision, artisan collaboration, and handover with full post-occupancy care.",
-              duration: "Month 4–14",
-              lag: 0.20
-            }
-          ].map((card, idx) => (
-            <LagItem
-              key={idx}
-              lag={card.lag}
-              inertia={card.lag > 0}
-              wrapperClassName="h-full"
-              className="bg-surface border-t border-ink p-8 flex flex-col justify-between min-h-[340px]"
-            >
-              <div>
-                <span className="font-dm-sans font-medium text-5xl md:text-6xl text-ink-muted tracking-[-2px] block mb-6">
-                  {card.step}
-                </span>
-                <h4 className="font-dm-sans font-medium text-2xl tracking-tight text-ink mb-3">
-                  {card.title}
-                </h4>
-                <p className="text-[15px] leading-relaxed text-ink-muted">
-                  {card.body}
-                </p>
-              </div>
-              <p className="mt-8 text-[12px] uppercase tracking-[0.48px] font-medium text-ink">
-                {card.duration}
-              </p>
-            </LagItem>
+      <div data-hero-copy className="relative z-10 h-full page-x pt-[96px] md:pt-[120px] pb-8 md:pb-10 flex flex-col justify-between pointer-events-none">
+        <p data-hero-fade className="label max-w-[30ch] md:max-w-[34ch] text-ink">
+          Architecture, interiors and landscape from Kalpetta, Wayanad and Jayanagar, Bengaluru. Led by Chief Architect Ar.&nbsp;Rashid&nbsp;Ali.
+        </p>
+        <h1 className="display text-[16vw] md:text-[9.6vw] max-md:mb-[44svh]">
+          <span className="sr-only">{HEADLINE.join(' ')}</span>
+          {HEADLINE.map((l) => (
+            <span key={l} aria-hidden="true" className="line-mask max-md:hidden"><span data-hero-line className="block">{l}</span></span>
           ))}
-        </div>
-      </section>
+          {HEADLINE_NARROW.map((l) => (
+            <span key={l} aria-hidden="true" className="line-mask md:hidden"><span data-hero-line className="block">{l}</span></span>
+          ))}
+        </h1>
+      </div>
 
-      {/* 6. TESTIMONIAL CAROUSEL */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        <div className="border-t border-ink pt-6 flex flex-col lg:flex-row gap-12 lg:gap-20 items-start justify-between">
-          <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium shrink-0">
-            (Client words)
-          </p>
+      <p data-hero-pre className="hidden md:block absolute z-10 left-[61%] top-[calc(62%+0.75rem)] label">
+        Courtyard residence, Wayanad
+      </p>
+    </section>
+  );
+};
 
-          <LagItem lag={0.08} inertia wrapperClassName="flex-1" className="flex flex-col gap-10">
-            <blockquote className="font-dm-sans font-medium text-2xl sm:text-4xl md:text-5xl leading-tight tracking-[-1.2px] text-ink max-w-[960px]">
-              “{testimonials[currentTestimonial].quote}”
-            </blockquote>
+/* -------------------------------------------------------------------------- */
 
-            <div className="flex items-center justify-between pt-6 border-t border-line">
-              <div className="flex items-center gap-3">
-                <div className="size-11 rounded-full bg-stone-1 overflow-hidden shrink-0">
-                  <img alt="" className="size-full object-cover" src={ASSETS.clientAvatar} />
-                </div>
-                <div>
-                  <p className="font-medium text-[15px] text-ink">
-                    {testimonials[currentTestimonial].author}
-                  </p>
-                  <p className="text-[14px] text-ink-muted">
-                    {testimonials[currentTestimonial].role}
-                  </p>
-                </div>
-              </div>
+export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [current, setCurrent] = useState(0);
+  const [cloud, terra, courtyard] = PROJECTS_DATA;
+  const t = TESTIMONIALS[current];
 
-              <div className="flex items-center gap-4">
-                <span className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-                  0{currentTestimonial + 1} / 0{testimonials.length}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentTestimonial((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1))}
-                    className="size-10 rounded-full border border-ink flex items-center justify-center text-ink hover:bg-ink hover:text-white transition-colors cursor-pointer"
-                    aria-label="Previous review"
-                  >
-                    ←
-                  </button>
-                  <button
-                    onClick={() => setCurrentTestimonial((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1))}
-                    className="size-10 rounded-full border border-ink flex items-center justify-center text-ink hover:bg-ink hover:text-white transition-colors cursor-pointer"
-                    aria-label="Next review"
-                  >
-                    →
-                  </button>
-                </div>
-              </div>
-            </div>
-          </LagItem>
-        </div>
-      </section>
+  return (
+    // Block layout on purpose: GSAP disables pin spacing when the pinned hero's parent is flex
+    <div>
+      <Hero />
 
-      {/* 7. AREAS WE SERVE */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        <div className="border-t border-ink pt-6 flex flex-col gap-12">
-          <div className="flex items-end justify-between">
-            <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-6xl tracking-[-1.68px] text-ink">
-              Areas we serve
-            </h2>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-              (Kerala · Karnataka)
+      {/* Studio */}
+      <section className="page-x pt-28 md:pt-44 pb-24 md:pb-36" aria-labelledby="studio-heading">
+        <div className="grid-page gap-y-10">
+          <h2 id="studio-heading" className="col-span-12 md:col-span-3 label pt-2">The studio</h2>
+          <div className="col-span-12 md:col-span-9 lg:col-span-8">
+            <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">
+              A space should speak for itself, without any description. We let form follow function, and function follow the people who live in it.
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-            {/* Wayanad Studio - goes at normal speed */}
-            <LagItem lag={0} className="flex flex-col gap-4">
-              <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-                Wayanad studio — Kalpetta
-              </p>
-              <div className="flex flex-wrap gap-2.5">
-                {[
-                  "Kalpetta", "Meppadi", "Vythiri", "Sulthan Bathery",
-                  "Mananthavady", "Panamaram", "Ambalavayal", "Pulpally", "Meenangadi"
-                ].map((place) => (
-                  <span
-                    key={place}
-                    className="px-4 py-2 rounded-full border border-line text-[14px] font-medium text-ink bg-white hover:border-ink transition-colors cursor-default"
-                  >
-                    {place}
-                  </span>
-                ))}
-              </div>
-            </LagItem>
-
-            {/* Bengaluru Studio - lags behind */}
-            <LagItem lag={0.12} inertia className="flex flex-col gap-4">
-              <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-                Bengaluru studio — Jayanagar
-              </p>
-              <div className="flex flex-wrap gap-2.5">
-                {[
-                  "Jayanagar", "JP Nagar", "Basavanagudi", "Banashankari",
-                  "BTM Layout", "HSR Layout", "Koramangala"
-                ].map((place) => (
-                  <span
-                    key={place}
-                    className="px-4 py-2 rounded-full border border-line text-[14px] font-medium text-ink bg-white hover:border-ink transition-colors cursor-default"
-                  >
-                    {place}
-                  </span>
-                ))}
-              </div>
-            </LagItem>
-          </div>
-
-          <p className="text-lg md:text-[22px] leading-[1.4] text-ink-muted tracking-[-0.22px] pt-4">
-            Building somewhere else in Kerala or Karnataka? Ask us — we travel for the right project.
-          </p>
-        </div>
-      </section>
-
-      {/* 8. JOURNAL / INSIGHTS */}
-      <section id="journal-section" className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        <div className="border-t border-ink pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium mb-2">
-              (Insights)
+            <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
+              Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, designing homes, workplaces and interiors from Wayanad and Bengaluru.
             </p>
-            <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-6xl tracking-[-1.68px] text-ink">
-              From the journal
-            </h2>
+            <a href="#/studio" className="text-link mt-8 text-[15px]">About the studio</a>
           </div>
-          <button
-            onClick={() => onNavigate('journal')}
-            className="group self-start inline-flex items-center gap-3 border-b border-ink pb-1.5 text-[15px] font-medium text-ink hover:text-neutral-600 transition-colors cursor-pointer"
-          >
-            <span>See all articles</span>
-            <img alt="" className="size-4 transition-transform duration-200 group-hover:translate-x-1" src={ASSETS.iconArrowRightDark} />
-          </button>
         </div>
 
-        <div className="flex flex-col">
+        <dl className="grid-page gap-y-0 mt-20 md:mt-28 text-[15px]">
           {[
-            {
-              title: "How much does it cost to build a house in Wayanad in 2026?",
-              date: "Oct 2026"
-            },
-            {
-              title: "Designing a Kerala home for the monsoon: Slope, roof overhangs & stone",
-              date: "Sep 2026"
-            },
-            {
-              title: "Building permits in Kerala, step by step: From Panchayath to occupancy",
-              date: "Aug 2026"
-            }
-          ].map((item, i) => (
-            <div
-              key={i}
-              onClick={() => (i === 0 ? onNavigate('article') : onNavigate('journal'))}
-              className="group border-t border-line py-8 flex items-center justify-between gap-6 cursor-pointer hover:border-ink transition-colors"
-            >
-              <h4 className="font-dm-sans font-medium text-xl sm:text-2xl md:text-3xl text-ink tracking-tight group-hover:text-accent transition-colors">
-                {item.title}
-              </h4>
-              <div className="flex items-center gap-6 shrink-0">
-                <span className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-                  {item.date}
-                </span>
-                <span className="text-2xl text-ink transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1">
-                  ↗
-                </span>
-              </div>
+            ['Studios', 'Kalpetta, Wayanad and Jayanagar, Bengaluru'],
+            ['Services', 'Over twenty, from house plans to conservation and urban work'],
+            ['Project types', 'Homes, apartments, commercial, retail, interiors and furniture'],
+            ['Honours', 'Design & Vision Firm of the Year 2026, South India; Vanitha Veedu Young Architect Award; FOAID Design Week'],
+          ].map(([term, desc]) => (
+            <div key={term} className="col-span-12 md:col-start-4 md:col-span-9 grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] gap-4 border-t border-line py-4">
+              <dt className="text-ink-muted">{term}</dt>
+              <dd>
+                {term === 'Honours' ? <a href="#/press" className="hover:text-accent transition-colors">{desc}</a> : desc}
+              </dd>
             </div>
           ))}
-          <div className="border-t border-line" />
+        </dl>
+      </section>
+
+      {/* Selected work */}
+      <section className="page-x pb-28 md:pb-44" aria-labelledby="work-heading">
+        <div className="grid-page items-end mb-12 md:mb-20">
+          <h2 id="work-heading" className="col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">Selected work</h2>
+          <a href="#/projects" className="col-span-4 justify-self-end text-link text-[15px] mb-2">All projects ({PROJECTS_DATA.length})</a>
+        </div>
+
+        <div className="flex flex-col gap-24 md:gap-40">
+          {/* Wide, caption to the right */}
+          <a href={`#/project/${cloud.id}`} className="group grid-page gap-y-5 items-end">
+            <Aperture src={cloud.image} alt={cloud.title} focus={cloud.focus} className="col-span-12 md:col-span-9 aspect-[16/10]" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]" />
+            <ProjectCaption project={cloud} className="col-span-12 md:col-span-3" />
+          </a>
+
+          {/* Narrow and offset, caption to the left */}
+          <a href={`#/project/${courtyard.id}`} className="group grid-page gap-y-5 items-end">
+            <ProjectCaption project={courtyard} className="col-span-12 md:col-span-4 lg:col-span-3 md:col-start-2 lg:col-start-3 order-2 md:order-1" />
+            <Aperture src={courtyard.image} alt={courtyard.title} className="col-span-12 md:col-span-6 lg:col-span-5 md:col-start-7 lg:col-start-7 aspect-[4/5] order-1 md:order-2" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]" />
+          </a>
+
+          {/* Wide again, caption below */}
+          <a href={`#/project/${terra.id}`} className="group grid-page gap-y-5">
+            <Aperture src={terra.image} alt={terra.title} className="col-span-12 md:col-start-3 md:col-span-10 aspect-[16/9]" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]" />
+            <ProjectCaption project={terra} className="col-span-12 md:col-start-3 md:col-span-5" />
+          </a>
         </div>
       </section>
 
-      {/* 9. FAQ ACCORDION SECTION */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        <div className="border-t border-ink pt-6 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-          {/* Left Column Sticky */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
-            <p className="text-[12px] uppercase tracking-[0.48px] text-ink-muted font-medium">
-              (FAQ)
-            </p>
-            <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-6xl tracking-[-1.68px] leading-tight text-ink">
-              Questions,<br />answered
-            </h2>
+      {/* Process: a real sequence, drawn on a shared fourteen-month axis */}
+      <section className="page-x pb-28 md:pb-44" aria-labelledby="process-heading">
+        <div className="grid-page gap-y-6 mb-12 md:mb-16">
+          <h2 id="process-heading" className="col-span-12 md:col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">From idea to built form</h2>
+          <p className="col-span-12 md:col-span-4 md:self-end text-[15px] text-ink-muted max-w-[38ch]">
+            A typical house takes about fourteen months from first site visit to handover. Most of that is building.
+          </p>
+        </div>
 
-            <LagItem lag={0.12} inertia className="bg-surface p-6 flex flex-col gap-3 mt-4">
-              <p className="font-medium text-[15px] text-ink">
-                Still have questions?
-              </p>
-              <p className="text-[15px] text-ink-muted leading-relaxed">
-                We are happy to jump on a quick call or welcome you to our studios in Kalpetta or Jayanagar.
-              </p>
-              <button
-                onClick={() => onNavigate('studio')}
-                className="mt-2 text-left font-medium text-[14px] text-accent hover:underline"
-              >
-                Reach out directly →
-              </button>
-            </LagItem>
-          </div>
-
-          {/* Right Column Accordion Items */}
-          <div className="lg:col-span-8 flex flex-col">
-            {faqs.map((faq, index) => {
-              const isOpen = openFaq === index;
-              return (
+        <ol>
+          {PROCESS.map((step, i) => (
+            <li key={step.title} className="grid-page gap-y-3 border-t border-line py-6 md:py-8">
+              <span className="col-span-1 text-[15px] text-ink-muted tabular-nums">{i + 1}</span>
+              <div className="col-span-11 md:col-span-3">
+                <h3 className="text-[20px] md:text-[22px] tracking-tight">{step.title}</h3>
+                <p className="label mt-1">{step.duration}</p>
+              </div>
+              <p className="col-span-11 col-start-2 md:col-span-4 text-[15px] leading-relaxed text-ink-muted max-w-[46ch]">{step.body}</p>
+              <div className="col-span-11 col-start-2 md:col-span-4 md:self-center relative h-2 mt-2 md:mt-0" aria-hidden="true">
+                <div className="absolute inset-y-[3px] left-0 right-0 bg-stone-1" />
                 <div
-                  key={index}
-                  className="border-t border-line py-6 flex flex-col transition-colors cursor-pointer"
-                  onClick={() => setOpenFaq(isOpen ? null : index)}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <h3 className="font-dm-sans text-xl sm:text-2xl text-ink tracking-tight">
-                      {faq.q}
-                    </h3>
-                    <div className="size-6 shrink-0 flex items-center justify-center">
-                      <img
-                        alt=""
-                        className="size-5 transition-transform duration-200"
-                        src={isOpen ? ASSETS.iconMinus : ASSETS.iconPlus}
-                      />
-                    </div>
-                  </div>
+                  className="absolute inset-y-0 bg-ink"
+                  style={{ left: `${(step.start / PROCESS_SPAN) * 100}%`, width: `${((step.end - step.start) / PROCESS_SPAN) * 100}%` }}
+                />
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="grid-page" aria-hidden="true">
+          <div className="col-span-11 col-start-2 md:col-start-9 md:col-span-4 flex justify-between label border-t border-line pt-2">
+            <span>Month 0</span><span>7</span><span>14</span>
+          </div>
+        </div>
+      </section>
 
-                  {isOpen && (
-                    <p className="mt-4 text-[16px] text-ink-muted leading-relaxed max-w-[700px] animate-in fade-in duration-200">
-                      {faq.a}
+      {/* Client words */}
+      <section className="bg-plaster page-x py-24 md:py-36" aria-labelledby="clients-heading">
+        <div className="grid-page gap-y-10">
+          <h2 id="clients-heading" className="col-span-12 md:col-span-3 label pt-3">Client words</h2>
+          <figure className="col-span-12 md:col-span-9 lg:col-span-8" aria-live="polite">
+            <blockquote key={current} className="prose-serif text-[26px] sm:text-[36px] lg:text-[44px] leading-[1.18] animate-in">
+              “{t.quote}”
+            </blockquote>
+            <figcaption className="mt-10 flex flex-wrap items-end justify-between gap-6 border-t border-line pt-5">
+              <div className="text-[15px]">
+                <p>{t.author}</p>
+                <p className="text-ink-muted">{t.role}</p>
+              </div>
+              <div className="flex items-center gap-6 text-[15px]">
+                <span className="text-ink-muted tabular-nums">{current + 1} of {TESTIMONIALS.length}</span>
+                <button onClick={() => setCurrent((c) => (c === 0 ? TESTIMONIALS.length - 1 : c - 1))} className="text-link">Previous</button>
+                <button onClick={() => setCurrent((c) => (c + 1) % TESTIMONIALS.length)} className="text-link">Next</button>
+              </div>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      {/* Where we work */}
+      <section className="page-x py-28 md:py-44" aria-labelledby="areas-heading">
+        <div className="grid-page gap-y-10">
+          <h2 id="areas-heading" className="col-span-12 md:col-span-3 label pt-2">Where we work</h2>
+          {([['Wayanad studio, Kalpetta', PLACES.wayanad], ['Bengaluru studio, Jayanagar', PLACES.bengaluru]] as const).map(([title, places]) => (
+            <div key={title} className="col-span-12 md:col-span-4 lg:col-span-4">
+              <h3 className="text-[15px] text-ink-muted mb-4">{title}</h3>
+              <p className="text-[24px] sm:text-[28px] leading-[1.3] tracking-tight font-light">{places.join(', ')}</p>
+            </div>
+          ))}
+          <p className="col-span-12 md:col-start-4 md:col-span-8 text-[17px] text-ink-muted max-w-[52ch]">
+            Building somewhere else in Kerala or Karnataka? Ask us. We travel for the right project.
+          </p>
+        </div>
+      </section>
+
+      {/* Journal */}
+      <section className="page-x pb-28 md:pb-44" aria-labelledby="journal-heading">
+        <div className="grid-page items-end mb-10 md:mb-14">
+          <h2 id="journal-heading" className="col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">Journal</h2>
+          <a href="#/journal" className="col-span-4 justify-self-end text-link text-[15px] mb-2">All articles</a>
+        </div>
+        <ul className="border-b border-line">
+          {JOURNAL.map((item) => (
+            <li key={item.title} className="border-t border-line">
+              <a href={`#/${item.target}`} className="group grid-page gap-y-2 py-6 md:py-8 items-baseline">
+                <span className="col-span-12 md:col-span-3 label">{item.date}</span>
+                <span className="col-span-12 md:col-span-9 text-[22px] sm:text-[28px] lg:text-[32px] leading-[1.2] tracking-tight transition-colors group-hover:text-accent">
+                  {item.title}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Questions */}
+      <section className="page-x pb-32 md:pb-48" aria-labelledby="faq-heading">
+        <div className="grid-page gap-y-10">
+          <div className="col-span-12 md:col-span-3">
+            <h2 id="faq-heading" className="label pt-2">Questions</h2>
+            <p className="mt-6 text-[15px] text-ink-muted max-w-[30ch] leading-relaxed">
+              Happy to talk on a call, or welcome you to our studios in Kalpetta or Jayanagar.
+            </p>
+            <button onClick={() => onNavigate('contact')} className="text-link mt-4 text-[15px]">Get in touch</button>
+          </div>
+          <div className="col-span-12 md:col-span-9 border-b border-line">
+            {FAQS.map((faq, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={faq.q} className="border-t border-line">
+                  <h3>
+                    <button
+                      onClick={() => setOpenFaq(open ? null : i)}
+                      aria-expanded={open}
+                      aria-controls={`faq-${i}`}
+                      className="w-full flex items-start justify-between gap-6 py-6 text-left text-[20px] sm:text-[24px] tracking-tight"
+                    >
+                      <span>{faq.q}</span>
+                      <span aria-hidden="true" className={`relative mt-2.5 size-3.5 shrink-0 transition-transform duration-500 ease-out-expo ${open ? 'rotate-45' : ''}`}>
+                        <span className="absolute inset-x-0 top-1/2 h-px bg-current" />
+                        <span className="absolute inset-y-0 left-1/2 w-px bg-current" />
+                      </span>
+                    </button>
+                  </h3>
+                  <div
+                    id={`faq-${i}`}
+                    className={`grid transition-[grid-template-rows] duration-500 ease-out-expo ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                  >
+                    <p className="overflow-hidden text-[16px] leading-relaxed text-ink-muted max-w-[62ch]">
+                      <span className="block pb-7">{faq.a}</span>
                     </p>
-                  )}
+                  </div>
                 </div>
               );
             })}
-            <div className="border-t border-line" />
           </div>
         </div>
       </section>
     </div>
   );
 };
+
+const ProjectCaption: React.FC<{ project: (typeof PROJECTS_DATA)[number]; className?: string }> = ({ project, className = '' }) => (
+  <div className={className}>
+    <h3 className="text-[24px] md:text-[28px] tracking-tight leading-tight group-hover:text-accent transition-colors">{project.title}</h3>
+    <p className="label mt-1">{project.location}, {project.year}</p>
+    <p className="prose-serif text-[17px] leading-snug mt-4 max-w-[34ch] text-ink/80">{project.description}</p>
+  </div>
+);

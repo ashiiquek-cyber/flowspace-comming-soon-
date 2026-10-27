@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import type { NavigateTarget } from "../data/projects";
 import { ASSETS } from '../constants/assets';
 import { Check, Copy } from 'lucide-react';
 
 interface ArticlePageProps {
-  onNavigate: (page: 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'press') => void;
+  onNavigate: (target: NavigateTarget) => void;
   articleId?: string;
   onSelectArticle?: (id: string) => void;
 }
@@ -104,7 +105,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="bg-white text-ink flex flex-col items-start w-full relative selection:bg-ink selection:text-white">
+    <div className="bg-lime text-ink flex flex-col items-start w-full relative selection:bg-ink selection:text-lime">
       {/* FIXED READING PROGRESS BAR (Figma: Reading progress (fixed) / node 76:1887) */}
       <div className="fixed top-0 left-0 right-0 h-[3px] z-[60] bg-transparent pointer-events-none">
         <div
@@ -118,7 +119,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
         {/* Breadcrumb Link */}
         <button
           onClick={() => onNavigate('journal')}
-          className="group inline-flex items-center gap-1.5 font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted hover:text-ink transition-colors cursor-pointer mb-8"
+          className="group inline-flex items-center gap-1.5 font-dm-sans font-medium text-[12px] text-ink-muted hover:text-ink transition-colors cursor-pointer mb-8"
         >
           <span className="transition-transform duration-200 group-hover:-translate-x-1">←</span>
           <span>Journal</span>
@@ -127,7 +128,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
         </button>
 
         {/* Headline */}
-        <h1 className="font-dm-sans font-medium text-4xl sm:text-6xl md:text-7xl lg:text-[96px] leading-[0.94] tracking-[-2px] sm:tracking-[-3px] lg:tracking-[-3.84px] text-ink max-w-[1140px] mb-10">
+        <h1 className="display text-4xl sm:text-6xl md:text-7xl lg:text-[96px] leading-[0.94] text-ink max-w-[1140px] mb-10">
           How much does it cost to build a house in Wayanad in 2026?
         </h1>
 
@@ -139,7 +140,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
               <img
                 alt="Ar. Rashid Ali"
                 className="size-full object-cover"
-                src={ASSETS.founderPhoto || ASSETS.authorAvatar}
+                src={ASSETS.authorAvatar}
               />
             </div>
             <div className="flex flex-col">
@@ -154,7 +155,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
 
           {/* Published */}
           <div className="flex flex-col gap-1">
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
               Published
             </span>
             <span className="font-dm-sans font-medium text-[15px] tracking-[-0.075px] text-ink">
@@ -164,7 +165,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
 
           {/* Updated */}
           <div className="flex flex-col gap-1">
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
               Updated
             </span>
             <span className="font-dm-sans font-medium text-[15px] tracking-[-0.075px] text-ink">
@@ -174,7 +175,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
 
           {/* Reading Time */}
           <div className="flex flex-col gap-1">
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
               Reading time
             </span>
             <span className="font-dm-sans font-medium text-[15px] tracking-[-0.075px] text-ink">
@@ -193,7 +194,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
             src={ASSETS.projectCloudHouse}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 pointer-events-none" />
-          <span className="relative z-10 font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-white">
+          <span className="relative z-10 font-dm-sans font-medium text-[12px] text-lime">
             Design visualisation
           </span>
         </div>
@@ -208,7 +209,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
           {/* STICKY SIDEBAR (TOC + Share) (Figma: Sidebar / node 24:1161) */}
           <aside className="w-full lg:w-[300px] shrink-0 lg:sticky lg:top-28 space-y-8">
             <div className="flex flex-col gap-3.5">
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
                 On this page
               </span>
               <nav className="flex flex-col" aria-label="Table of contents">
@@ -233,7 +234,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
 
             {/* Share Widget */}
             <div className="pt-6 border-t border-line flex flex-col gap-2.5">
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
                 Share
               </span>
               <div className="flex items-center gap-3 text-[15px] sm:text-[16px] text-ink font-normal">
@@ -286,7 +287,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
               id="short-answer"
               className="bg-surface border-l-[3px] border-ink p-6 sm:p-8 flex flex-col gap-3.5"
             >
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
                 The short answer
               </span>
               <p className="font-dm-sans font-normal text-xl sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink">
@@ -316,7 +317,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
               <div className="w-full overflow-x-auto no-scrollbar">
                 <div className="min-w-[640px] flex flex-col">
                   {/* Table Header */}
-                  <div className="border-b border-ink py-3.5 flex font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+                  <div className="border-b border-ink py-3.5 flex font-dm-sans font-medium text-[12px] text-ink-muted">
                     <span className="w-[160px] shrink-0">Level</span>
                     <span className="w-[220px] shrink-0">Typical range</span>
                     <span className="flex-1">Includes</span>
@@ -366,7 +367,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
             {/* 4. Figure / In-article Image */}
             <div className="flex flex-col gap-3">
               <div className="relative w-full h-[320px] sm:h-[420px] lg:h-[460px] overflow-hidden bg-[#d9d9d6] flex flex-col justify-end p-4 pb-[14px] pt-[16px] px-[16px]">
-                <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-[#8c8c88]">
+                <span className="font-dm-sans font-medium text-[12px] text-[#8c8c88]">
                   Site photo
                 </span>
               </div>
@@ -401,11 +402,11 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
             </div>
 
             {/* 6. Studio Tip Box */}
-            <div className="bg-ink text-white p-6 sm:p-8 flex flex-col gap-3">
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-[#d9d9d6]">
+            <div className="bg-ink text-lime p-6 sm:p-8 flex flex-col gap-3">
+              <span className="font-dm-sans font-medium text-[12px] text-[#d9d9d6]">
                 Studio tip
               </span>
-              <p className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-white">
+              <p className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-lime">
                 Spend first on what is hard to change later — the structure, the roof and the openings. Finishes can be upgraded over time.
               </p>
             </div>
@@ -436,7 +437,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
                         className="w-full flex items-start justify-between text-left gap-4 cursor-pointer focus:outline-none group"
                         aria-expanded={isOpen}
                       >
-                        <span className="font-dm-sans font-normal text-lg sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink group-hover:text-neutral-700 transition-colors">
+                        <span className="font-dm-sans font-normal text-lg sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink group-hover:text-accent transition-colors">
                           {faq.question}
                         </span>
                         <span className="shrink-0 size-6 flex items-center justify-center pt-1 text-ink">
@@ -467,11 +468,11 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
                 <img
                   alt="Ar. Rashid Ali"
                   className="size-full object-cover"
-                  src={ASSETS.founderPhoto || ASSETS.authorAvatarLg || ASSETS.authorAvatar}
+                  src={ASSETS.authorAvatarLg}
                 />
               </div>
               <div className="flex-1 flex flex-col gap-2.5">
-                <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+                <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
                   Written by
                 </span>
                 <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink">
@@ -521,14 +522,14 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
             className="group cursor-pointer flex flex-col gap-4 items-start"
           >
             <div className="relative w-full h-[240px] sm:h-[280px] lg:h-[293px] overflow-hidden bg-[#d9d9d6] flex flex-col justify-end p-4 pb-[14px] pt-[16px] px-[16px]">
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-[#8c8c88]">
+              <span className="font-dm-sans font-medium text-[12px] text-[#8c8c88]">
                 Cover image
               </span>
             </div>
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
               Permits — Aug 2026
             </span>
-            <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-neutral-700 transition-colors">
+            <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-accent transition-colors">
               Building permits in Kerala, step by step
             </h3>
             <p className="font-dm-sans font-normal text-[15px] sm:text-[16px] leading-[1.5] text-ink-muted">
@@ -547,14 +548,14 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
             className="group cursor-pointer flex flex-col gap-4 items-start"
           >
             <div className="relative w-full h-[240px] sm:h-[280px] lg:h-[293px] overflow-hidden bg-[#d9d9d6] flex flex-col justify-end p-4 pb-[14px] pt-[16px] px-[16px]">
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-[#8c8c88]">
+              <span className="font-dm-sans font-medium text-[12px] text-[#8c8c88]">
                 Cover image
               </span>
             </div>
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
               Costs & planning — Jul 2026
             </span>
-            <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-neutral-700 transition-colors">
+            <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-accent transition-colors">
               Building on a hill slope in Wayanad
             </h3>
             <p className="font-dm-sans font-normal text-[15px] sm:text-[16px] leading-[1.5] text-ink-muted">
@@ -579,14 +580,14 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
                 src={ASSETS.projectHover}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none" />
-              <span className="relative z-10 font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-white">
+              <span className="relative z-10 font-dm-sans font-medium text-[12px] text-lime">
                 Design visualisation
               </span>
             </div>
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
               Climate & materials — Sep 2026
             </span>
-            <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-neutral-700 transition-colors">
+            <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-accent transition-colors">
               Designing a Kerala home for the monsoon
             </h3>
             <p className="font-dm-sans font-normal text-[15px] sm:text-[16px] leading-[1.5] text-ink-muted">
@@ -607,13 +608,9 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
           </h2>
           <button
             onClick={() => {
-              onNavigate('studio');
-              setTimeout(() => {
-                const el = document.getElementById('contact-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
+              onNavigate('contact');
             }}
-            className="inline-flex items-center gap-3.5 px-7 py-4.5 bg-ink text-white text-[15px] font-medium tracking-[-0.075px] hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center gap-3.5 px-7 py-4.5 bg-ink text-lime text-[15px] font-medium tracking-[-0.075px] hover:bg-accent transition-colors cursor-pointer shrink-0"
           >
             <span>Book a consultation</span>
             <img alt="" className="size-4" src={ASSETS.iconArrowRightWhite} />
@@ -626,7 +623,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
         href="https://wa.me/919447000000"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-8 right-6 md:right-10 z-40 bg-ink text-white flex items-center gap-2.5 pl-4 pr-5 py-3 rounded-full shadow-[0px_8px_24px_0px_rgba(0,0,0,0.22)] hover:bg-neutral-800 transition-all duration-300 hover:scale-105 group"
+        className="fixed bottom-8 right-6 md:right-10 z-40 bg-ink text-lime flex items-center gap-2.5 pl-4 pr-5 py-3 hover:bg-accent transition-all duration-300 group"
         aria-label="Chat on WhatsApp"
       >
         <img alt="WhatsApp" className="size-5 shrink-0" src={ASSETS.iconWhatsapp} />
