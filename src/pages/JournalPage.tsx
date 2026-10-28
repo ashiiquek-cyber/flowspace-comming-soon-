@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
+import type { NavigateTarget } from "../data/projects";
 import { ASSETS } from '../constants/assets';
 import { X, Send, CheckCircle2, ChevronRight } from 'lucide-react';
 
 interface JournalPageProps {
-  onNavigate: (page: 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'press') => void;
+  onNavigate: (target: NavigateTarget) => void;
 }
 
 type Category =
@@ -52,7 +53,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.founderPhoto || ASSETS.authorAvatar,
+      avatar: ASSETS.authorAvatar,
     },
     image: ASSETS.projectCloudHouse,
     imageTag: 'Design visualisation',
@@ -98,7 +99,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.founderPhoto || ASSETS.authorAvatar,
+      avatar: ASSETS.authorAvatar,
     },
     image: ASSETS.projectHover,
     imageTag: 'Design visualisation',
@@ -133,7 +134,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.founderPhoto || ASSETS.authorAvatar,
+      avatar: ASSETS.authorAvatar,
     },
     isCoverPlaceholder: true,
     content: {
@@ -169,7 +170,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.founderPhoto || ASSETS.authorAvatar,
+      avatar: ASSETS.authorAvatar,
     },
     isCoverPlaceholder: true,
     content: {
@@ -203,7 +204,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.founderPhoto || ASSETS.authorAvatar,
+      avatar: ASSETS.authorAvatar,
     },
     image: ASSETS.projectInterior,
     imageTag: 'Design visualisation',
@@ -234,7 +235,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.founderPhoto || ASSETS.authorAvatar,
+      avatar: ASSETS.authorAvatar,
     },
     image: ASSETS.projectHover,
     imageTag: 'Design visualisation',
@@ -269,7 +270,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.founderPhoto || ASSETS.authorAvatar,
+      avatar: ASSETS.authorAvatar,
     },
     image: ASSETS.projectCloudHouse,
     imageTag: 'Design visualisation',
@@ -357,16 +358,16 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="bg-white text-ink flex flex-col items-start w-full relative selection:bg-ink selection:text-white">
+    <div className="bg-lime text-ink flex flex-col items-start w-full relative selection:bg-ink selection:text-lime">
       {/* 1. HEADER SECTION (Figma: Header / node 22:865) */}
       <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-12 md:pb-16">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 md:gap-12">
           {/* Main Title + Counter */}
           <div className="flex items-start gap-4 sm:gap-6">
-            <h1 className="font-dm-sans font-medium text-7xl sm:text-9xl md:text-[140px] lg:text-[200px] leading-[0.86] tracking-[-4px] sm:tracking-[-8px] lg:tracking-[-12px] text-ink">
+            <h1 className="display text-7xl sm:text-9xl md:text-[140px] lg:text-[200px] leading-[0.86] text-ink">
               Journal
             </h1>
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted pt-2 sm:pt-4">
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted pt-2 sm:pt-4">
               (07)
             </span>
           </div>
@@ -388,9 +389,9 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 sm:px-[18px] py-2 sm:py-[10px] rounded-full text-[14px] sm:text-[15px] font-medium tracking-[-0.075px] whitespace-nowrap transition-all duration-200 cursor-pointer focus:outline-none ${
+                  className={`px-4 sm:px-[18px] py-2 sm:py-[10px] text-[14px] sm:text-[15px] font-medium tracking-[-0.075px] whitespace-nowrap transition-all duration-200 cursor-pointer focus:outline-none ${
                     isActive
-                      ? 'bg-ink text-white shadow-sm'
+                      ? 'bg-ink text-lime shadow-sm'
                       : 'border border-line text-ink hover:border-ink hover:bg-stone-1/60'
                   }`}
                 >
@@ -417,18 +418,18 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
                 src={featuredArticle.image}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 pointer-events-none" />
-              <span className="relative z-10 font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-white">
+              <span className="relative z-10 font-dm-sans font-medium text-[12px] text-lime">
                 {featuredArticle.imageTag}
               </span>
             </div>
 
             {/* Featured Text */}
             <div className="flex-1 flex flex-col gap-5 sm:gap-6 items-start lg:pb-2">
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
                 Featured · {featuredArticle.meta}
               </span>
 
-              <h2 className="font-dm-sans font-medium text-3xl sm:text-4xl md:text-5xl lg:text-[56px] leading-[1.05] tracking-[-1.68px] text-ink transition-colors group-hover:text-neutral-700">
+              <h2 className="font-dm-sans font-medium text-3xl sm:text-4xl md:text-5xl lg:text-[56px] leading-[1.05] tracking-[-1.68px] text-ink transition-colors group-hover:text-accent">
                 {featuredArticle.title}
               </h2>
 
@@ -478,7 +479,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
           <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-none tracking-[-1.68px] text-ink">
             {selectedCategory === 'All' ? 'Latest' : selectedCategory}
           </h2>
-          <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted pt-1">
+          <span className="font-dm-sans font-medium text-[12px] text-ink-muted pt-1">
             ({filteredLatestArticles.length.toString().padStart(2, '0')})
           </span>
         </div>
@@ -503,13 +504,13 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
                       src={article.image}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none" />
-                    <span className="relative z-10 font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-white">
+                    <span className="relative z-10 font-dm-sans font-medium text-[12px] text-lime">
                       {article.imageTag || 'Design visualisation'}
                     </span>
                   </>
                 ) : (
                   <div className="size-full flex flex-col justify-end">
-                    <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-[#8c8c88]">
+                    <span className="font-dm-sans font-medium text-[12px] text-[#8c8c88]">
                       Cover image
                     </span>
                   </div>
@@ -517,12 +518,12 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
               </div>
 
               {/* Metadata category */}
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
                 {article.meta}
               </span>
 
               {/* Title */}
-              <h3 className="font-dm-sans font-medium text-2xl sm:text-[28px] lg:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink transition-colors group-hover:text-neutral-700">
+              <h3 className="font-dm-sans font-medium text-2xl sm:text-[28px] lg:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink transition-colors group-hover:text-accent">
                 {article.title}
               </h3>
 
@@ -545,8 +546,8 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
         <div className="flex flex-col lg:flex-row items-start justify-between gap-10 lg:gap-16">
           {/* FAQ Left Column */}
           <div className="flex flex-col items-start gap-5 shrink-0">
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
-              (FAQ)
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
+              FAQ
             </span>
             <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-tight tracking-[-1.68px] text-ink">
               Questions<br />clients ask us
@@ -567,7 +568,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
                     className="w-full flex items-start justify-between text-left gap-6 group cursor-pointer focus:outline-none"
                     aria-expanded={isOpen}
                   >
-                    <span className="font-dm-sans font-normal text-xl sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink group-hover:text-neutral-700 transition-colors">
+                    <span className="font-dm-sans font-normal text-xl sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink group-hover:text-accent transition-colors">
                       {faq.question}
                     </span>
                     <span className="shrink-0 size-6 flex items-center justify-center pt-1 text-ink">
@@ -610,7 +611,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
           </h3>
           <button
             onClick={() => setIsAskModalOpen(true)}
-            className="inline-flex items-center gap-3.5 px-7 py-4 bg-ink text-white text-[15px] font-medium tracking-[-0.075px] hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center gap-3.5 px-7 py-4 bg-ink text-lime text-[15px] font-medium tracking-[-0.075px] hover:bg-accent transition-colors cursor-pointer shrink-0"
           >
             <span>Ask the studio</span>
             <img alt="" className="size-4" src={ASSETS.iconArrowRightWhite} />
@@ -623,7 +624,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
         href="https://wa.me/919447000000"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-8 right-6 md:right-10 z-40 bg-ink text-white flex items-center gap-2.5 pl-4 pr-5 py-3 rounded-full shadow-[0px_8px_24px_0px_rgba(0,0,0,0.22)] hover:bg-neutral-800 transition-all duration-300 hover:scale-105 group"
+        className="fixed bottom-8 right-6 md:right-10 z-40 bg-ink text-lime flex items-center gap-2.5 pl-4 pr-5 py-3 hover:bg-accent transition-all duration-300 group"
         aria-label="Chat on WhatsApp"
       >
         <img alt="WhatsApp" className="size-5 shrink-0" src={ASSETS.iconWhatsapp} />
@@ -635,7 +636,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
       {/* 8. ARTICLE READER MODAL (Interactive reader for all articles) */}
       {activeArticle && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-3xl my-8 p-6 sm:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-plaster w-full max-w-3xl my-8 p-6 sm:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button
               onClick={() => setActiveArticle(null)}
@@ -647,7 +648,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
 
             {/* Modal Header */}
             <div className="mb-6 pr-8">
-              <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
+              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
                 {activeArticle.meta}
               </span>
               <h2 className="font-dm-sans font-medium text-2xl sm:text-4xl tracking-tight text-ink mt-2 mb-4 leading-tight">
@@ -718,13 +719,9 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
               <button
                 onClick={() => {
                   setActiveArticle(null);
-                  onNavigate('studio');
-                  setTimeout(() => {
-                    const el = document.getElementById('contact-section');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
+                  onNavigate('contact');
                 }}
-                className="px-6 py-3 bg-ink text-white text-[14px] font-medium hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
+                className="px-6 py-3 bg-ink text-lime text-[14px] font-medium hover:bg-accent transition-colors cursor-pointer shrink-0"
               >
                 Book a consultation
               </button>
@@ -736,7 +733,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
       {/* 9. ASK THE STUDIO MODAL */}
       {isAskModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg p-6 sm:p-8 shadow-2xl relative">
+          <div className="bg-plaster w-full max-w-lg p-6 sm:p-8 shadow-2xl relative">
             <button
               onClick={() => setIsAskModalOpen(false)}
               className="absolute top-6 right-6 p-2 rounded-full hover:bg-stone-1 text-ink transition-colors cursor-pointer"
@@ -745,8 +742,8 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
               <X size={20} />
             </button>
 
-            <span className="font-dm-sans font-medium text-[12px] uppercase tracking-[0.48px] text-ink-muted">
-              (Studio Inquiry)
+            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
+              Studio Inquiry
             </span>
             <h3 className="font-dm-sans font-medium text-2xl sm:text-3xl tracking-tight text-ink mt-1 mb-2">
               Ask the Studio
@@ -808,7 +805,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-ink text-white font-medium text-[15px] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  className="w-full py-3.5 bg-ink text-lime font-medium text-[15px] hover:bg-accent transition-colors flex items-center justify-center gap-2 cursor-pointer mt-2"
                 >
                   <span>Submit Question</span>
                   <Send size={15} />

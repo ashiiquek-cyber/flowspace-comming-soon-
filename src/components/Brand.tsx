@@ -1,0 +1,67 @@
+import React from 'react';
+import { prefersReducedMotion } from '../context/SmoothScrollContext';
+import { EMBLEM_BOXES, EMBLEM_LINES, EMBLEM_SWAY } from './emblemMotion';
+
+/** The Flowspace emblem: a site plan of contour lines with buildings placed on the slope. */
+export const Emblem: React.FC<{ className?: string }> = ({ className = 'size-8' }) => (
+  <svg viewBox="0 0 36 36" fill="none" className={className} aria-hidden="true">
+    <g stroke="currentColor">
+      <circle cx="17.98" cy="17.89" r="16.06" strokeWidth="0.9" />
+      <path strokeWidth="0.56" d="M2.236 15.019c2.422.074 4.845-1.975 6.894-1.845 2.423.149 6.15 2.292 8.758 2.143 2.609-.13 4.1-2.273 6.336-2.05 2.795.242 6.521 1.64 9.465 1.789" />
+      <path strokeWidth="0.56" d="M2.05 16.211c1.677-.335 3.167 0 5.03.932 1.678.838 3.355 1.025 5.964.559 2.236-.466 4.1-1.49 6.149-1.528 2.236 0 4.1 1.528 6.522 1.435 2.236-.093 3.727-1.584 5.963-1.77l2.142-.056" />
+      <path strokeWidth="0.56" d="M2.05 20.273c1.677.41 3.54.597 5.776.317 2.609-.317 4.845-2.143 7.454-2.236 2.608-.093 4.285 1.584 6.708 1.547 2.608-.038 4.472-1.547 7.08-1.603 2.236-.037 2.982.708 4.938.783" />
+      <path strokeWidth="0.56" d="M2.702 22.77c3.26-.074 5.124-.41 6.987-1.528 1.491-.838 2.423-1.267 4.473-1.155 2.608.13 4.472 1.714 7.08 1.64 2.609-.075 4.845-2.124 7.454-2.124 2.05 0 2.981 2.012 4.956 1.826" />
+      <path strokeWidth="0.56" d="M3.075 24.037c1.583-.41 4.379-.372 6.615 0 2.236.373 3.726 1.305 5.59 1.305 2.422 0 4.285-2.05 7.08-2.18 2.423-.094 4.1 1.155 5.777 1.155 2.05 0 3.54-1.957 5.404-1.994" />
+    </g>
+    <g fill="currentColor">
+      <rect x="8.5" y="14.11" width="2.68" height="2.7" />
+      <rect x="23.46" y="13.99" width="2.8" height="2.68" />
+      <rect x="3.58" y="17.37" width="1.98" height="1.86" />
+      <rect x="19.75" y="17.37" width="1.75" height="1.38" />
+      <rect x="31.84" y="16.7" width="1.42" height="1.29" />
+      <rect x="16.88" y="19.4" width="1.12" height="1.08" />
+      <rect x="31.64" y="19.66" width="0.88" height="0.95" />
+      <rect x="3.39" y="21.06" width="1.17" height="1.1" />
+      <rect x="12.39" y="21.45" width="2.93" height="2.93" />
+      <rect x="26.27" y="21.06" width="2.37" height="2.16" />
+    </g>
+  </svg>
+);
+
+/**
+ * The emblem in motion: each contour line keeps its shape and sways gently sideways,
+ * neighbours slightly out of step, and the buildings ride their slope.
+ * Falls back to the still emblem when the visitor prefers reduced motion.
+ */
+export const MovingEmblem: React.FC<{ className?: string }> = ({ className = 'size-8' }) => {
+  const clipId = `emblem-clip-${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  if (prefersReducedMotion()) return <Emblem className={className} />;
+  return (
+    <svg viewBox="0 0 36 36" fill="none" className={className} aria-hidden="true">
+      <defs>
+        <clipPath id={clipId}><circle cx="17.98" cy="17.89" r="16.06" /></clipPath>
+      </defs>
+      <circle cx="17.98" cy="17.89" r="16.06" stroke="currentColor" strokeWidth="0.9" />
+      <g clipPath={`url(#${clipId})`}>
+        <g stroke="currentColor" strokeWidth="0.56">
+          {EMBLEM_LINES.map(({ d, dur }) => (
+            <path key={d} d={d}>
+              <animateTransform attributeName="transform" type="translate" dur={`${dur}s`} repeatCount="indefinite" values={EMBLEM_SWAY} />
+            </path>
+          ))}
+        </g>
+      </g>
+      <g fill="currentColor">
+        {EMBLEM_BOXES.map(({ x, y, w, h, dur, values }) => (
+          <rect key={`${x},${y}`} x={x} y={y} width={w} height={h}>
+            <animate attributeName="y" dur={`${dur}s`} repeatCount="indefinite" values={values} />
+          </rect>
+        ))}
+      </g>
+    </svg>
+  );
+};
+
+export const Wordmark: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <span className={`font-didact text-[14px] tracking-[0.3em] uppercase ${className}`}>Flowspace</span>
+);

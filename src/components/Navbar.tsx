@@ -1,188 +1,183 @@
-import React, { useState } from 'react';
-import { ASSETS } from '../constants/assets';
-import { Menu, X } from 'lucide-react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { Flip } from 'gsap/Flip';
+import { MovingEmblem, Wordmark } from './Brand';
+import { useSmoothScroll } from '../context/SmoothScrollContext';
+import { HERO_EVENT, getHeroState } from '../lib/heroSignal';
+import type { NavigateTarget, Page } from '../data/projects';
+
+gsap.registerPlugin(Flip);
 
 interface NavbarProps {
-  currentPage: 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'press';
-  onNavigate: (page: 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'press') => void;
-  variant?: 'solid' | 'transparent';
+  currentPage: Page;
+  onNavigate: (target: NavigateTarget) => void;
 }
 
-interface NavLinkItem {
-  id: string;
-  label: string;
-  action?: () => void;
-}
+const NAV_LINKS: { id: NavigateTarget; label: string; match: Page[] }[] = [
+  { id: 'projects', label: 'Projects', match: ['projects', 'project-detail'] },
+  { id: 'studio', label: 'Studio', match: ['studio'] },
+  { id: 'journal', label: 'Journal', match: ['journal', 'article'] },
+  { id: 'press', label: 'Press', match: ['press'] },
+];
 
-export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, variant = 'solid' }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { isScrolled, direction, lenis } = useSmoothScroll();
+  const firstLinkRef = useRef<HTMLButtonElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const flipState = useRef<Flip.FlipState | null>(null);
+  const [hero, setHero] = useState(getHeroState);
 
-  const isHome = currentPage === 'home' && variant === 'transparent';
-  const textColor = isHome ? 'text-white' : 'text-ink';
-  const emblem = isHome ? ASSETS.emblemWhite : ASSETS.emblemDark;
+  // The home hero tells us when its emblem has docked; links gather with a FLIP move.
+  // Layout effect so the listener exists before the hero's own first-paint signal.
+  useLayoutEffect(() => {
+    setHero(getHeroState());
+    const onHero = (e: Event) => {
+      const next = getHeroState();
+      const animate = (e as CustomEvent<{ animate: boolean }>).detail?.animate;
+      if (animate && navRef.current && next.docked !== hero.docked) {
+        flipState.current = Flip.getState(navRef.current.children);
+      }
+      setHero(next);
+    };
+    window.addEventListener(HERO_EVENT, onHero);
+    return () => window.removeEventListener(HERO_EVENT, onHero);
+  }, [hero.docked]);
 
-  const navLinks: NavLinkItem[] = [
-    { id: 'projects', label: 'Projects' },
-    { id: 'studio', label: 'Studio' },
-    { id: 'journal', label: 'Journal' },
-    { id: 'press', label: 'Press' },
-    { id: 'contact', label: 'Contact', action: () => {
-      onNavigate('studio');
-      setTimeout(() => {
-        const el = document.getElementById('contact-section');
-        el?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }},
-  ];
+  const spread = currentPage === 'home' && !hero.docked;
+
+  useLayoutEffect(() => {
+    if (!flipState.current) return;
+    Flip.from(flipState.current, { duration: 0.9, ease: 'expo.out' });
+    flipState.current = null;
+  }, [spread]);
+
+  const hidden = isScrolled && direction === 1 && !menuOpen && !hero.active;
+
+  // Sticky sub-bars (e.g. project filters) dock under the header while it is showing
+  useEffect(() => {
+    document.documentElement.style.setProperty('--header-offset', hidden ? '0px' : 'var(--header-h)');
+  }, [hidden]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    lenis?.stop();
+    document.body.style.overflow = 'hidden';
+    firstLinkRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      lenis?.start();
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen, lenis]);
+
+  const go = (target: NavigateTarget) => {
+    setMenuOpen(false);
+    onNavigate(target);
+  };
 
   return (
-    <header className={`w-full z-50 transition-colors duration-300 ${
-      isHome 
-        ? 'absolute top-0 left-0 bg-transparent text-white' 
-        : 'sticky top-0 bg-white/95 backdrop-blur-md border-b border-line text-ink'
-    }`}>
-      <div className="max-w-[1440px] mx-auto px-6 md:px-10 py-5 md:py-7 flex items-center justify-between">
-        {/* Brand Logo */}
-        <button
-          onClick={() => {
-            onNavigate('home');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          className="flex items-center gap-3 group text-left cursor-pointer focus:outline-none"
-        >
-          <div className="size-9 shrink-0 relative transition-transform duration-300 group-hover:rotate-45">
-            <img alt="Flowspace Emblem" className="size-full object-contain" src={emblem} />
-          </div>
-          <span className={`font-didact text-[15px] tracking-[4.2px] uppercase font-normal ${textColor}`}>
-            FLOWSPACE
-          </span>
-        </button>
+    <>
+      <header
+        className={`fixed inset-x-0 top-0 z-50 transition-[transform,background-color,border-color] duration-500 ease-out-expo ${
+          hidden ? '-translate-y-full' : 'translate-y-0'
+        } ${
+          // Stay see-through while the hero emblem is still flying up into the bar
+          isScrolled && !menuOpen && !(hero.active && !hero.docked) ? 'bg-lime border-b border-line' : 'bg-transparent border-b border-transparent'
+        }`}
+      >
+        <div className="relative page-x h-[68px] md:h-[76px] flex items-center justify-between">
+          <button
+            onClick={() => go('home')}
+            className="flex items-center gap-3 text-ink"
+            aria-label="Flowspace Architects, home"
+          >
+            <span data-nav-emblem className="block">
+              <MovingEmblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
+            </span>
+            <span data-nav-wordmark className="block"><Wordmark /></span>
+          </button>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-10">
-          <div className="flex items-center gap-8 xl:gap-10">
-            {navLinks.map((link) => {
-              const isActive = (currentPage === link.id) || (link.id === 'journal' && currentPage === 'article');
+          <nav
+            ref={navRef}
+            aria-label="Primary"
+            className={`hidden lg:flex items-center text-[15px] ${
+              spread ? 'absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] justify-between' : 'gap-9'
+            }`}
+          >
+            {NAV_LINKS.map((link) => {
+              const active = link.match.includes(currentPage);
               return (
                 <button
                   key={link.id}
-                  onClick={() => {
-                    if (link.action) {
-                      link.action();
-                    } else if (link.id === 'projects') {
-                      onNavigate('projects');
-                    } else if (link.id === 'studio') {
-                      onNavigate('studio');
-                    } else if (link.id === 'journal') {
-                      onNavigate('journal');
-                    } else if (link.id === 'press') {
-                      onNavigate('press');
-                    }
-                  }}
-                  className={`text-[15px] font-medium tracking-[-0.075px] transition-colors relative py-1 cursor-pointer focus:outline-none ${
-                    isActive
-                      ? isHome ? 'text-white font-semibold' : 'text-ink font-semibold'
-                      : isHome ? 'text-white/80 hover:text-white' : 'text-ink/75 hover:text-ink'
-                  }`}
+                  onClick={() => go(link.id)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`relative py-1 transition-colors ${active ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
                 >
                   {link.label}
-                  {isActive && !isHome && (
-                    <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-ink" />
-                  )}
+                  <span
+                    className={`absolute left-0 -bottom-0.5 h-px bg-current transition-[width] duration-500 ease-out-expo ${active ? 'w-full' : 'w-0'}`}
+                  />
                 </button>
               );
             })}
-          </div>
-
-          {/* Consultation CTA */}
-          <button
-            onClick={() => {
-              onNavigate('studio');
-              setTimeout(() => {
-                const el = document.getElementById('contact-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
-            }}
-            className={`px-5 py-2.5 text-[15px] font-medium tracking-[-0.075px] transition-all duration-200 cursor-pointer ${
-              isHome 
-                ? 'bg-white text-ink hover:bg-white/90 shadow-sm' 
-                : 'bg-ink text-white hover:bg-neutral-800'
-            }`}
-          >
-            Book a consultation
-          </button>
-        </nav>
-
-        {/* Mobile Hamburger Toggle */}
-        <div className="flex lg:hidden items-center gap-3">
-          <button
-            onClick={() => {
-              onNavigate('studio');
-              setTimeout(() => {
-                const el = document.getElementById('contact-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
-            }}
-            className={`px-3.5 py-1.5 text-[13px] font-medium tracking-tight ${
-              isHome ? 'bg-white text-ink' : 'bg-ink text-white'
-            }`}
-          >
-            Consult
-          </button>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`p-2 rounded focus:outline-none ${textColor}`}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-line text-ink px-6 py-6 shadow-xl animate-in slide-in-from-top-4 duration-200">
-          <div className="flex flex-col gap-4">
-            {navLinks.map((link) => (
-              <button
-                key={link.id}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (link.action) {
-                    link.action();
-                  } else if (link.id === 'projects') {
-                    onNavigate('projects');
-                  } else if (link.id === 'studio') {
-                    onNavigate('studio');
-                  } else if (link.id === 'journal') {
-                    onNavigate('journal');
-                  } else if (link.id === 'press') {
-                    onNavigate('press');
-                  }
-                }}
-                className={`text-left text-[17px] font-medium py-2 border-b border-stone-1/80 ${
-                  currentPage === link.id ? 'text-ink font-semibold' : 'text-ink/80'
-                }`}
-              >
-                {link.label}
-              </button>
-            ))}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onNavigate('studio');
-                setTimeout(() => {
-                  const el = document.getElementById('contact-section');
-                  el?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="mt-3 w-full py-3 bg-ink text-white text-center text-[15px] font-medium"
-            >
+            <button onClick={() => go('contact')} className="btn-solid !py-2.5 !px-4 !text-[14px]">
               Book a consultation
             </button>
+          </nav>
+
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            className="lg:hidden text-[15px] text-ink py-2 pl-4"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+          >
+            {menuOpen ? 'Close' : 'Menu'}
+          </button>
+        </div>
+      </header>
+
+      {/* Full-screen menu for small screens */}
+      <div
+        id="mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site menu"
+        className={`lg:hidden fixed inset-0 z-40 bg-lime flex flex-col justify-between pt-[96px] pb-8 page-x transition-[opacity,visibility] duration-300 ${
+          menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`}
+      >
+        <nav aria-label="Mobile" className="flex flex-col">
+          {[{ id: 'home' as NavigateTarget, label: 'Home', match: ['home'] as Page[] }, ...NAV_LINKS, { id: 'contact' as NavigateTarget, label: 'Contact', match: [] as Page[] }].map((link, i) => (
+            <button
+              key={link.id}
+              ref={i === 0 ? firstLinkRef : undefined}
+              onClick={() => go(link.id)}
+              aria-current={link.match.includes(currentPage) ? 'page' : undefined}
+              className={`text-left display text-[13vw] sm:text-[64px] py-1.5 border-b border-line transition-[transform,opacity] duration-700 ease-out-expo ${
+                menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              } ${link.match.includes(currentPage) ? 'text-ink' : 'text-ink/70'}`}
+              style={{ transitionDelay: menuOpen ? `${80 + i * 45}ms` : '0ms' }}
+            >
+              {link.label}
+            </button>
+          ))}
+        </nav>
+        <div className="grid grid-cols-2 gap-6 text-[14px] leading-relaxed">
+          <div>
+            <p className="label mb-1">Wayanad</p>
+            <p>Kalpetta, Kerala 673122</p>
+            <a href="tel:+919447000000" className="text-link mt-1">+91 94470 00000</a>
+          </div>
+          <div>
+            <p className="label mb-1">Bengaluru</p>
+            <p>Jayanagar, Karnataka 560011</p>
+            <a href="tel:+919845000000" className="text-link mt-1">+91 98450 00000</a>
           </div>
         </div>
-      )}
-    </header>
+      </div>
+    </>
   );
 };
