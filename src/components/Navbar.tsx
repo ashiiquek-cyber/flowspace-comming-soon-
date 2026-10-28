@@ -28,27 +28,28 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   const flipState = useRef<Flip.FlipState | null>(null);
   const [hero, setHero] = useState(getHeroState);
 
-  // The home hero tells us when its emblem has docked; links gather with a FLIP move.
+  // The home hero tells us when its emblem sets off; links slide right with a FLIP move.
   // Layout effect so the listener exists before the hero's own first-paint signal.
   useLayoutEffect(() => {
     setHero(getHeroState());
     const onHero = (e: Event) => {
       const next = getHeroState();
       const animate = (e as CustomEvent<{ animate: boolean }>).detail?.animate;
-      if (animate && navRef.current && next.docked !== hero.docked) {
+      if (animate && navRef.current && next.gathered !== hero.gathered) {
         flipState.current = Flip.getState(navRef.current.children);
       }
       setHero(next);
     };
     window.addEventListener(HERO_EVENT, onHero);
     return () => window.removeEventListener(HERO_EVENT, onHero);
-  }, [hero.docked]);
+  }, [hero.gathered]);
 
-  const spread = currentPage === 'home' && !hero.docked;
+  const spread = currentPage === 'home' && !hero.gathered;
 
+  // Same length and ease as the emblem's flight, so the two move as one
   useLayoutEffect(() => {
     if (!flipState.current) return;
-    Flip.from(flipState.current, { duration: 0.9, ease: 'expo.out' });
+    Flip.from(flipState.current, { duration: 0.9, ease: 'power3.inOut' });
     flipState.current = null;
   }, [spread]);
 
@@ -85,7 +86,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
           hidden ? '-translate-y-full' : 'translate-y-0'
         } ${
           // Stay see-through while the hero emblem is still flying up into the bar
-          isScrolled && !menuOpen && !(hero.active && !hero.docked) ? 'bg-lime border-b border-line' : 'bg-transparent border-b border-transparent'
+          isScrolled && !menuOpen && !(hero.active && !hero.docked)
+            ? 'bg-lime/70 backdrop-blur-md border-b border-line'
+            : 'bg-transparent border-b border-transparent'
         }`}
       >
         <div className="relative page-x h-[68px] md:h-[76px] flex items-center justify-between">
@@ -104,7 +107,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             ref={navRef}
             aria-label="Primary"
             className={`hidden lg:flex items-center text-[15px] ${
-              spread ? 'absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] justify-between' : 'gap-9'
+              spread ? 'absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] justify-between' : 'gap-12'
             }`}
           >
             {NAV_LINKS.map((link) => {
@@ -123,9 +126,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                 </button>
               );
             })}
-            <button onClick={() => go('contact')} className="btn-solid !py-2.5 !px-4 !text-[14px]">
-              Book a consultation
-            </button>
           </nav>
 
           <button

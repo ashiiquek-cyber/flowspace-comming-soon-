@@ -4,7 +4,7 @@ import { ASSETS } from '../constants/assets';
 import { Aperture } from '../components/Aperture';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
-import { Emblem } from '../components/Brand';
+import { MovingEmblem } from '../components/Brand';
 import { setHeroState } from '../lib/heroSignal';
 
 interface LandingPageProps {
@@ -79,7 +79,7 @@ const Hero: React.FC = () => {
     const header = document.querySelector<HTMLElement>('header');
 
     // Before first paint: the emblem is centre stage, the navbar waits for it
-    setHeroState({ docked: false }, false);
+    setHeroState({ docked: false, gathered: false }, false);
 
     const ctx = gsap.context(() => {
       gsap.from('[data-hero-emblem]', { autoAlpha: 0, scale: 0.94, duration: 1.4, ease: 'expo.out', delay: 0.1 });
@@ -96,6 +96,13 @@ const Hero: React.FC = () => {
         };
       };
 
+      // How far the intro line drops to sit in the bottom-left corner before the dock
+      const liftFrom = () => {
+        const line = root.querySelector<HTMLElement>('[data-hero-fade]')!;
+        const bottomGap = window.innerWidth >= 768 ? 32 : 24;
+        return root.clientHeight - bottomGap - (line.offsetTop + line.offsetHeight);
+      };
+
       const mm = gsap.matchMedia();
       mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
         const { desktop } = c.conditions as { desktop: boolean };
@@ -103,39 +110,59 @@ const Hero: React.FC = () => {
         gsap.set('[data-hero-aperture]', { clipPath: opening });
         if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { autoAlpha: 0 });
 
-        // Timeline units: 0–1 emblem docks, 0.7–1.5 headline and window arrive, 1.6–2.6 window opens
-        const DOCKED_AT = 1;
+        // Stage 1 is played, not scrubbed: the first nudge of the wheel docks the emblem
+        // and lifts the intro line from the bottom-left corner to its place under the bar
+        const DOCKED_AT = 0.9;
+        const dockTl = gsap.timeline({ paused: true, defaults: { ease: 'power3.inOut' } });
+        dockTl
+          .fromTo('[data-hero-emblem]', { x: 0, y: 0, scale: 1 }, { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, duration: DOCKED_AT }, 0)
+          .fromTo('[data-hero-fade]', { y: () => liftFrom() }, { y: 0, duration: DOCKED_AT }, 0);
+        if (navEmblem && navWordmark) {
+          dockTl
+            .set('[data-hero-emblem]', { autoAlpha: 0 }, DOCKED_AT)
+            .set(navEmblem, { autoAlpha: 1 }, DOCKED_AT)
+            .fromTo(navWordmark, { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, duration: 0.3, ease: 'power2.out' }, DOCKED_AT);
+        }
+        dockTl.eventCallback('onComplete', () => setHeroState({ docked: true }));
+
+        // Timeline units: 0–0.8 headline and window arrive, 0.9–1.9 window opens
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: root,
             start: 'top top',
-            end: '+=260%',
+            end: '+=190%',
             scrub: 0.8,
             pin: true,
             pinSpacing: true,
             invalidateOnRefresh: true,
             onToggle: (self) => setHeroState({ active: self.isActive }),
-            onUpdate: (self) => setHeroState({ docked: self.progress * tl.duration() >= DOCKED_AT - 0.02 }),
+            onUpdate: (self) => {
+              // The navbar links gather alongside the emblem's flight, so signal at the start
+              if (self.scroll() - self.start > 1) {
+                if (dockTl.reversed() || dockTl.progress() === 0) {
+                  setHeroState({ gathered: true });
+                  dockTl.play();
+                }
+              } else if (dockTl.progress() > 0 && !dockTl.reversed()) {
+                setHeroState({ docked: false, gathered: false });
+                dockTl.reverse();
+              }
+            },
+            // Re-measure both ends of the dock; the round trip forces a render at the current spot
+            onRefresh: () => {
+              const p = dockTl.progress();
+              dockTl.invalidate().progress(p === 1 ? 0 : 1, true).progress(p, true);
+            },
           },
         });
 
-        // Stage 1: the emblem leaves centre stage and settles into the navbar
-        tl.to('[data-hero-emblem]', { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, ease: 'power2.inOut', duration: DOCKED_AT }, 0)
-          .to('[data-hero-hint]', { autoAlpha: 0, duration: 0.2 }, 0);
-        if (navEmblem && navWordmark) {
-          tl.set('[data-hero-emblem]', { autoAlpha: 0 }, DOCKED_AT)
-            .set(navEmblem, { autoAlpha: 1 }, DOCKED_AT)
-            .fromTo(navWordmark, { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, duration: 0.3 }, DOCKED_AT);
-        }
-
         // The statement and the small courtyard window arrive behind it
-        tl.fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0.7)
-          .fromTo('[data-hero-fade]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, 0.9)
-          .fromTo('[data-hero-frame]', { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'power3.out', duration: 0.6 }, 0.85)
-          .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 1.2);
+        tl.fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0)
+          .fromTo('[data-hero-frame]', { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'power3.out', duration: 0.6 }, 0.15)
+          .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.5);
 
         // Stage 2: the courtyard opening widens to the full sky
-        const S2 = 1.6;
+        const S2 = 0.9;
         tl.to('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut', duration: 1 }, S2)
           .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1, ease: 'power2.inOut', duration: 1 }, S2)
           .to('[data-hero-copy]', { yPercent: -40, autoAlpha: 0, ease: 'power1.in', duration: 0.45 }, S2)
@@ -150,7 +177,7 @@ const Hero: React.FC = () => {
 
     return () => {
       ctx.revert();
-      setHeroState({ active: false, docked: true }, false);
+      setHeroState({ active: false, docked: true, gathered: true }, false);
     };
   }, [reduced]);
 
@@ -212,10 +239,9 @@ const Hero: React.FC = () => {
       {/* The emblem, centre stage until it docks in the navbar */}
       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" aria-hidden="true">
         <span data-hero-emblem className="block text-ink will-change-transform">
-          <Emblem className="size-[min(38svh,64vw)]" />
+          <MovingEmblem className="size-[min(38svh,64vw)]" />
         </span>
       </div>
-      <p data-hero-hint className="absolute z-20 inset-x-0 bottom-8 text-center label" aria-hidden="true">Scroll</p>
     </section>
   );
 };
