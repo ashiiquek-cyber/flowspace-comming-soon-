@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ASSETS } from '../constants/assets';
-import { Aperture } from '../components/Aperture';
+import { ProjectReel } from '../components/ProjectReel';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
 import { MovingEmblem } from '../components/Brand';
@@ -82,7 +82,8 @@ const Hero: React.FC = () => {
     setHeroState({ docked: false, gathered: false }, false);
 
     const ctx = gsap.context(() => {
-      gsap.from('[data-hero-emblem]', { autoAlpha: 0, scale: 0.94, duration: 1.4, ease: 'expo.out', delay: 0.1 });
+      // The entrance runs on the wrapper so it never fights the dock over the emblem's own opacity and scale
+      gsap.from('[data-hero-emblem-wrap]', { autoAlpha: 0, scale: 0.94, duration: 1.4, ease: 'expo.out', delay: 0.1 });
 
       // Where the navbar's emblem sits, relative to the centre of the (unscrolled) hero
       const dock = () => {
@@ -117,10 +118,15 @@ const Hero: React.FC = () => {
         dockTl
           .fromTo('[data-hero-emblem]', { x: 0, y: 0, scale: 1 }, { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, duration: DOCKED_AT }, 0)
           .fromTo('[data-hero-fade]', { y: () => liftFrom() }, { y: 0, duration: DOCKED_AT }, 0);
+        // The hand-over swaps are explicit fromTo pairs rather than .set(), which would restore whatever
+        // opacity it happened to record (mid-entrance, or hidden after a refresh while docked) on the way back.
+        // Their start values render up front (they match the page as it loads), so an invalidate can't leave
+        // them uninitialised and skipped on the way back
         if (navEmblem && navWordmark) {
+          const swap = { duration: 0.01, ease: 'none' };
           dockTl
-            .set('[data-hero-emblem]', { autoAlpha: 0 }, DOCKED_AT)
-            .set(navEmblem, { autoAlpha: 1 }, DOCKED_AT)
+            .fromTo('[data-hero-emblem]', { autoAlpha: 1 }, { autoAlpha: 0, ...swap }, DOCKED_AT)
+            .fromTo(navEmblem, { autoAlpha: 0 }, { autoAlpha: 1, ...swap }, DOCKED_AT)
             .fromTo(navWordmark, { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, duration: 0.3, ease: 'power2.out' }, DOCKED_AT);
         }
         dockTl.eventCallback('onComplete', () => setHeroState({ docked: true }));
@@ -237,7 +243,7 @@ const Hero: React.FC = () => {
       </p>
 
       {/* The emblem, centre stage until it docks in the navbar */}
-      <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" aria-hidden="true">
+      <div data-hero-emblem-wrap className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" aria-hidden="true">
         <span data-hero-emblem className="block text-ink will-change-transform">
           <MovingEmblem className="size-[min(38svh,64vw)]" />
         </span>
@@ -251,7 +257,6 @@ const Hero: React.FC = () => {
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [current, setCurrent] = useState(0);
-  const [cloud, terra, courtyard] = PROJECTS_DATA;
   const t = TESTIMONIALS[current];
 
   return (
@@ -292,31 +297,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       </section>
 
       {/* Selected work */}
-      <section className="page-x pb-28 md:pb-44" aria-labelledby="work-heading">
-        <div className="grid-page items-end mb-12 md:mb-20">
+      <section className="pb-28 md:pb-44" aria-labelledby="work-heading">
+        <div className="page-x grid-page items-end mb-12 md:mb-20">
           <h2 id="work-heading" className="col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">Selected work</h2>
           <a href="#/projects" className="col-span-4 justify-self-end text-link text-[15px] mb-2">All projects ({PROJECTS_DATA.length})</a>
         </div>
 
-        <div className="flex flex-col gap-24 md:gap-40">
-          {/* Wide, caption to the right */}
-          <a href={`#/project/${cloud.id}`} className="group grid-page gap-y-5 items-end">
-            <Aperture src={cloud.image} alt={cloud.title} focus={cloud.focus} className="col-span-12 md:col-span-9 aspect-[16/10]" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]" />
-            <ProjectCaption project={cloud} className="col-span-12 md:col-span-3" />
-          </a>
-
-          {/* Narrow and offset, caption to the left */}
-          <a href={`#/project/${courtyard.id}`} className="group grid-page gap-y-5 items-end">
-            <ProjectCaption project={courtyard} className="col-span-12 md:col-span-4 lg:col-span-3 md:col-start-2 lg:col-start-3 order-2 md:order-1" />
-            <Aperture src={courtyard.image} alt={courtyard.title} className="col-span-12 md:col-span-6 lg:col-span-5 md:col-start-7 lg:col-start-7 aspect-[4/5] order-1 md:order-2" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]" />
-          </a>
-
-          {/* Wide again, caption below */}
-          <a href={`#/project/${terra.id}`} className="group grid-page gap-y-5">
-            <Aperture src={terra.image} alt={terra.title} className="col-span-12 md:col-start-3 md:col-span-10 aspect-[16/9]" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]" />
-            <ProjectCaption project={terra} className="col-span-12 md:col-start-3 md:col-span-5" />
-          </a>
-        </div>
+        <ProjectReel projects={PROJECTS_DATA.slice(0, 4)} />
       </section>
 
       {/* Process: a real sequence, drawn on a shared fourteen-month axis */}
@@ -459,11 +446,3 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
-
-const ProjectCaption: React.FC<{ project: (typeof PROJECTS_DATA)[number]; className?: string }> = ({ project, className = '' }) => (
-  <div className={className}>
-    <h3 className="text-[24px] md:text-[28px] tracking-tight leading-tight group-hover:text-accent transition-colors">{project.title}</h3>
-    <p className="label mt-1">{project.location}, {project.year}</p>
-    <p className="prose-serif text-[17px] leading-snug mt-4 max-w-[34ch] text-ink/80">{project.description}</p>
-  </div>
-);
