@@ -25,12 +25,24 @@ export default {
         // Monsoon moss: the single accent, used for focus and active state
         accent: '#4B5B45',
         'on-ink': '#ECEBE5',
+        // CMS (admin panel): neutral white workspace, separate from the limewash site
+        cms: {
+          bg: '#FFFFFF',
+          ink: '#0B0B0B',
+          muted: '#666666',
+          'stone-1': '#D9D9D6',
+          'stone-3': '#8C8C88',
+          line: '#E3E3E0',
+          surface: '#F3F3F1',
+          accent: '#E8461E',
+        },
       },
       fontFamily: {
         sans: ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
         'dm-sans': ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
         serif: ['Newsreader', 'Georgia', 'serif'],
         didact: ['"Didact Gothic"', 'sans-serif'],
+        cms: ['"DM Sans"', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {
         tightest: '-0.045em',

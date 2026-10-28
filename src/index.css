@@ -121,6 +121,27 @@ html.lenis, html.lenis body { height: auto; }
   .btn-solid:hover { background: var(--color-accent); }
 }
 
+/* CMS type scale (DM Sans, optical size 14) */
+@layer components {
+  .cms-root {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-variation-settings: 'opsz' 14;
+    background: #fff;
+    color: #0b0b0b;
+  }
+  .cms-root ::selection { background: #0b0b0b; color: #fff; }
+  .cms-root :focus-visible { outline-color: #0b0b0b; }
+  .cms-caps { font-size: 12px; line-height: 1.3; font-weight: 500; letter-spacing: 0.48px; text-transform: uppercase; }
+  .cms-nav { font-size: 15px; line-height: 1.2; font-weight: 500; letter-spacing: -0.075px; }
+  .cms-body { font-size: 16px; line-height: 1.5; font-weight: 400; }
+  .cms-body-l { font-size: 22px; line-height: 1.4; font-weight: 400; letter-spacing: -0.22px; }
+  .cms-display-s { font-size: 32px; line-height: 1.15; font-weight: 500; letter-spacing: -0.64px; }
+  .cms-display-m { font-size: 56px; line-height: 1; font-weight: 500; letter-spacing: -1.68px; }
+  @media (max-width: 767px) {
+    .cms-display-m { font-size: 40px; letter-spacing: -1.2px; }
+  }
+}
+
 /* Masked line reveal used by the hero headline */
 .line-mask {
   display: block;

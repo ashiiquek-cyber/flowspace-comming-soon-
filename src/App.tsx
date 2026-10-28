@@ -11,6 +11,7 @@ import { JournalPage } from './pages/JournalPage';
 import { ArticlePage } from './pages/ArticlePage';
 import { PressAwardsPage } from './pages/PressAwardsPage';
 import { PROJECTS_DATA, type NavigateTarget, type Page } from './data/projects';
+import { AdminApp } from './admin/AdminApp';
 
 interface Route {
   page: Page;
@@ -111,7 +112,20 @@ function AppContent() {
   );
 }
 
+const isAdminHash = () => /^#\/?admin(\/|$)/.test(window.location.hash);
+
 export default function App() {
+  // The CMS is its own shell: no site navbar, footer or smooth scrolling
+  const [isAdmin, setIsAdmin] = useState(isAdminHash);
+
+  useEffect(() => {
+    const onHashChange = () => setIsAdmin(isAdminHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  if (isAdmin) return <AdminApp />;
+
   return (
     <SmoothScrollProvider>
       <AppContent />
