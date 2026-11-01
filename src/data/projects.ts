@@ -1,6 +1,6 @@
 import { ASSETS } from '../constants/assets';
 
-export type Page = 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'press';
+export type Page = 'home' | 'projects' | 'project-detail' | 'studio' | 'journal' | 'article' | 'research' | 'press';
 export type NavigateTarget = Page | 'contact';
 
 export interface ProjectItem {

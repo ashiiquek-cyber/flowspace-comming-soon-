@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { ASSETS } from '../constants/assets';
+import { RESEARCH_DATA } from '../data/research';
 import { ARTICLES, PROJECTS, TEAM } from './data';
 import { CMS_ASSETS } from './ui';
 import { cn } from './cn';
@@ -8,6 +9,7 @@ import { adminHref, parseAdminHash, type AdminRoute, type AdminSection } from '.
 import { DashboardPage } from './pages/DashboardPage';
 import { ArticlesPage } from './pages/ArticlesPage';
 import { ArticleEditorPage } from './pages/ArticleEditorPage';
+import { ResearchPage } from './pages/ResearchPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { ProjectEditorPage } from './pages/ProjectEditorPage';
 import { HomepageEditorPage } from './pages/HomepageEditorPage';
@@ -20,6 +22,7 @@ const NAV: { group: string; items: { id: AdminSection; label: string; count?: nu
     items: [
       { id: 'dashboard', label: 'Dashboard' },
       { id: 'articles', label: 'Articles', count: ARTICLES.length },
+      { id: 'research', label: 'Research', count: RESEARCH_DATA.length },
       { id: 'projects', label: 'Projects', count: PROJECTS.length },
       { id: 'homepage', label: 'Homepage' },
       { id: 'media', label: 'Media library' },
@@ -89,6 +92,7 @@ const Sidebar: React.FC<{ active: AdminSection; onNavigate: () => void }> = ({ a
 const BREADCRUMBS: Record<AdminSection, string> = {
   dashboard: 'Dashboard',
   articles: 'Content / Articles',
+  research: 'Content / Research',
   projects: 'Content / Projects',
   homepage: 'Content / Homepage',
   media: 'Content / Media library',
@@ -128,6 +132,7 @@ export const AdminApp: React.FC = () => {
   let page: React.ReactNode;
   switch (section) {
     case 'articles': page = param ? <ArticleEditorPage /> : <ArticlesPage initialQuery={query} />; break;
+    case 'research': page = <ResearchPage />; break;
     case 'projects': page = param ? <ProjectEditorPage projectId={param} /> : <ProjectsPage />; break;
     case 'homepage': page = <HomepageEditorPage />; break;
     case 'team': page = <TeamPage />; break;

@@ -6,6 +6,7 @@ import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
 import { MovingEmblem } from '../components/Brand';
 import { setHeroState } from '../lib/heroSignal';
+import { RESEARCH_DATA } from '../data/research';
 
 interface LandingPageProps {
   onNavigate: (target: NavigateTarget) => void;
@@ -384,6 +385,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             Building somewhere else in Kerala or Karnataka? Ask us. We travel for the right project.
           </p>
         </div>
+      </section>
+
+      {/* Research */}
+      <section className="page-x pb-28 md:pb-44" aria-labelledby="research-heading">
+        <div className="grid-page items-end mb-10 md:mb-14">
+          <h2 id="research-heading" className="col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">Research</h2>
+          <a href="#/research" className="col-span-4 justify-self-end text-link text-[15px] mb-2">All research</a>
+        </div>
+        <ul className="grid-page gap-y-10">
+          {RESEARCH_DATA.slice(0, 3).map((r) => (
+            <li key={r.id} className="col-span-12 md:col-span-4">
+              <a href="#/research" className="group block">
+                <div className="aspect-[4/3] overflow-hidden bg-line">
+                  <img src={r.image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]" />
+                </div>
+                <p className="label mt-4">{r.type} · {r.year}</p>
+                <h3 className="mt-2 text-[20px] sm:text-[22px] leading-[1.2] tracking-tight transition-colors group-hover:text-accent">{r.title}</h3>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* Journal */}

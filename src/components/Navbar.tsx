@@ -17,6 +17,7 @@ const NAV_LINKS: { id: NavigateTarget; label: string; match: Page[] }[] = [
   { id: 'projects', label: 'Projects', match: ['projects', 'project-detail'] },
   { id: 'studio', label: 'Studio', match: ['studio'] },
   { id: 'journal', label: 'Journal', match: ['journal', 'article'] },
+  { id: 'research', label: 'Research', match: ['research'] },
   { id: 'press', label: 'Press', match: ['press'] },
 ];
 

@@ -9,6 +9,7 @@ import { ProjectDetailPage } from './pages/ProjectDetailPage';
 import { AboutContactPage } from './pages/AboutContactPage';
 import { JournalPage } from './pages/JournalPage';
 import { ArticlePage } from './pages/ArticlePage';
+import { ResearchPage } from './pages/ResearchPage';
 import { PressAwardsPage } from './pages/PressAwardsPage';
 import { PROJECTS_DATA, type NavigateTarget, type Page } from './data/projects';
 import { AdminApp } from './admin/AdminApp';
@@ -31,6 +32,7 @@ const parseHash = (): Route => {
     case 'contact': return { page: 'studio', section: 'contact-section' };
     case 'journal': return { page: 'journal' };
     case 'article': return { page: 'article' };
+    case 'research': return { page: 'research' };
     case 'press':
     case 'awards': return { page: 'press' };
     default: return { page: 'home' };
@@ -44,6 +46,7 @@ const TITLES: Record<Page, string> = {
   studio: 'Studio and contact — Flowspace Architects',
   journal: 'Journal — Flowspace Architects',
   article: 'Journal — Flowspace Architects',
+  research: 'Research — Flowspace Architects',
   press: 'Press and awards — Flowspace Architects',
 };
 
@@ -103,7 +106,8 @@ function AppContent() {
         {page === 'studio' && <AboutContactPage onNavigate={navigate} />}
         {page === 'journal' && <JournalPage onNavigate={navigate} />}
         {page === 'article' && <ArticlePage onNavigate={navigate} />}
-        {page === 'press' && <PressAwardsPage onNavigate={navigate} />}
+        {page === 'research' && <ResearchPage />}
+        {page === 'press' &&<PressAwardsPage onNavigate={navigate} />}
         </div>
       </main>
 
