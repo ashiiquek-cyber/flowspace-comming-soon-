@@ -21,8 +21,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const { scrollTo } = useSmoothScroll();
 
   return (
-    <footer className="lg:sticky lg:bottom-0 z-0 bg-kadappa text-lime">
-      <div className="page-x pt-20 md:pt-28 pb-8 flex flex-col gap-20 md:gap-28 lg:min-h-[100svh] lg:justify-between">
+    <footer className="z-0 bg-kadappa text-lime [@media(min-width:1024px)_and_(min-height:800px)]:sticky [@media(min-width:1024px)_and_(min-height:800px)]:bottom-0">
+      <div className="page-x pt-20 md:pt-28 pb-8 flex flex-col gap-20 md:gap-28 lg:justify-between [@media(min-width:1024px)_and_(min-height:800px)]:min-h-[100svh]">
         <div className="grid-page gap-y-10">
           <h2 className="col-span-12 lg:col-span-9 display text-[13vw] sm:text-[10vw] lg:text-[8.2vw]">
             Have a project in mind? Let’s create something lasting.

@@ -108,7 +108,7 @@ const Hero: React.FC = () => {
       mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
         const { desktop } = c.conditions as { desktop: boolean };
         const opening = desktop ? 'inset(12% 11% 38% 61% round 0px)' : 'inset(57% 6% 7% 36% round 0px)';
-        gsap.set('[data-hero-aperture]', { clipPath: opening });
+        gsap.set('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' });
         if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { autoAlpha: 0 });
 
         // Stage 1 is played, not scrubbed: the first nudge of the wheel docks the emblem
@@ -162,13 +162,18 @@ const Hero: React.FC = () => {
           },
         });
 
-        // The statement and the small courtyard window arrive behind it
-        tl.fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0)
-          .fromTo('[data-hero-frame]', { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'power3.out', duration: 0.6 }, 0.15)
-          .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.5);
+        // The full-bleed courtyard settles back into its small window; the scrim lifts as it goes
+        tl.fromTo('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: opening, ease: 'power2.inOut', duration: 0.9 }, 0)
+          .fromTo('[data-hero-image]', { scale: 1 }, { scale: 1.22, ease: 'power2.inOut', duration: 0.9 }, 0)
+          .to('[data-hero-scrim]', { autoAlpha: 0, duration: 0.9, ease: 'power1.inOut' }, 0)
+          .to('[data-hero-post]', { autoAlpha: 0, duration: 0.2 }, 0)
+          .fromTo('[data-hero-emblem], [data-hero-fade]', { color: '#ffffff' }, { color: '#1d201e', duration: 0.9, ease: 'power1.inOut' }, 0)
+          // The headline stays out of the opening view and arrives once the window has settled
+          .fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0.5)
+          .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.7);
 
         // Stage 2: the courtyard opening widens to the full sky
-        const S2 = 0.9;
+        const S2 = 1.1;
         tl.to('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut', duration: 1 }, S2)
           .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1, ease: 'power2.inOut', duration: 1 }, S2)
           .to('[data-hero-copy]', { yPercent: -40, autoAlpha: 0, ease: 'power1.in', duration: 0.45 }, S2)
@@ -217,8 +222,9 @@ const Hero: React.FC = () => {
             {...{ fetchpriority: 'high' }}
             className="absolute left-0 top-0 w-[112%] h-[112%] max-w-none object-cover origin-top-left"
           />
+          <div data-hero-scrim className="absolute inset-0 bg-black/50" />
         </div>
-        <p data-hero-post className="absolute left-[var(--gutter)] bottom-6 md:bottom-8 text-[13px] text-lime opacity-0 [text-shadow:0_1px_12px_rgba(0,0,0,0.35)]">
+        <p data-hero-post className="absolute left-[var(--gutter)] bottom-6 md:bottom-8 text-[13px] text-lime opacity-0[text-shadow:0_1px_12px_rgba(0,0,0,0.35)]">
           Courtyard residence, Wayanad. Design visualisation.
         </p>
       </div>
