@@ -13,7 +13,7 @@ export default {
         // Wet stone text, mist secondary
         ink: {
           DEFAULT: '#1D201E',
-          muted: '#6E736D',
+          muted: '#5F645E',
         },
         stone: {
           1: '#E3E2DB',
@@ -39,7 +39,6 @@ export default {
       },
       fontFamily: {
         sans: ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
-        'dm-sans': ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
         serif: ['Newsreader', 'Georgia', 'serif'],
         didact: ['"Didact Gothic"', 'sans-serif'],
         cms: ['"DM Sans"', 'system-ui', 'sans-serif'],

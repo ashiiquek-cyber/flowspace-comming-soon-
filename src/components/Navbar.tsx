@@ -1,12 +1,8 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
-import { Flip } from 'gsap/Flip';
+import React, { useEffect, useRef, useState } from 'react';
 import { MovingEmblem, Wordmark } from './Brand';
 import { useSmoothScroll } from '../context/SmoothScrollContext';
-import { HERO_EVENT, getHeroState } from '../lib/heroSignal';
+import { RouteLink } from './RouteLink';
 import type { NavigateTarget, Page } from '../data/projects';
-
-gsap.registerPlugin(Flip);
 
 interface NavbarProps {
   currentPage: Page;
@@ -19,42 +15,16 @@ const NAV_LINKS: { id: NavigateTarget; label: string; match: Page[] }[] = [
   { id: 'journal', label: 'Journal', match: ['journal', 'article'] },
   { id: 'research', label: 'Research', match: ['research'] },
   { id: 'press', label: 'Press', match: ['press'] },
+  // Contact lives on the studio page, so it never claims the active state itself
+  { id: 'contact', label: 'Contact', match: [] },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isScrolled, direction, lenis } = useSmoothScroll();
-  const firstLinkRef = useRef<HTMLButtonElement>(null);
-  const navRef = useRef<HTMLElement>(null);
-  const flipState = useRef<Flip.FlipState | null>(null);
-  const [hero, setHero] = useState(getHeroState);
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
 
-  // The home hero tells us when its emblem sets off; links slide right with a FLIP move.
-  // Layout effect so the listener exists before the hero's own first-paint signal.
-  useLayoutEffect(() => {
-    setHero(getHeroState());
-    const onHero = (e: Event) => {
-      const next = getHeroState();
-      const animate = (e as CustomEvent<{ animate: boolean }>).detail?.animate;
-      if (animate && navRef.current && next.gathered !== hero.gathered) {
-        flipState.current = Flip.getState(navRef.current.children);
-      }
-      setHero(next);
-    };
-    window.addEventListener(HERO_EVENT, onHero);
-    return () => window.removeEventListener(HERO_EVENT, onHero);
-  }, [hero.gathered]);
-
-  const spread = currentPage === 'home' && !hero.gathered;
-
-  // Same length and ease as the emblem's flight, so the two move as one
-  useLayoutEffect(() => {
-    if (!flipState.current) return;
-    Flip.from(flipState.current, { duration: 0.9, ease: 'power3.inOut' });
-    flipState.current = null;
-  }, [spread]);
-
-  const hidden = isScrolled && direction === 1 && !menuOpen && !hero.active;
+  const hidden = isScrolled && direction === 1 && !menuOpen;
 
   // Sticky sub-bars (e.g. project filters) dock under the header while it is showing
   useEffect(() => {
@@ -86,37 +56,30 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
         className={`fixed inset-x-0 top-0 z-50 transition-[transform,background-color,border-color] duration-500 ease-out-expo ${
           hidden ? '-translate-y-full' : 'translate-y-0'
         } ${
-          // Stay see-through while the hero emblem is still flying up into the bar
-          isScrolled && !menuOpen && !(hero.active && !hero.docked)
+          isScrolled && !menuOpen
             ? 'bg-lime/70 backdrop-blur-md border-b border-line'
             : 'bg-transparent border-b border-transparent'
         }`}
       >
         <div className="relative page-x h-[68px] md:h-[76px] flex items-center justify-between">
-          <button
-            onClick={() => go('home')}
+          <RouteLink
+            to="home"
+            onNavigate={go}
             className="flex items-center gap-3 text-ink"
             aria-label="Flowspace Architects, home"
           >
-            <span data-nav-emblem className="block">
-              <MovingEmblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
-            </span>
-            <span data-nav-wordmark className="block"><Wordmark /></span>
-          </button>
+            <MovingEmblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
+            <Wordmark className="block" />
+          </RouteLink>
 
-          <nav
-            ref={navRef}
-            aria-label="Primary"
-            className={`hidden lg:flex items-center text-[15px] ${
-              spread ? 'absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] justify-between' : 'gap-12'
-            }`}
-          >
+          <nav aria-label="Primary" className="hidden lg:flex items-center gap-10 xl:gap-12 text-[15px]">
             {NAV_LINKS.map((link) => {
               const active = link.match.includes(currentPage);
               return (
-                <button
+                <RouteLink
                   key={link.id}
-                  onClick={() => go(link.id)}
+                  to={link.id}
+                  onNavigate={go}
                   aria-current={active ? 'page' : undefined}
                   className={`relative py-1 transition-colors ${active ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
                 >
@@ -124,7 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   <span
                     className={`absolute left-0 -bottom-0.5 h-px bg-current transition-[width] duration-500 ease-out-expo ${active ? 'w-full' : 'w-0'}`}
                   />
-                </button>
+                </RouteLink>
               );
             })}
           </nav>
@@ -151,11 +114,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
         }`}
       >
         <nav aria-label="Mobile" className="flex flex-col">
-          {[{ id: 'home' as NavigateTarget, label: 'Home', match: ['home'] as Page[] }, ...NAV_LINKS, { id: 'contact' as NavigateTarget, label: 'Contact', match: [] as Page[] }].map((link, i) => (
-            <button
+          {[{ id: 'home' as NavigateTarget, label: 'Home', match: ['home'] as Page[] }, ...NAV_LINKS].map((link, i) => (
+            <RouteLink
               key={link.id}
               ref={i === 0 ? firstLinkRef : undefined}
-              onClick={() => go(link.id)}
+              to={link.id}
+              onNavigate={go}
               aria-current={link.match.includes(currentPage) ? 'page' : undefined}
               className={`text-left display text-[13vw] sm:text-[64px] py-1.5 border-b border-line transition-[transform,opacity] duration-700 ease-out-expo ${
                 menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
@@ -163,7 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
               style={{ transitionDelay: menuOpen ? `${80 + i * 45}ms` : '0ms' }}
             >
               {link.label}
-            </button>
+            </RouteLink>
           ))}
         </nav>
         <div className="grid grid-cols-2 gap-6 text-[14px] leading-relaxed">

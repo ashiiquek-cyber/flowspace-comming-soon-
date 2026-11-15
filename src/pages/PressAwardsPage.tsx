@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { RouteLink } from '../components/RouteLink';
 import type { NavigateTarget } from "../data/projects";
 import { ASSETS } from '../constants/assets';
+import { useDialog } from '../lib/useDialog';
 import { X, Download, ExternalLink, Check, FileText, Image as ImageIcon, Sparkles } from 'lucide-react';
 
 interface PressAwardsPageProps {
@@ -66,7 +68,7 @@ const FEATURES_DATA: FeatureItem[] = [
   {
     id: 'vanitha-veedu-feature',
     imageCaption: 'Vanitha Veedu — page or cover image',
-    meta: 'Vanitha Veedu · Magazine · 2024',
+    meta: 'Vanitha Veedu, Magazine, 2024',
     title: 'Young Architect feature',
     image: ASSETS.projectCloudHouse,
     details: {
@@ -85,7 +87,7 @@ const FEATURES_DATA: FeatureItem[] = [
   {
     id: 'foaid-showcase',
     imageCaption: 'FOAID — page or cover image',
-    meta: 'FOAID · Design festival · 2023',
+    meta: 'FOAID, Design festival, 2023',
     title: 'Design Week showcase',
     image: ASSETS.projectHover,
     details: {
@@ -104,7 +106,7 @@ const FEATURES_DATA: FeatureItem[] = [
   {
     id: 'houzz-profile',
     imageCaption: 'Houzz — page or cover image',
-    meta: 'Houzz · Professional profile',
+    meta: 'Houzz, Professional profile',
     title: 'Flowspace Architects on Houzz',
     image: ASSETS.projectInterior,
     details: {
@@ -135,6 +137,11 @@ export const PressAwardsPage: React.FC<PressAwardsPageProps> = ({ onNavigate }) 
   // Motion annotation 4: Button magnet (eases 4px toward cursor)
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [buttonOffset, setButtonOffset] = useState({ x: 0, y: 0 });
+
+  const featureCloseRef = useRef<HTMLButtonElement>(null);
+  const pressKitCloseRef = useRef<HTMLButtonElement>(null);
+  useDialog(!!activeFeature, () => setActiveFeature(null), featureCloseRef);
+  useDialog(isPressKitOpen, () => setIsPressKitOpen(false), pressKitCloseRef);
 
   // 1. Trigger Title Mask Reveal
   useEffect(() => {
@@ -208,335 +215,232 @@ Thank you for featuring Flowspace Architects.`;
   };
 
   return (
-    <div className="bg-lime text-ink flex flex-col items-start w-full relative selection:bg-ink selection:text-lime">
-      {/* 1. HEADER SECTION (Figma: Header / node 42:1543) */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-16 md:pb-24">
-        <div className="flex flex-col gap-8 md:gap-10">
-          {/* Title Mask Reveal (700ms animation from Figma annotation) */}
-          <div className="overflow-hidden">
+    <div className="bg-lime text-ink w-full relative">
+      {/* Header */}
+      <section className="page-x pt-16 md:pt-24 pb-16 md:pb-24">
+        <div className="grid-page gap-y-8">
+          <div className="col-span-12 md:col-span-8 overflow-hidden">
             <h1
-              className={`display text-5xl sm:text-7xl md:text-9xl lg:text-[180px] xl:text-[200px] leading-[0.86] text-ink transition-all duration-700 ease-out ${
-                titleRevealed
-                  ? 'translate-y-0 opacity-100'
-                  : 'translate-y-full opacity-0'
+              className={`display text-[14vw] md:text-[9vw] transition-[transform,opacity] duration-700 ease-out-expo ${
+                titleRevealed ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
               }`}
             >
-              Press &amp; Awards
+              Press and awards
             </h1>
           </div>
-
-          <p className="font-dm-sans font-normal text-lg sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink max-w-[620px]">
+          <p className="col-span-12 md:col-span-4 md:self-end label max-w-[34ch] leading-relaxed">
             Recognition for Flowspace Architects and Ar. Rashid Ali, and the places the studio’s work has been featured.
           </p>
         </div>
       </section>
 
-      {/* 2. AWARDS SECTION (Figma: Awards / node 42:1546) */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-36">
-        {/* Awards Header */}
-        <div className="border-t border-ink pt-6 pb-8 md:pb-10 flex items-end justify-between">
-          <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-none tracking-[-1.68px] text-ink">
-            Awards
-          </h2>
-          <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-            ({String(AWARDS_DATA.length).padStart(2, '0')})
-          </span>
-        </div>
-
-        {/* Awards Rows (Staggered fade up + counting year) */}
-        <div className="flex flex-col border-b border-line">
-          {AWARDS_DATA.map((award, index) => {
-            const currentYear = award.targetYear;
-            return (
-              <div
-                key={award.id}
-                style={{ animationDelay: `${index * 80}ms` }}
-                className="border-t border-line py-7 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 group hover:bg-stone-1/40 px-2 sm:px-3 -mx-2 sm:-mx-3 transition-colors duration-200 animate-in fade-in slide-in-from-bottom-2"
-              >
-                {/* Year (Animated Count) */}
-                <span className="font-dm-sans font-normal text-[16px] leading-[1.5] text-ink-muted md:w-[120px] shrink-0 tabular-nums">
-                  {currentYear}
-                </span>
-
-                {/* Award Title */}
-                <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink md:w-[520px] shrink-0 group-hover:text-accent transition-colors">
-                  {award.name}
-                </h3>
-
-                {/* Organization */}
-                <p className="font-dm-sans font-medium text-[15px] leading-[1.2] tracking-[-0.075px] text-ink md:w-[300px] shrink-0">
-                  {award.organization}
-                </p>
-
-                {/* Recipient */}
-                <p className="font-dm-sans font-normal text-[16px] leading-[1.5] text-ink-muted md:w-[300px] shrink-0">
-                  {award.recipient}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+      {/* Awards */}
+      <section className="page-x pb-28 md:pb-36">
+        <h2 className="label border-t border-line pt-5 mb-6 md:mb-8">Awards</h2>
+        <ul className="border-b border-line">
+          {AWARDS_DATA.map((award, index) => (
+            <li
+              key={award.id}
+              style={{ animationDelay: `${index * 80}ms` }}
+              className="border-t border-line py-7 grid-page gap-y-2 items-baseline group animate-in"
+            >
+              <span className="col-span-12 md:col-span-2 label tabular-nums">{award.targetYear}</span>
+              <h3 className="col-span-12 md:col-span-5 text-[24px] sm:text-[28px] leading-[1.15] tracking-[-0.02em] group-hover:text-accent transition-colors">
+                {award.name}
+              </h3>
+              <p className="col-span-6 md:col-span-3 text-[15px]">{award.organization}</p>
+              <p className="col-span-6 md:col-span-2 text-[15px] text-ink-muted">{award.recipient}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* 3. FEATURED IN SECTION (Figma: Featured in / node 42:1560) */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-36">
-        {/* Section Header */}
-        <div className="border-t border-ink pt-6 mb-10 md:mb-12 flex items-end justify-between">
-          <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-none tracking-[-1.68px] text-ink">
-            Featured in
-          </h2>
-          <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-            (03)
-          </span>
-        </div>
-
-        {/* 3-Column Grid with Curtain Reveal & 1.04 Zoom on Hover */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      {/* Featured in */}
+      <section className="page-x pb-28 md:pb-36">
+        <h2 className="label border-t border-line pt-5 mb-10 md:mb-12">Featured in</h2>
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-x-10 gap-y-14">
           {FEATURES_DATA.map((item, idx) => (
-            <article
-              key={item.id}
-              onClick={() => setActiveFeature(item)}
-              style={{ animationDelay: `${idx * 120}ms` }}
-              className="group cursor-pointer flex flex-col gap-4 items-start animate-in fade-in slide-in-from-bottom-3 duration-500"
-            >
-              {/* Cover Image Container with Curtain Reveal + Zoom 1.04 */}
-              <div className="relative w-full h-[280px] sm:h-[320px] overflow-hidden bg-[#d9d9d6] flex flex-col justify-end p-4 pb-[14px] pt-[16px] px-[16px]">
+            <li key={item.id} style={{ animationDelay: `${idx * 120}ms` }} className="animate-in">
+              <button
+                onClick={() => setActiveFeature(item)}
+                aria-haspopup="dialog"
+                className="group w-full text-left flex flex-col gap-4 items-start"
+              >
                 {item.image ? (
-                  <>
+                  <span className="block w-full aspect-[4/3] overflow-hidden bg-stone-1 mb-1">
                     <img
-                      alt={item.title}
-                      className="absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                      alt=""
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                       src={item.image}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 pointer-events-none" />
-                    <span className="relative z-10 font-dm-sans font-medium text-[12px] text-lime">
-                      {item.imageCaption}
-                    </span>
-                  </>
+                  </span>
                 ) : (
-                  <div className="size-full flex flex-col justify-end">
-                    <span className="font-dm-sans font-medium text-[12px] text-[#8c8c88]">
-                      {item.imageCaption}
-                    </span>
-                  </div>
+                  <span aria-hidden className="block w-full border-t border-ink" />
                 )}
-              </div>
-
-              {/* Metadata */}
-              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-                {item.meta}
-              </span>
-
-              {/* Headline */}
-              <h3 className="font-dm-sans font-medium text-2xl sm:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink group-hover:text-accent transition-colors">
-                {item.title}
-              </h3>
-
-              {/* TextLink */}
-              <div className="inline-flex items-center gap-3 border-b border-ink pb-1 pt-1 group-hover:border-neutral-500 transition-colors">
-                <span className="font-dm-sans font-medium text-[15px] tracking-[-0.075px] text-ink">
-                  Read feature
+                <span className="label">{item.meta}</span>
+                <span className="text-[24px] sm:text-[28px] leading-[1.15] tracking-[-0.02em] group-hover:text-accent transition-colors">
+                  {item.title}
                 </span>
-                <img
-                  alt=""
-                  className="size-4 transition-transform duration-200 group-hover:translate-x-1"
-                  src={ASSETS.iconArrowRightDark}
-                />
-              </div>
-            </article>
+                <span className="text-link text-[15px]">Read feature</span>
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
-      {/* 4. PRESS KIT BANNER (Figma: Press kit / node 42:1592) */}
-      <section className="w-full bg-surface border-t border-line">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-10 py-14 md:py-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-          <div className="flex flex-col gap-2.5 max-w-[640px]">
-            <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-none tracking-[-1.68px] text-ink">
-              Press kit
-            </h2>
-            <p className="font-dm-sans font-normal text-lg sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink-muted">
-              Logo, studio bio, portrait of Ar. Rashid Ali and project images (design visualisations). Press enquiries:{' '}
-              <a
-                href="mailto:hello@flowspacearchitects.com"
-                className="underline hover:text-ink text-ink transition-colors"
-              >
+      {/* Press kit */}
+      <section className="bg-plaster border-t border-line">
+        <div className="page-x py-14 md:py-16 grid-page gap-y-8 items-center">
+          <div className="col-span-12 lg:col-span-8">
+            <h2 className="label mb-3">Press kit</h2>
+            <p className="prose-serif text-[24px] sm:text-[30px] leading-[1.25] max-w-[40ch]">
+              Logo, studio bio, a portrait of Ar. Rashid Ali and project visualisations.
+            </p>
+            <p className="label mt-3">
+              Press enquiries:{' '}
+              <a href="mailto:hello@flowspacearchitects.com" className="text-link text-ink">
                 hello@flowspacearchitects.com
               </a>
             </p>
           </div>
 
-          {/* Magnetic Button (Motion annotation: on hover the button eases 4px toward the cursor) */}
-          <button
-            ref={buttonRef}
-            onClick={() => setIsPressKitOpen(true)}
-            onMouseMove={handleButtonMouseMove}
-            onMouseLeave={handleButtonMouseLeave}
-            style={{
-              transform: `translate3d(${buttonOffset.x}px, ${buttonOffset.y}px, 0)`,
-              transition: buttonOffset.x === 0 ? 'transform 0.3s ease-out' : 'transform 0.1s ease-out',
-            }}
-            className="inline-flex items-center gap-3.5 px-7 py-4.5 bg-ink text-lime text-[15px] font-medium tracking-[-0.075px] hover:bg-accent transition-colors cursor-pointer shrink-0"
-          >
-            <span>Download press kit</span>
-            <img alt="" className="size-4" src={ASSETS.iconArrowRightWhite} />
-          </button>
+          {/* Eases up to 4px toward the cursor on hover */}
+          <div className="col-span-12 lg:col-span-4 lg:justify-self-end">
+            <button
+              ref={buttonRef}
+              onClick={() => setIsPressKitOpen(true)}
+              onMouseMove={handleButtonMouseMove}
+              onMouseLeave={handleButtonMouseLeave}
+              aria-haspopup="dialog"
+              style={{
+                transform: `translate3d(${buttonOffset.x}px, ${buttonOffset.y}px, 0)`,
+                transition: buttonOffset.x === 0 ? 'transform 0.3s ease-out, background-color 0.2s' : 'transform 0.1s ease-out, background-color 0.2s',
+              }}
+              className="btn-solid"
+            >
+              Download press kit
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* 5. FLOATING WHATSAPP BUTTON (Figma: WhatsApp (fixed) / node 42:1647) */}
-      <a
-        href="https://wa.me/919447000000"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-8 right-6 md:right-10 z-40 bg-ink text-lime flex items-center gap-2.5 pl-4 pr-5 py-3 hover:bg-accent transition-all duration-300 group"
-        aria-label="Chat on WhatsApp"
-      >
-        <img alt="WhatsApp" className="size-5 shrink-0" src={ASSETS.iconWhatsapp} />
-        <span className="font-dm-sans font-medium text-[14px] sm:text-[15px] tracking-[-0.075px] whitespace-nowrap">
-          Chat on WhatsApp
-        </span>
-      </a>
-
-      {/* 6. FEATURE MODAL READER */}
+      {/* Feature reader */}
       {activeFeature && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-plaster w-full max-w-2xl my-8 p-6 sm:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in"
+          onClick={(e) => e.target === e.currentTarget && setActiveFeature(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="feature-title"
+            data-lenis-prevent
+            className="bg-plaster w-full max-w-2xl p-6 sm:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain"
+          >
             <button
+              ref={featureCloseRef}
               onClick={() => setActiveFeature(null)}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-stone-1 text-ink transition-colors cursor-pointer"
+              className="absolute top-5 right-5 p-2 text-ink hover:text-accent transition-colors"
               aria-label="Close"
             >
               <X size={22} />
             </button>
 
-            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-              {activeFeature.meta}
-            </span>
-
-            <h2 className="font-dm-sans font-medium text-3xl sm:text-4xl tracking-tight text-ink mt-2 mb-3 leading-tight">
+            <p className="label pr-10">{activeFeature.meta}</p>
+            <h2 id="feature-title" className="text-[28px] sm:text-[36px] leading-[1.1] tracking-[-0.03em] mt-2 mb-3 pr-10">
               {activeFeature.title}
             </h2>
-
-            <p className="font-dm-sans font-normal text-sm text-ink-muted mb-6">
-              {activeFeature.details.publication} · {activeFeature.details.date}
+            <p className="label mb-6">
+              {activeFeature.details.publication}, {activeFeature.details.date}
             </p>
 
             {activeFeature.image && (
-              <div className="w-full h-64 sm:h-80 overflow-hidden mb-6 bg-stone-1">
-                <img
-                  alt={activeFeature.title}
-                  className="size-full object-cover"
-                  src={activeFeature.image}
-                />
+              <div className="w-full aspect-[16/9] overflow-hidden mb-6 bg-stone-1">
+                <img alt="" className="size-full object-cover" src={activeFeature.image} />
               </div>
             )}
 
-            <div className="space-y-4 text-ink">
-              <p className="font-dm-sans font-normal text-lg sm:text-xl leading-relaxed text-ink/90 border-l-2 border-ink pl-4 italic">
-                {activeFeature.details.excerpt}
-              </p>
-
-              {activeFeature.details.body.map((para, i) => (
-                <p key={i} className="font-dm-sans font-normal text-[16px] leading-[1.6] text-ink/80">
-                  {para}
-                </p>
+            <div className="space-y-4">
+              <p className="prose-serif text-[20px] sm:text-[22px] leading-relaxed">{activeFeature.details.excerpt}</p>
+              {activeFeature.details.body.map((para) => (
+                <p key={para} className="text-[16px] leading-[1.65] text-ink/80">{para}</p>
               ))}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="mt-8 pt-6 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               {activeFeature.details.url ? (
-                <a
-                  href={activeFeature.details.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-[15px] font-medium text-ink hover:underline"
-                >
-                  <span>{activeFeature.details.linkText || 'Visit official feature'}</span>
-                  <ExternalLink size={16} />
+                <a href={activeFeature.details.url} target="_blank" rel="noopener noreferrer" className="text-link text-[15px]">
+                  {activeFeature.details.linkText || 'Visit the feature'}
+                  <ExternalLink size={14} aria-hidden />
                 </a>
               ) : (
-                <span className="text-sm text-ink-muted">Official press feature</span>
+                <span className="label">Printed feature</span>
               )}
-
-              <button
-                onClick={() => {
-                  setActiveFeature(null);
-                  onNavigate('contact');
-                }}
-                className="px-6 py-2.5 bg-ink text-lime text-[14px] font-medium hover:bg-accent transition-colors cursor-pointer"
-              >
-                Contact studio
-              </button>
+              <RouteLink to="contact" onNavigate={onNavigate} className="btn-solid">
+                Contact the studio
+              </RouteLink>
             </div>
           </div>
         </div>
       )}
 
-      {/* 7. PRESS KIT MODAL */}
+      {/* Press kit dialog */}
       {isPressKitOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-          <div className="bg-plaster w-full max-w-lg p-6 sm:p-8 shadow-2xl relative">
+        <div
+          className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in"
+          onClick={(e) => e.target === e.currentTarget && setIsPressKitOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="presskit-title"
+            data-lenis-prevent
+            className="bg-plaster w-full max-w-lg p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+          >
             <button
+              ref={pressKitCloseRef}
               onClick={() => setIsPressKitOpen(false)}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-stone-1 text-ink transition-colors cursor-pointer"
+              className="absolute top-5 right-5 p-2 text-ink hover:text-accent transition-colors"
               aria-label="Close"
             >
               <X size={20} />
             </button>
 
-            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-              Media Assets
-            </span>
-            <h3 className="font-dm-sans font-medium text-2xl sm:text-3xl tracking-tight text-ink mt-1 mb-2">
-              Flowspace Press Kit
-            </h3>
-            <p className="font-dm-sans font-normal text-sm text-ink-muted mb-6">
-              Curated media package for architectural journalists, design publications, and conference organizers.
+            <h2 id="presskit-title" className="text-[26px] sm:text-[30px] tracking-[-0.02em] mb-2 pr-10">
+              Press kit
+            </h2>
+            <p className="label leading-relaxed mb-6">
+              For journalists, publications and conference organisers.
             </p>
 
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3 p-3 bg-surface border border-line">
-                <FileText className="size-5 text-ink shrink-0" />
-                <div className="flex-1">
-                  <p className="text-[14px] font-medium text-ink">Studio Bio &amp; Founder Profile</p>
-                  <p className="text-[12px] text-ink-muted">PDF &amp; Markdown (Kerala &amp; Bengaluru studios)</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-surface border border-line">
-                <ImageIcon className="size-5 text-ink shrink-0" />
-                <div className="flex-1">
-                  <p className="text-[14px] font-medium text-ink">High-Resolution Visualisations</p>
-                  <p className="text-[12px] text-ink-muted">The Cloud House, Terra Villa &amp; Courtyard Studio</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-surface border border-line">
-                <Sparkles className="size-5 text-ink shrink-0" />
-                <div className="flex-1">
-                  <p className="text-[14px] font-medium text-ink">Brand Identity Pack</p>
-                  <p className="text-[12px] text-ink-muted">Flowspace emblem &amp; Didact wordmark (SVG/PNG)</p>
-                </div>
-              </div>
-            </div>
+            <ul className="border-b border-line mb-6">
+              {[
+                { Icon: FileText, title: 'Studio bio and founder profile', note: 'Wayanad and Bengaluru studios' },
+                { Icon: ImageIcon, title: 'High-resolution visualisations', note: 'The Cloud House, Terra Villa and Courtyard Studio' },
+                { Icon: Sparkles, title: 'Brand identity', note: 'Emblem and wordmark, SVG and PNG' },
+              ].map(({ Icon, title, note }) => (
+                <li key={title} className="flex items-start gap-3 py-3 border-t border-line">
+                  <Icon className="size-4 mt-1 text-ink-muted shrink-0" aria-hidden />
+                  <div>
+                    <p className="text-[15px]">{title}</p>
+                    <p className="label">{note}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
 
             {pressKitDownloaded ? (
-              <div className="py-4 text-center text-emerald-700 flex items-center justify-center gap-2 font-medium">
-                <Check size={18} />
-                <span>Press kit bundle downloaded!</span>
-              </div>
+              <p role="status" className="py-4 text-center text-accent flex items-center justify-center gap-2">
+                <Check size={18} aria-hidden />
+                Press kit downloaded
+              </p>
             ) : (
-              <button
-                onClick={handleDownloadPressKit}
-                className="w-full py-4 bg-ink text-lime font-medium text-[15px] hover:bg-accent transition-colors flex items-center justify-center gap-2.5 cursor-pointer"
-              >
-                <span>Download Media Package</span>
-                <Download size={16} />
+              <button onClick={handleDownloadPressKit} className="btn-solid w-full">
+                Download press kit
+                <Download size={16} aria-hidden />
               </button>
             )}
-
-            <p className="text-[12px] text-ink-muted text-center mt-3">
-              Direct press enquiries: <a href="mailto:hello@flowspacearchitects.com" className="underline text-ink">hello@flowspacearchitects.com</a>
-            </p>
           </div>
         </div>
       )}

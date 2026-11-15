@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RouteLink } from '../components/RouteLink';
 import { Aperture } from '../components/Aperture';
 import { getNextProject, getProject, type NavigateTarget } from '../data/projects';
 
@@ -111,7 +112,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate
         </a>
         <div className="mt-16 flex flex-wrap gap-8 text-[15px]">
           <a href="#/projects" className="text-link">All projects</a>
-          <button onClick={() => onNavigate('contact')} className="text-link">Discuss a similar project</button>
+          <RouteLink to="contact" onNavigate={onNavigate} className="text-link">Discuss a similar project</RouteLink>
         </div>
       </section>
     </article>

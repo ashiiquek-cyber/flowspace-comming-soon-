@@ -167,14 +167,14 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
 
                 <fieldset>
                   <legend className="label mb-3">Project type</legend>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-x-6 gap-y-3 text-[15px]">
                     {PROJECT_TYPES.map((type) => {
                       const checked = formData.projectType === type;
                       return (
                         <label
                           key={type}
-                          className={`cursor-pointer px-4 py-2 text-[14px] border transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent outline-offset-2 ${
-                            checked ? 'bg-ink text-lime border-ink' : 'border-line hover:border-ink'
+                          className={`cursor-pointer pb-0.5 border-b transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent outline-offset-4 ${
+                            checked ? 'text-ink border-ink' : 'text-ink-muted border-transparent hover:text-ink'
                           }`}
                         >
                           <input

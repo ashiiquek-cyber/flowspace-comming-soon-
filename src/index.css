@@ -6,7 +6,7 @@
   --color-lime: #ecebe5;
   --color-plaster: #f6f5f1;
   --color-ink: #1d201e;
-  --color-ink-muted: #6e736d;
+  --color-ink-muted: #5f645e;
   --color-line: #d2d1c9;
   --color-kadappa: #202421;
   --color-accent: #4b5b45;
@@ -45,9 +45,19 @@ body {
   outline-offset: 3px;
 }
 
-/* Hide the page scrollbar (scrolling still works) */
-html { scrollbar-width: none; -ms-overflow-style: none; }
-html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+/* Moss is about 2:1 on the dark grounds; switch the ring to limewash there */
+footer :focus-visible,
+.bg-kadappa :focus-visible,
+.bg-ink :focus-visible {
+  outline-color: var(--color-lime);
+}
+
+/* A quiet scrollbar in the stone palette: visitors keep their sense of length and place */
+/* Chrome and Firefox use scrollbar-color; the -webkit rules only reach Safari. Same thumb in both. */
+html { scrollbar-width: thin; scrollbar-color: #a9a8a0 var(--color-lime); }
+html::-webkit-scrollbar { width: 10px; }
+html::-webkit-scrollbar-track { background: var(--color-lime); }
+html::-webkit-scrollbar-thumb { background: #a9a8a0; border: 3px solid var(--color-lime); border-radius: 10px; }
 
 /* Lenis */
 html.lenis, html.lenis body { height: auto; }

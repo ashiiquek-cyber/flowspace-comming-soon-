@@ -1,11 +1,10 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ASSETS } from '../constants/assets';
-import { ProjectReel } from '../components/ProjectReel';
+import { Aperture } from '../components/Aperture';
+import { RouteLink } from '../components/RouteLink';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
-import { MovingEmblem } from '../components/Brand';
-import { setHeroState } from '../lib/heroSignal';
 import { RESEARCH_DATA } from '../data/research';
 
 interface LandingPageProps {
@@ -36,14 +35,21 @@ const TESTIMONIALS = [
   },
 ];
 
-// Durations on a shared axis, in months from the first site visit
+// Positions in months from the first site visit; durations are written as lengths so they never fight the axis
 const PROCESS = [
-  { title: 'Site visit and brief', body: 'We walk the plot with you, listen to how your family lives, and agree a budget before a single line is drawn.', duration: 'Weeks 1–2', start: 0, end: 0.5 },
-  { title: 'Concept and form', body: 'Climate orientation, spatial flow diagrams, and 3D massing presented with tangible material samples.', duration: 'Weeks 3–6', start: 0.5, end: 1.5 },
-  { title: 'Detailing and approvals', body: 'Complete structural, electrical, and plumbing documentation alongside municipality clearances in Kerala and Karnataka.', duration: 'Months 2–3', start: 1.5, end: 3 },
-  { title: 'Realization', body: 'Periodic on-site supervision, artisan collaboration, and handover with full post-occupancy care.', duration: 'Months 4–14', start: 3, end: 14 },
+  { title: 'Site visit and brief', body: 'We walk the plot with you, listen to how your family lives, and agree a budget before a single line is drawn.', duration: '2 weeks', start: 0, end: 0.5 },
+  { title: 'Concept and form', body: 'Climate orientation, spatial flow diagrams, and 3D massing presented with tangible material samples.', duration: '4 weeks', start: 0.5, end: 1.5 },
+  { title: 'Detailing and approvals', body: 'Complete structural, electrical, and plumbing documentation alongside municipality clearances in Kerala and Karnataka.', duration: '6 weeks', start: 1.5, end: 3 },
+  { title: 'Realization', body: 'Periodic on-site supervision, artisan collaboration, and handover with full post-occupancy care.', duration: '11 months', start: 3, end: 14 },
 ];
 const PROCESS_SPAN = 14;
+// Design and approvals (months 0–3) get the left half of the bar and building the right half:
+// on one linear scale the first two steps were only a few pixels wide
+const PROCESS_BREAK = 3;
+const processX = (month: number) =>
+  month <= PROCESS_BREAK
+    ? (month / PROCESS_BREAK) * 50
+    : 50 + ((month - PROCESS_BREAK) / (PROCESS_SPAN - PROCESS_BREAK)) * 50;
 
 const FAQS = [
   { q: 'How long does it take to design and build a house?', a: 'Typically 12 to 18 months depending on scale. Concept and approvals take 3–4 months, with 9–14 months of supervised construction.' },
@@ -53,15 +59,23 @@ const FAQS = [
 ];
 
 const JOURNAL = [
-  { title: 'How much does it cost to build a house in Wayanad in 2026?', date: 'Oct 2026', target: 'article' as NavigateTarget },
-  { title: 'Designing a Kerala home for the monsoon: slope, roof overhangs and stone', date: 'Sep 2026', target: 'journal' as NavigateTarget },
-  { title: 'Building permits in Kerala, step by step: from panchayat to occupancy', date: 'Aug 2026', target: 'journal' as NavigateTarget },
+  // The cost guide has its own page; the others open in the Journal's reader
+  { title: 'How much does it cost to build a house in Wayanad in 2026?', date: 'Oct 2026', href: '#/article' },
+  { title: 'Designing a Kerala home for the monsoon: slope, roof overhangs and stone', date: 'Sep 2026', href: '#/journal/kerala-monsoon-design' },
+  { title: 'Building permits in Kerala, step by step: from panchayat to occupancy', date: 'Aug 2026', href: '#/journal/kerala-building-permits' },
 ];
 
 const PLACES = {
   wayanad: ['Kalpetta', 'Meppadi', 'Vythiri', 'Sulthan Bathery', 'Mananthavady', 'Panamaram', 'Ambalavayal', 'Pulpally', 'Meenangadi'],
   bengaluru: ['Jayanagar', 'JP Nagar', 'Basavanagudi', 'Banashankari', 'BTM Layout', 'HSR Layout', 'Koramangala'],
 };
+
+// Selected work on the home page: wide, then narrow and offset right, then wide again
+const WORK_LAYOUT = [
+  { col: 'md:col-span-9', aspect: 'aspect-[4/3] md:aspect-[16/10]', wide: true },
+  { col: 'md:col-start-7 md:col-span-5', aspect: 'aspect-[4/5]', wide: false },
+  { col: 'md:col-start-2 md:col-span-10', aspect: 'aspect-[4/3] md:aspect-[16/9]', wide: true },
+];
 
 const HEADLINE = ['Spaces that speak', 'for themselves.'];
 const HEADLINE_NARROW = ['Spaces that', 'speak for', 'themselves.'];
@@ -74,123 +88,29 @@ const Hero: React.FC = () => {
 
   useLayoutEffect(() => {
     if (reduced || !rootRef.current) return;
-    const root = rootRef.current;
-    const navEmblem = document.querySelector<HTMLElement>('[data-nav-emblem]');
-    const navWordmark = document.querySelector<HTMLElement>('[data-nav-wordmark]');
-    const header = document.querySelector<HTMLElement>('header');
-
-    // Before first paint: the emblem is centre stage, the navbar waits for it
-    setHeroState({ docked: false, gathered: false }, false);
-
     const ctx = gsap.context(() => {
-      // The entrance runs on the wrapper so it never fights the dock over the emblem's own opacity and scale
-      gsap.from('[data-hero-emblem-wrap]', { autoAlpha: 0, scale: 0.94, duration: 1.4, ease: 'expo.out', delay: 0.1 });
-
-      // Where the navbar's emblem sits, relative to the centre of the (unscrolled) hero
-      const dock = () => {
-        const nav = navEmblem!.getBoundingClientRect();
-        const top = header ? header.getBoundingClientRect().top : 0;
-        const big = root.querySelector<HTMLElement>('[data-hero-emblem]')!;
-        return {
-          x: nav.left + nav.width / 2 - root.clientWidth / 2,
-          y: nav.top - top + nav.height / 2 - root.clientHeight / 2,
-          scale: nav.width / big.offsetWidth,
-        };
-      };
-
-      // How far the intro line drops to sit in the bottom-left corner before the dock
-      const liftFrom = () => {
-        const line = root.querySelector<HTMLElement>('[data-hero-fade]')!;
-        const bottomGap = window.innerWidth >= 768 ? 32 : 24;
-        return root.clientHeight - bottomGap - (line.offsetTop + line.offsetHeight);
-      };
+      // On load: the headline rises line by line beside the small courtyard window
+      gsap.from('[data-hero-line]', { yPercent: 105, duration: 0.9, ease: 'expo.out', stagger: 0.08, delay: 0.15 });
+      gsap.from('[data-hero-intro], [data-hero-pre]', { autoAlpha: 0, duration: 0.9, ease: 'power2.out', delay: 0.5 });
 
       const mm = gsap.matchMedia();
       mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
         const { desktop } = c.conditions as { desktop: boolean };
         const opening = desktop ? 'inset(12% 11% 38% 61% round 0px)' : 'inset(57% 6% 7% 36% round 0px)';
-        gsap.set('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' });
-        if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { autoAlpha: 0 });
 
-        // Stage 1 is played, not scrubbed: the first nudge of the wheel docks the emblem
-        // and lifts the intro line from the bottom-left corner to its place under the bar
-        const DOCKED_AT = 0.9;
-        const dockTl = gsap.timeline({ paused: true, defaults: { ease: 'power3.inOut' } });
-        dockTl
-          .fromTo('[data-hero-emblem]', { x: 0, y: 0, scale: 1 }, { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, duration: DOCKED_AT }, 0)
-          .fromTo('[data-hero-fade]', { y: () => liftFrom() }, { y: 0, duration: DOCKED_AT }, 0);
-        // The hand-over swaps are explicit fromTo pairs rather than .set(), which would restore whatever
-        // opacity it happened to record (mid-entrance, or hidden after a refresh while docked) on the way back.
-        // Their start values render up front (they match the page as it loads), so an invalidate can't leave
-        // them uninitialised and skipped on the way back
-        if (navEmblem && navWordmark) {
-          const swap = { duration: 0.01, ease: 'none' };
-          dockTl
-            .fromTo('[data-hero-emblem]', { autoAlpha: 1 }, { autoAlpha: 0, ...swap }, DOCKED_AT)
-            .fromTo(navEmblem, { autoAlpha: 0 }, { autoAlpha: 1, ...swap }, DOCKED_AT)
-            .fromTo(navWordmark, { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, duration: 0.3, ease: 'power2.out' }, DOCKED_AT);
-        }
-        dockTl.eventCallback('onComplete', () => setHeroState({ docked: true }));
-
-        // Timeline units: 0–0.8 headline and window arrive, 0.9–1.9 window opens
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: root,
-            start: 'top top',
-            end: '+=190%',
-            scrub: 0.8,
-            pin: true,
-            pinSpacing: true,
-            invalidateOnRefresh: true,
-            onToggle: (self) => setHeroState({ active: self.isActive }),
-            onUpdate: (self) => {
-              // The navbar links gather alongside the emblem's flight, so signal at the start
-              if (self.scroll() - self.start > 1) {
-                if (dockTl.reversed() || dockTl.progress() === 0) {
-                  setHeroState({ gathered: true });
-                  dockTl.play();
-                }
-              } else if (dockTl.progress() > 0 && !dockTl.reversed()) {
-                setHeroState({ docked: false, gathered: false });
-                dockTl.reverse();
-              }
-            },
-            // Re-measure both ends of the dock; the round trip forces a render at the current spot
-            onRefresh: () => {
-              const p = dockTl.progress();
-              dockTl.invalidate().progress(p === 1 ? 0 : 1, true).progress(p, true);
-            },
-          },
-        });
-
-        // The full-bleed courtyard settles back into its small window; the scrim lifts as it goes
-        tl.fromTo('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: opening, ease: 'power2.inOut', duration: 0.9 }, 0)
-          .fromTo('[data-hero-image]', { scale: 1 }, { scale: 1.22, ease: 'power2.inOut', duration: 0.9 }, 0)
-          .to('[data-hero-scrim]', { autoAlpha: 0, duration: 0.9, ease: 'power1.inOut' }, 0)
-          .to('[data-hero-post]', { autoAlpha: 0, duration: 0.2 }, 0)
-          .fromTo('[data-hero-emblem], [data-hero-fade]', { color: '#ffffff' }, { color: '#1d201e', duration: 0.9, ease: 'power1.inOut' }, 0)
-          // The headline stays out of the opening view and arrives once the window has settled
-          .fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0.5)
-          .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.7);
-
-        // Stage 2: the courtyard opening widens to the full sky
-        const S2 = 1.1;
-        tl.to('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut', duration: 1 }, S2)
-          .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1, ease: 'power2.inOut', duration: 1 }, S2)
-          .to('[data-hero-copy]', { yPercent: -40, autoAlpha: 0, ease: 'power1.in', duration: 0.45 }, S2)
-          .to('[data-hero-pre]', { autoAlpha: 0, duration: 0.2 }, S2)
-          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.25 }, S2 + 0.75);
-
-        return () => {
-          if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { clearProps: 'all' });
-        };
+        // One move on scroll: the window opens to the full sky while the headline lifts away
+        gsap.timeline({
+          defaults: { ease: 'power2.inOut' },
+          scrollTrigger: { trigger: rootRef.current, start: 'top top', end: '+=70%', scrub: 0.6, pin: true, pinSpacing: true },
+        })
+          .fromTo('[data-hero-aperture]', { clipPath: opening }, { clipPath: 'inset(0% 0% 0% 0% round 0px)', duration: 1 }, 0)
+          .fromTo('[data-hero-image]', { scale: 1.15 }, { scale: 1, duration: 1 }, 0)
+          .to('[data-hero-copy]', { yPercent: -30, autoAlpha: 0, ease: 'power1.in', duration: 0.5 }, 0)
+          .to('[data-hero-pre]', { autoAlpha: 0, duration: 0.2 }, 0)
+          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.25 }, 0.75);
       });
     }, rootRef);
-
-    return () => {
-      ctx.revert();
-      setHeroState({ active: false, docked: true, gathered: true }, false);
-    };
+    return () => ctx.revert();
   }, [reduced]);
 
   if (reduced) {
@@ -205,7 +125,7 @@ const Hero: React.FC = () => {
           </h1>
         </div>
         <div className="relative h-[80svh]">
-          <img src={ASSETS.heroBg} alt="Double-height living room opening onto a garden courtyard" className="absolute inset-0 size-full object-cover" />
+          <img src={ASSETS.heroBg} alt="Double-height living room opening onto a garden courtyard" className="absolute inset-0 size-full object-cover object-[22%_50%] md:object-center" />
         </div>
       </section>
     );
@@ -213,25 +133,24 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={rootRef} className="relative h-[100svh] overflow-hidden bg-lime" aria-label="Introduction">
-      {/* Aperture: the full-bleed image, clipped to a small opening at first */}
-      <div data-hero-aperture className="absolute inset-0 will-change-[clip-path]">
-        <div data-hero-frame className="absolute inset-0 overflow-hidden">
-          <img
-            data-hero-image
-            src={ASSETS.heroBg}
-            alt="Double-height living room opening onto a garden courtyard"
-            {...{ fetchpriority: 'high' }}
-            className="absolute left-0 top-0 w-[112%] h-[112%] max-w-none object-cover origin-top-left"
-          />
-          <div data-hero-scrim className="absolute inset-0 bg-black/50" />
-        </div>
-        <p data-hero-post className="absolute left-[var(--gutter)] bottom-6 md:bottom-8 text-[13px] text-lime opacity-0[text-shadow:0_1px_12px_rgba(0,0,0,0.35)]">
+      {/* Aperture: the full-bleed image, clipped to a small opening until the visitor scrolls */}
+      <div data-hero-aperture className="absolute inset-0 will-change-[clip-path] [clip-path:inset(57%_6%_7%_36%)] md:[clip-path:inset(12%_11%_38%_61%)]">
+        <img
+          data-hero-image
+          src={ASSETS.heroBg}
+          alt="Double-height living room opening onto a garden courtyard"
+          {...{ fetchpriority: 'high' }}
+          className="absolute inset-0 size-full object-cover object-[22%_50%] md:object-center"
+        />
+        {/* A soft foot shadow only, so the caption reads without dimming the render */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/45 to-transparent" />
+        <p data-hero-post className="absolute left-[var(--gutter)] bottom-6 md:bottom-8 text-[13px] text-white opacity-0 [text-shadow:0_1px_12px_rgba(0,0,0,0.35)]">
           Courtyard residence, Wayanad. Design visualisation.
         </p>
       </div>
 
       <div data-hero-copy className="relative z-10 h-full page-x pt-[96px] md:pt-[120px] pb-8 md:pb-10 flex flex-col justify-between pointer-events-none">
-        <p data-hero-fade className="label max-w-[30ch] md:max-w-[34ch] text-ink">
+        <p data-hero-intro className="label max-w-[30ch] md:max-w-[34ch]">
           Architecture, interiors and landscape from Kalpetta, Wayanad and Jayanagar, Bengaluru. Led by Chief Architect Ar.&nbsp;Rashid&nbsp;Ali.
         </p>
         <h1 className="display text-[16vw] md:text-[9.6vw] max-md:mb-[44svh]">
@@ -248,13 +167,6 @@ const Hero: React.FC = () => {
       <p data-hero-pre className="hidden md:block absolute z-10 left-[61%] top-[calc(62%+0.75rem)] label">
         Courtyard residence, Wayanad
       </p>
-
-      {/* The emblem, centre stage until it docks in the navbar */}
-      <div data-hero-emblem-wrap className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" aria-hidden="true">
-        <span data-hero-emblem className="block text-ink will-change-transform">
-          <MovingEmblem className="size-[min(38svh,64vw)]" />
-        </span>
-      </div>
     </section>
   );
 };
@@ -277,7 +189,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           <h2 id="studio-heading" className="col-span-12 md:col-span-3 label pt-2">The studio</h2>
           <div className="col-span-12 md:col-span-9 lg:col-span-8">
             <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">
-              A space should speak for itself, without any description. We let form follow function, and function follow the people who live in it.
+              We design for the climate first: deep eaves for the monsoon, courtyards that pull air through, and stone and timber from within a day’s drive of the site.
             </p>
             <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
               Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, designing homes, workplaces and interiors from Wayanad and Bengaluru.
@@ -305,21 +217,52 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
       {/* Selected work */}
       <section className="pb-28 md:pb-44" aria-labelledby="work-heading">
-        <div className="page-x grid-page items-end mb-12 md:mb-20">
-          <h2 id="work-heading" className="col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">Selected work</h2>
-          <a href="#/projects" className="col-span-4 justify-self-end text-link text-[15px] mb-2">All projects ({PROJECTS_DATA.length})</a>
+        <div className="page-x grid-page items-baseline mb-10 md:mb-14">
+          <h2 id="work-heading" className="col-span-6 md:col-span-3 label">Selected work</h2>
+          <a href="#/projects" className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px] whitespace-nowrap">All projects ({PROJECTS_DATA.length})</a>
         </div>
 
-        <ProjectReel projects={PROJECTS_DATA.slice(0, 4)} />
+        {/* Wide, narrow and offset, wide: unequal frames give rhythm; captions sit below, never on the image */}
+        <ul className="page-x grid-page gap-y-20 md:gap-y-32">
+          {PROJECTS_DATA.slice(0, 3).map((project, i) => {
+            const layout = WORK_LAYOUT[i];
+            return (
+              <li key={project.id} className={`col-span-12 ${layout.col}`}>
+                <a href={`#/project/${project.id}`} className="group block">
+                  <Aperture
+                    src={project.image}
+                    alt={project.title}
+                    focus={project.focus}
+                    className={layout.aspect}
+                    imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]"
+                  />
+                  <div className={`mt-5 grid grid-cols-1 gap-x-10 gap-y-3 ${layout.wide ? 'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]' : ''}`}>
+                    <div>
+                      <div className="flex items-baseline justify-between gap-4">
+                        <h3 className="text-[22px] md:text-[26px] tracking-tight transition-colors group-hover:text-accent">{project.title}</h3>
+                        <span className="label tabular-nums sm:hidden">{project.year}</span>
+                      </div>
+                      <p className="label mt-1">{project.location}<span className="max-sm:hidden">, {project.year}</span></p>
+                    </div>
+                    <p className="prose-serif text-[18px] md:text-[20px] leading-[1.35] max-w-[42ch]">{project.description}</p>
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
-      {/* Process: a real sequence, drawn on a shared fourteen-month axis */}
+      {/* Process: a real sequence on a shared axis, with the design months drawn larger */}
       <section className="page-x pb-28 md:pb-44" aria-labelledby="process-heading">
-        <div className="grid-page gap-y-6 mb-12 md:mb-16">
-          <h2 id="process-heading" className="col-span-12 md:col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">From idea to built form</h2>
-          <p className="col-span-12 md:col-span-4 md:self-end text-[15px] text-ink-muted max-w-[38ch]">
-            A typical house takes about fourteen months from first site visit to handover. Most of that is building.
-          </p>
+        <div className="grid-page gap-y-10 mb-14 md:mb-20">
+          <h2 id="process-heading" className="col-span-12 md:col-span-3 label pt-2">Process</h2>
+          <div className="col-span-12 md:col-span-9 lg:col-span-8">
+            <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">From idea to built form.</p>
+            <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
+              A typical house takes about fourteen months from first site visit to handover. Most of that is building.
+            </p>
+          </div>
         </div>
 
         <ol>
@@ -332,19 +275,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               </div>
               <p className="col-span-11 col-start-2 md:col-span-4 text-[15px] leading-relaxed text-ink-muted max-w-[46ch]">{step.body}</p>
               <div className="col-span-11 col-start-2 md:col-span-4 md:self-center relative h-2 mt-2 md:mt-0" aria-hidden="true">
-                <div className="absolute inset-y-[3px] left-0 right-0 bg-stone-1" />
+                {/* Two track segments with a gap at the scale change */}
+                <div className="absolute inset-y-[3px] left-0 right-[calc(50%+3px)] bg-stone-1" />
+                <div className="absolute inset-y-[3px] left-[calc(50%+3px)] right-0 bg-stone-1" />
                 <div
                   className="absolute inset-y-0 bg-ink"
-                  style={{ left: `${(step.start / PROCESS_SPAN) * 100}%`, width: `${((step.end - step.start) / PROCESS_SPAN) * 100}%` }}
+                  style={{ left: `${processX(step.start)}%`, width: `${processX(step.end) - processX(step.start)}%` }}
                 />
               </div>
             </li>
           ))}
         </ol>
         <div className="grid-page" aria-hidden="true">
-          <div className="col-span-11 col-start-2 md:col-start-9 md:col-span-4 flex justify-between label border-t border-line pt-2">
-            <span>Month 0</span><span>7</span><span>14</span>
+          <div className="col-span-11 col-start-2 md:col-start-9 md:col-span-4 relative h-7 label border-t border-line">
+            <span className="absolute left-0 top-2">Start</span>
+            <span className="absolute left-1/2 top-2 -translate-x-1/2">Month 3</span>
+            <span className="absolute right-0 top-2">Month 14</span>
           </div>
+          <p className="col-span-11 col-start-2 md:col-start-9 md:col-span-4 label mt-2">
+            The first three months are drawn at a larger scale.
+          </p>
         </div>
       </section>
 
@@ -389,18 +339,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
       {/* Research */}
       <section className="page-x pb-28 md:pb-44" aria-labelledby="research-heading">
-        <div className="grid-page items-end mb-10 md:mb-14">
-          <h2 id="research-heading" className="col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">Research</h2>
-          <a href="#/research" className="col-span-4 justify-self-end text-link text-[15px] mb-2">All research</a>
+        <div className="grid-page items-baseline mb-10 md:mb-14">
+          <h2 id="research-heading" className="col-span-6 md:col-span-3 label">Research</h2>
+          <a href="#/research" className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px]">All research</a>
         </div>
         <ul className="grid-page gap-y-10">
           {RESEARCH_DATA.slice(0, 3).map((r) => (
             <li key={r.id} className="col-span-12 md:col-span-4">
-              <a href="#/research" className="group block">
+              <a href={`#/research/${r.id}`} className="group block">
                 <div className="aspect-[4/3] overflow-hidden bg-line">
                   <img src={r.image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]" />
                 </div>
-                <p className="label mt-4">{r.type} · {r.year}</p>
+                <p className="label mt-4">{r.type}, {r.year}</p>
                 <h3 className="mt-2 text-[20px] sm:text-[22px] leading-[1.2] tracking-tight transition-colors group-hover:text-accent">{r.title}</h3>
               </a>
             </li>
@@ -410,14 +360,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
       {/* Journal */}
       <section className="page-x pb-28 md:pb-44" aria-labelledby="journal-heading">
-        <div className="grid-page items-end mb-10 md:mb-14">
-          <h2 id="journal-heading" className="col-span-8 display text-[44px] sm:text-[64px] lg:text-[88px]">Journal</h2>
-          <a href="#/journal" className="col-span-4 justify-self-end text-link text-[15px] mb-2">All articles</a>
+        <div className="grid-page items-baseline mb-10 md:mb-14">
+          <h2 id="journal-heading" className="col-span-6 md:col-span-3 label">Journal</h2>
+          <a href="#/journal" className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px]">All articles</a>
         </div>
         <ul className="border-b border-line">
           {JOURNAL.map((item) => (
             <li key={item.title} className="border-t border-line">
-              <a href={`#/${item.target}`} className="group grid-page gap-y-2 py-6 md:py-8 items-baseline">
+              <a href={item.href} className="group grid-page gap-y-2 py-6 md:py-8 items-baseline">
                 <span className="col-span-12 md:col-span-3 label">{item.date}</span>
                 <span className="col-span-12 md:col-span-9 text-[22px] sm:text-[28px] lg:text-[32px] leading-[1.2] tracking-tight transition-colors group-hover:text-accent">
                   {item.title}
@@ -436,7 +386,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             <p className="mt-6 text-[15px] text-ink-muted max-w-[30ch] leading-relaxed">
               Happy to talk on a call, or welcome you to our studios in Kalpetta or Jayanagar.
             </p>
-            <button onClick={() => onNavigate('contact')} className="text-link mt-4 text-[15px]">Get in touch</button>
+            <RouteLink to="contact" onNavigate={onNavigate} className="text-link mt-4 text-[15px]">Get in touch</RouteLink>
           </div>
           <div className="col-span-12 md:col-span-9 border-b border-line">
             {FAQS.map((faq, i) => {
