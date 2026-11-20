@@ -1,8 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { Flip } from 'gsap/Flip';
 import { MovingEmblem, Wordmark } from './Brand';
 import { useSmoothScroll } from '../context/SmoothScrollContext';
+import { HERO_EVENT, getHeroState } from '../lib/heroSignal';
 import { RouteLink } from './RouteLink';
 import type { NavigateTarget, Page } from '../data/projects';
+
+gsap.registerPlugin(Flip);
 
 interface NavbarProps {
   currentPage: Page;
@@ -23,8 +28,36 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isScrolled, direction, lenis } = useSmoothScroll();
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const flipState = useRef<Flip.FlipState | null>(null);
+  const [hero, setHero] = useState(getHeroState);
 
-  const hidden = isScrolled && direction === 1 && !menuOpen;
+  // The home hero tells us when its emblem sets off; links slide right with a FLIP move.
+  // Layout effect so the listener exists before the hero's own first-paint signal.
+  useLayoutEffect(() => {
+    setHero(getHeroState());
+    const onHero = (e: Event) => {
+      const next = getHeroState();
+      const animate = (e as CustomEvent<{ animate: boolean }>).detail?.animate;
+      if (animate && navRef.current && next.gathered !== hero.gathered) {
+        flipState.current = Flip.getState(navRef.current.children);
+      }
+      setHero(next);
+    };
+    window.addEventListener(HERO_EVENT, onHero);
+    return () => window.removeEventListener(HERO_EVENT, onHero);
+  }, [hero.gathered]);
+
+  const spread = currentPage === 'home' && !hero.gathered;
+
+  // Same length and ease as the emblem's flight, so the two move as one
+  useLayoutEffect(() => {
+    if (!flipState.current) return;
+    Flip.from(flipState.current, { duration: 0.9, ease: 'power3.inOut' });
+    flipState.current = null;
+  }, [spread]);
+
+  const hidden = isScrolled && direction === 1 && !menuOpen && !hero.active;
 
   // Sticky sub-bars (e.g. project filters) dock under the header while it is showing
   useEffect(() => {
@@ -56,7 +89,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
         className={`fixed inset-x-0 top-0 z-50 transition-[transform,background-color,border-color] duration-500 ease-out-expo ${
           hidden ? '-translate-y-full' : 'translate-y-0'
         } ${
-          isScrolled && !menuOpen
+          // Stay see-through while the hero emblem is still flying up into the bar
+          isScrolled && !menuOpen && !(hero.active && !hero.docked)
             ? 'bg-lime/70 backdrop-blur-md border-b border-line'
             : 'bg-transparent border-b border-transparent'
         }`}
@@ -68,11 +102,19 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             className="flex items-center gap-3 text-ink"
             aria-label="Flowspace Architects, home"
           >
-            <MovingEmblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
-            <Wordmark className="block" />
+            <span data-nav-emblem className="block">
+              <MovingEmblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
+            </span>
+            <span data-nav-wordmark className="block"><Wordmark className="block" /></span>
           </RouteLink>
 
-          <nav aria-label="Primary" className="hidden lg:flex items-center gap-10 xl:gap-12 text-[15px]">
+          <nav
+            ref={navRef}
+            aria-label="Primary"
+            className={`hidden lg:flex items-center text-[15px] ${
+              spread ? 'absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] justify-between' : 'gap-10 xl:gap-12'
+            }`}
+          >
             {NAV_LINKS.map((link) => {
               const active = link.match.includes(currentPage);
               return (

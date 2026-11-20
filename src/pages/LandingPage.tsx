@@ -6,6 +6,8 @@ import { RouteLink } from '../components/RouteLink';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
 import { RESEARCH_DATA } from '../data/research';
+import { MovingEmblem } from '../components/Brand';
+import { setHeroState } from '../lib/heroSignal';
 
 const SunStudy = lazy(() => import('../components/SunStudy'));
 
@@ -90,29 +92,123 @@ const Hero: React.FC = () => {
 
   useLayoutEffect(() => {
     if (reduced || !rootRef.current) return;
+    const root = rootRef.current;
+    const navEmblem = document.querySelector<HTMLElement>('[data-nav-emblem]');
+    const navWordmark = document.querySelector<HTMLElement>('[data-nav-wordmark]');
+    const header = document.querySelector<HTMLElement>('header');
+
+    // Before first paint: the emblem is centre stage, the navbar waits for it
+    setHeroState({ docked: false, gathered: false }, false);
+
     const ctx = gsap.context(() => {
-      // On load: the headline rises line by line beside the small courtyard window
-      gsap.from('[data-hero-line]', { yPercent: 105, duration: 0.9, ease: 'expo.out', stagger: 0.08, delay: 0.15 });
-      gsap.from('[data-hero-intro], [data-hero-pre]', { autoAlpha: 0, duration: 0.9, ease: 'power2.out', delay: 0.5 });
+      // The entrance runs on the wrapper so it never fights the dock over the emblem's own opacity and scale
+      gsap.from('[data-hero-emblem-wrap]', { autoAlpha: 0, scale: 0.94, duration: 1.4, ease: 'expo.out', delay: 0.1 });
+
+      // Where the navbar's emblem sits, relative to the centre of the (unscrolled) hero
+      const dock = () => {
+        const nav = navEmblem!.getBoundingClientRect();
+        const top = header ? header.getBoundingClientRect().top : 0;
+        const big = root.querySelector<HTMLElement>('[data-hero-emblem]')!;
+        return {
+          x: nav.left + nav.width / 2 - root.clientWidth / 2,
+          y: nav.top - top + nav.height / 2 - root.clientHeight / 2,
+          scale: nav.width / big.offsetWidth,
+        };
+      };
+
+      // How far the intro line drops to sit in the bottom-left corner before the dock
+      const liftFrom = () => {
+        const line = root.querySelector<HTMLElement>('[data-hero-fade]')!;
+        const bottomGap = window.innerWidth >= 768 ? 32 : 24;
+        return root.clientHeight - bottomGap - (line.offsetTop + line.offsetHeight);
+      };
 
       const mm = gsap.matchMedia();
       mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
         const { desktop } = c.conditions as { desktop: boolean };
         const opening = desktop ? 'inset(12% 11% 38% 61% round 0px)' : 'inset(57% 6% 7% 36% round 0px)';
+        gsap.set('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' });
+        if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { autoAlpha: 0 });
 
-        // One move on scroll: the window opens to the full sky while the headline lifts away
-        gsap.timeline({
-          defaults: { ease: 'power2.inOut' },
-          scrollTrigger: { trigger: rootRef.current, start: 'top top', end: '+=70%', scrub: 0.6, pin: true, pinSpacing: true },
-        })
-          .fromTo('[data-hero-aperture]', { clipPath: opening }, { clipPath: 'inset(0% 0% 0% 0% round 0px)', duration: 1 }, 0)
-          .fromTo('[data-hero-image]', { scale: 1.15 }, { scale: 1, duration: 1 }, 0)
-          .to('[data-hero-copy]', { yPercent: -30, autoAlpha: 0, ease: 'power1.in', duration: 0.5 }, 0)
-          .to('[data-hero-pre]', { autoAlpha: 0, duration: 0.2 }, 0)
-          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.25 }, 0.75);
+        // Stage 1 is played, not scrubbed: the first nudge of the wheel docks the emblem
+        // and lifts the intro line from the bottom-left corner to its place under the bar
+        const DOCKED_AT = 0.9;
+        const dockTl = gsap.timeline({ paused: true, defaults: { ease: 'power3.inOut' } });
+        dockTl
+          .fromTo('[data-hero-emblem]', { x: 0, y: 0, scale: 1 }, { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, duration: DOCKED_AT }, 0)
+          .fromTo('[data-hero-fade]', { y: () => liftFrom() }, { y: 0, duration: DOCKED_AT }, 0);
+        // The hand-over swaps are explicit fromTo pairs rather than .set(), which would restore whatever
+        // opacity it happened to record (mid-entrance, or hidden after a refresh while docked) on the way back.
+        // Their start values render up front (they match the page as it loads), so an invalidate can't leave
+        // them uninitialised and skipped on the way back
+        if (navEmblem && navWordmark) {
+          const swap = { duration: 0.01, ease: 'none' };
+          dockTl
+            .fromTo('[data-hero-emblem]', { autoAlpha: 1 }, { autoAlpha: 0, ...swap }, DOCKED_AT)
+            .fromTo(navEmblem, { autoAlpha: 0 }, { autoAlpha: 1, ...swap }, DOCKED_AT)
+            .fromTo(navWordmark, { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, duration: 0.3, ease: 'power2.out' }, DOCKED_AT);
+        }
+        dockTl.eventCallback('onComplete', () => setHeroState({ docked: true }));
+
+        // Timeline units: 0–0.8 headline and window arrive, 0.9–1.9 window opens
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: root,
+            start: 'top top',
+            end: '+=190%',
+            scrub: 0.8,
+            pin: true,
+            pinSpacing: true,
+            invalidateOnRefresh: true,
+            onToggle: (self) => setHeroState({ active: self.isActive }),
+            onUpdate: (self) => {
+              // The navbar links gather alongside the emblem's flight, so signal at the start
+              if (self.scroll() - self.start > 1) {
+                if (dockTl.reversed() || dockTl.progress() === 0) {
+                  setHeroState({ gathered: true });
+                  dockTl.play();
+                }
+              } else if (dockTl.progress() > 0 && !dockTl.reversed()) {
+                setHeroState({ docked: false, gathered: false });
+                dockTl.reverse();
+              }
+            },
+            // Re-measure both ends of the dock; the round trip forces a render at the current spot
+            onRefresh: () => {
+              const p = dockTl.progress();
+              dockTl.invalidate().progress(p === 1 ? 0 : 1, true).progress(p, true);
+            },
+          },
+        });
+
+        // The full-bleed courtyard settles back into its small window; the scrim lifts as it goes
+        tl.fromTo('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: opening, ease: 'power2.inOut', duration: 0.9 }, 0)
+          .fromTo('[data-hero-image]', { scale: 1 }, { scale: 1.22, ease: 'power2.inOut', duration: 0.9 }, 0)
+          .to('[data-hero-scrim]', { autoAlpha: 0, duration: 0.9, ease: 'power1.inOut' }, 0)
+          .to('[data-hero-post]', { autoAlpha: 0, duration: 0.2 }, 0)
+          .fromTo('[data-hero-emblem], [data-hero-fade]', { color: '#ffffff' }, { color: '#1d201e', duration: 0.9, ease: 'power1.inOut' }, 0)
+          // The headline stays out of the opening view and arrives once the window has settled
+          .fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0.5)
+          .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.7);
+
+        // Stage 2: the courtyard opening widens to the full sky
+        const S2 = 1.1;
+        tl.to('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut', duration: 1 }, S2)
+          .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1, ease: 'power2.inOut', duration: 1 }, S2)
+          .to('[data-hero-copy]', { yPercent: -40, autoAlpha: 0, ease: 'power1.in', duration: 0.45 }, S2)
+          .to('[data-hero-pre]', { autoAlpha: 0, duration: 0.2 }, S2)
+          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.25 }, S2 + 0.75);
+
+        return () => {
+          if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { clearProps: 'all' });
+        };
       });
     }, rootRef);
-    return () => ctx.revert();
+
+    return () => {
+      ctx.revert();
+      setHeroState({ active: false, docked: true, gathered: true }, false);
+    };
   }, [reduced]);
 
   if (reduced) {
@@ -135,24 +231,25 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={rootRef} className="relative h-[100svh] overflow-hidden bg-lime" aria-label="Introduction">
-      {/* Aperture: the full-bleed image, clipped to a small opening until the visitor scrolls */}
-      <div data-hero-aperture className="absolute inset-0 will-change-[clip-path] [clip-path:inset(57%_6%_7%_36%)] md:[clip-path:inset(12%_11%_38%_61%)]">
-        <img
-          data-hero-image
-          src={ASSETS.heroBg}
-          alt="Double-height living room opening onto a garden courtyard"
-          {...{ fetchpriority: 'high' }}
-          className="absolute inset-0 size-full object-cover object-[22%_50%] md:object-center"
-        />
-        {/* A soft foot shadow only, so the caption reads without dimming the render */}
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/45 to-transparent" />
+      {/* Aperture: the full-bleed image, clipped to a small opening at first */}
+      <div data-hero-aperture className="absolute inset-0 will-change-[clip-path]">
+        <div data-hero-frame className="absolute inset-0 overflow-hidden">
+          <img
+            data-hero-image
+            src={ASSETS.heroBg}
+            alt="Double-height living room opening onto a garden courtyard"
+            {...{ fetchpriority: 'high' }}
+            className="absolute left-0 top-0 w-[112%] h-[112%] max-w-none object-cover origin-top-left"
+          />
+          <div data-hero-scrim className="absolute inset-0 bg-black/50" />
+        </div>
         <p data-hero-post className="absolute left-[var(--gutter)] bottom-6 md:bottom-8 text-[13px] text-white opacity-0 [text-shadow:0_1px_12px_rgba(0,0,0,0.35)]">
           Courtyard residence, Wayanad. Design visualisation.
         </p>
       </div>
 
       <div data-hero-copy className="relative z-10 h-full page-x pt-[96px] md:pt-[120px] pb-8 md:pb-10 flex flex-col justify-between pointer-events-none">
-        <p data-hero-intro className="label max-w-[30ch] md:max-w-[34ch]">
+        <p data-hero-fade className="label max-w-[30ch] md:max-w-[34ch] text-ink">
           Architecture, interiors and landscape from Kalpetta, Wayanad and Jayanagar, Bengaluru. Led by Chief Architect Ar.&nbsp;Rashid&nbsp;Ali.
         </p>
         <h1 className="display text-[16vw] md:text-[9.6vw] max-md:mb-[44svh]">
@@ -169,6 +266,13 @@ const Hero: React.FC = () => {
       <p data-hero-pre className="hidden md:block absolute z-10 left-[61%] top-[calc(62%+0.75rem)] label">
         Courtyard residence, Wayanad
       </p>
+
+      {/* The emblem, centre stage until it docks in the navbar */}
+      <div data-hero-emblem-wrap className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" aria-hidden="true">
+        <span data-hero-emblem className="block text-ink will-change-transform">
+          <MovingEmblem className="size-[min(38svh,64vw)]" />
+        </span>
+      </div>
     </section>
   );
 };
