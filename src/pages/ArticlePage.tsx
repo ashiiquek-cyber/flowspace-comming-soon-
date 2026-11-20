@@ -141,7 +141,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
               <img
                 alt="Ar. Rashid Ali"
                 className="size-full object-cover"
-                src={ASSETS.authorAvatar}
+                src={ASSETS.avatarRashid}
               />
             </div>
             <div className="flex flex-col">
@@ -455,7 +455,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
                 <img
                   alt="Ar. Rashid Ali"
                   className="size-full object-cover"
-                  src={ASSETS.authorAvatarLg}
+                  src={ASSETS.avatarRashid}
                 />
               </div>
               <div className="flex-1 flex flex-col gap-2.5">

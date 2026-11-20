@@ -57,7 +57,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectCloudHouse,
     imageTag: 'Design visualisation',
@@ -103,7 +103,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectHover,
     imageTag: 'Design visualisation',
@@ -138,7 +138,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     isCoverPlaceholder: true,
     content: {
@@ -174,7 +174,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     isCoverPlaceholder: true,
     content: {
@@ -208,7 +208,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectInterior,
     imageTag: 'Design visualisation',
@@ -239,7 +239,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectHover,
     imageTag: 'Design visualisation',
@@ -274,7 +274,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectCloudHouse,
     imageTag: 'Design visualisation',

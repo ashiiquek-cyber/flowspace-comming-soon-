@@ -176,12 +176,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
           <div>
             <p className="label mb-1">Wayanad</p>
             <p>Kalpetta, Kerala 673122</p>
-            <a href="tel:+919447000000" className="text-link mt-1">+91 94470 00000</a>
           </div>
           <div>
             <p className="label mb-1">Bengaluru</p>
-            <p>Jayanagar, Karnataka 560011</p>
-            <a href="tel:+919845000000" className="text-link mt-1">+91 98450 00000</a>
+            <p>7th Block, Jayanagar, Bengaluru 560070</p>
+            <a href="tel:+919747859991" className="text-link mt-1">+91 97478 59991</a>
           </div>
         </div>
       </div>

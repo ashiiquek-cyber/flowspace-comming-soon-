@@ -8,6 +8,7 @@ import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
 import { RESEARCH_DATA } from '../data/research';
 import { MovingEmblem } from '../components/Brand';
 import { setHeroState } from '../lib/heroSignal';
+import { BoxMarker, BoxStack } from '../components/Massing';
 
 const SunStudy = lazy(() => import('../components/SunStudy'));
 
@@ -74,15 +75,38 @@ const PLACES = {
   bengaluru: ['Jayanagar', 'JP Nagar', 'Basavanagudi', 'Banashankari', 'BTM Layout', 'HSR Layout', 'Koramangala'],
 };
 
-// Selected work on the home page: wide, then narrow and offset right, then wide again
+// Selected work on the home page: one wide feature, then two side by side, so no row is left half empty
 const WORK_LAYOUT = [
-  { col: 'md:col-span-9', aspect: 'aspect-[4/3] md:aspect-[16/10]', wide: true },
-  { col: 'md:col-start-7 md:col-span-5', aspect: 'aspect-[4/5]', wide: false },
-  { col: 'md:col-start-2 md:col-span-10', aspect: 'aspect-[4/3] md:aspect-[16/9]', wide: true },
+  { col: 'md:col-span-12', aspect: 'aspect-[4/3] md:aspect-[21/9]', wide: true },
+  { col: 'md:col-span-6', aspect: 'aspect-[4/3]', wide: false },
+  { col: 'md:col-span-6', aspect: 'aspect-[4/3]', wide: false },
 ];
+
+// One rhythm for the whole page: each section's top gap, and the gap from its label row to its content
+const SECTION = 'page-x pt-16 md:pt-24';
+
+/** A section label with its box marker, sitting in the narrow left column */
+const SectionLabel: React.FC<{ id: string; className?: string; children: React.ReactNode }> = ({ id, className = '', children }) => (
+  <h2 id={id} className={`label flex items-center gap-2.5 self-start ${className}`}>
+    <BoxMarker />
+    {children}
+  </h2>
+);
 
 const HEADLINE = ['Spaces that speak', 'for themselves.'];
 const HEADLINE_NARROW = ['Spaces that', 'speak for', 'themselves.'];
+
+// The gallery the hero settles into: the courtyard as the centre box, four other projects around it.
+// Phones keep the first two, so the scatter never crowds the centre
+const HERO_GALLERY = PROJECTS_DATA.filter((p) => p.image !== ASSETS.heroBg).slice(0, 4);
+// Desktop boxes are large enough to fill the screen around the centre box, with no wide empty bands
+const HERO_CARD_LAYOUT = [
+  'left-[6%] top-[11.5%] w-[42%] aspect-[4/3] md:left-[4%] md:top-[14%] md:w-[26%]',
+  'right-[6%] top-[78%] w-[40%] aspect-[4/3] md:right-auto md:left-[9%] md:top-[55%] md:w-[21%] md:aspect-[5/4]',
+  'max-md:hidden left-[69%] top-[12%] w-[23%] aspect-[4/3]',
+  'max-md:hidden left-[70%] top-[49%] w-[26%] aspect-[16/10]',
+];
+const HERO_MARQUEE = 'Flowspace Architects · Wayanad · Bengaluru · ';
 
 /* -------------------------------------------------------------------------- */
 
@@ -127,6 +151,8 @@ const Hero: React.FC = () => {
       mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
         const { desktop } = c.conditions as { desktop: boolean };
         const opening = desktop ? 'inset(12% 11% 38% 61% round 0px)' : 'inset(57% 6% 7% 36% round 0px)';
+        // Stage 2's centre box, which the other projects gather around
+        const centre = desktop ? 'inset(14% 34% 16% 34% round 0px)' : 'inset(27% 18% 27% 18% round 0px)';
         gsap.set('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' });
         if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { autoAlpha: 0 });
 
@@ -150,12 +176,12 @@ const Hero: React.FC = () => {
         }
         dockTl.eventCallback('onComplete', () => setHeroState({ docked: true }));
 
-        // Timeline units: 0–0.8 headline and window arrive, 0.9–1.9 window opens
+        // Timeline units: 0–0.8 headline and window arrive, 1.1–2.1 the window becomes the centre box of a gallery
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: root,
             start: 'top top',
-            end: '+=190%',
+            end: '+=170%',
             scrub: 0.8,
             pin: true,
             pinSpacing: true,
@@ -185,19 +211,21 @@ const Hero: React.FC = () => {
         tl.fromTo('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: opening, ease: 'power2.inOut', duration: 0.9 }, 0)
           .fromTo('[data-hero-image]', { scale: 1 }, { scale: 1.22, ease: 'power2.inOut', duration: 0.9 }, 0)
           .to('[data-hero-scrim]', { autoAlpha: 0, duration: 0.9, ease: 'power1.inOut' }, 0)
-          .to('[data-hero-post]', { autoAlpha: 0, duration: 0.2 }, 0)
           .fromTo('[data-hero-emblem], [data-hero-fade]', { color: '#ffffff' }, { color: '#1d201e', duration: 0.9, ease: 'power1.inOut' }, 0)
           // The headline stays out of the opening view and arrives once the window has settled
           .fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0.5)
           .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.7);
 
-        // Stage 2: the courtyard opening widens to the full sky
+        // Stage 2: the window moves to the centre and the other projects gather round it as boxes,
+        // with the studio's name passing faintly underneath
         const S2 = 1.1;
-        tl.to('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut', duration: 1 }, S2)
-          .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1, ease: 'power2.inOut', duration: 1 }, S2)
-          .to('[data-hero-copy]', { yPercent: -40, autoAlpha: 0, ease: 'power1.in', duration: 0.45 }, S2)
+        tl.to('[data-hero-aperture]', { clipPath: centre, ease: 'power2.inOut', duration: 0.65 }, S2)
+          .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1.08, ease: 'power2.inOut', duration: 0.65 }, S2)
+          .to('[data-hero-copy]', { yPercent: -40, autoAlpha: 0, ease: 'power1.in', duration: 0.4 }, S2)
           .to('[data-hero-pre]', { autoAlpha: 0, duration: 0.2 }, S2)
-          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.25 }, S2 + 0.75);
+          .fromTo('[data-hero-marquee]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, S2 + 0.15)
+          .fromTo('[data-hero-card]', { autoAlpha: 0, y: 80, scale: 0.92 }, { autoAlpha: 1, y: 0, scale: 1, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, S2 + 0.25)
+          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.3 }, S2 + 0.7);
 
         return () => {
           if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { clearProps: 'all' });
@@ -231,6 +259,14 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={rootRef} className="relative h-[100svh] overflow-hidden bg-lime" aria-label="Introduction">
+      {/* Stage 2 ground: the studio's name passing faintly under the boxes */}
+      <div data-hero-marquee aria-hidden="true" className="invisible absolute inset-x-0 top-1/2 -translate-y-1/2 overflow-hidden pointer-events-none select-none">
+        <div className="hero-marquee flex w-max whitespace-nowrap display text-ink/[0.06] text-[34vw] md:text-[21vw]">
+          <span className="pr-[0.25em]">{HERO_MARQUEE}</span>
+          <span className="pr-[0.25em]">{HERO_MARQUEE}</span>
+        </div>
+      </div>
+
       {/* Aperture: the full-bleed image, clipped to a small opening at first */}
       <div data-hero-aperture className="absolute inset-0 will-change-[clip-path]">
         <div data-hero-frame className="absolute inset-0 overflow-hidden">
@@ -243,9 +279,35 @@ const Hero: React.FC = () => {
           />
           <div data-hero-scrim className="absolute inset-0 bg-black/50" />
         </div>
-        <p data-hero-post className="absolute left-[var(--gutter)] bottom-6 md:bottom-8 text-[13px] text-white opacity-0 [text-shadow:0_1px_12px_rgba(0,0,0,0.35)]">
-          Courtyard residence, Wayanad. Design visualisation.
-        </p>
+      </div>
+
+      {/* Stage 2: the other projects as boxes around the courtyard */}
+      {HERO_GALLERY.map((p, i) => (
+        <a
+          key={p.id}
+          href={`#/project/${p.id}`}
+          data-hero-card
+          aria-label={p.title}
+          className={`invisible group absolute z-[5] ${HERO_CARD_LAYOUT[i]}`}
+        >
+          <span className="block size-full overflow-hidden bg-stone-1">
+            <img
+              src={p.image}
+              alt=""
+              decoding="async"
+              style={{ objectPosition: p.focus }}
+              className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]"
+            />
+          </span>
+          <span aria-hidden="true" className="max-md:hidden label block mt-2 text-ink transition-colors group-hover:text-accent">{p.title}</span>
+        </a>
+      ))}
+      <p data-hero-post className="invisible absolute z-10 left-[18%] md:left-[34%] top-[calc(73%+0.5rem)] md:top-[calc(84%+0.6rem)] label text-ink">
+        Courtyard residence, Wayanad
+      </p>
+      <div data-hero-post className="invisible absolute z-10 inset-x-0 bottom-5 md:bottom-8 page-x flex items-baseline justify-between gap-6">
+        <p className="label">Selected work. Design visualisations.</p>
+        <a href="#/projects" className="text-link text-[15px]">All projects</a>
       </div>
 
       <div data-hero-copy className="relative z-10 h-full page-x pt-[96px] md:pt-[120px] pb-8 md:pb-10 flex flex-col justify-between pointer-events-none">
@@ -303,10 +365,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       <Hero />
 
       {/* Studio */}
-      <section className="page-x pt-28 md:pt-44 pb-24 md:pb-36" aria-labelledby="studio-heading">
-        <div className="grid-page gap-y-10">
-          <h2 id="studio-heading" className="col-span-12 md:col-span-3 label pt-2">The studio</h2>
-          <div className="col-span-12 md:col-span-9 lg:col-span-8">
+      <section className={SECTION} aria-labelledby="studio-heading">
+        <div className="grid-page gap-y-8">
+          <SectionLabel id="studio-heading" className="col-span-12 md:col-span-2 pt-2">The studio</SectionLabel>
+          <div className="col-span-12 md:col-span-10 lg:col-span-9">
             <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">
               We draw every building as boxes and lines: a box for each part of life, and flowing lines of movement, light and air weaving through them all.
             </p>
@@ -317,14 +379,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        <dl className="grid-page gap-y-0 mt-20 md:mt-28 text-[15px]">
+        <dl className="grid-page gap-y-0 mt-12 md:mt-16 text-[15px]">
           {[
             ['Studios', 'Kalpetta, Wayanad and Jayanagar, Bengaluru'],
-            ['Services', 'Over twenty, from house plans to conservation and urban work'],
+            ['Services', 'Architecture, interior design, landscape design, master planning and product design'],
             ['Project types', 'Homes from budget to weekend retreats, apartments, resorts and eco villages, cafés, breweries and club houses, retail, interiors and furniture'],
             ['Honours', 'Design & Vision Firm of the Year 2026, South India; Vanitha Veedu Young Architect Award; FOAID Design Week'],
           ].map(([term, desc]) => (
-            <div key={term} className="col-span-12 md:col-start-4 md:col-span-9 grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] gap-4 border-t border-line py-4">
+            <div key={term} className="col-span-12 md:col-start-3 md:col-span-10 grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] gap-4 border-t border-line py-4">
               <dt className="text-ink-muted">{term}</dt>
               <dd>
                 {term === 'Honours' ? <a href="#/press" className="hover:text-accent transition-colors">{desc}</a> : desc}
@@ -335,14 +397,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       </section>
 
       {/* Selected work */}
-      <section className="pb-28 md:pb-44" aria-labelledby="work-heading">
-        <div className="page-x grid-page items-baseline mb-10 md:mb-14">
-          <h2 id="work-heading" className="col-span-6 md:col-span-3 label">Selected work</h2>
+      <section className={SECTION} aria-labelledby="work-heading">
+        <div className="grid-page items-center mb-8 md:mb-10">
+          <SectionLabel id="work-heading" className="col-span-6 md:col-span-3">Selected work</SectionLabel>
           <a href="#/projects" className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px] whitespace-nowrap">All projects ({PROJECTS_DATA.length})</a>
         </div>
 
-        {/* Wide, narrow and offset, wide: unequal frames give rhythm; captions sit below, never on the image */}
-        <ul className="page-x grid-page gap-y-20 md:gap-y-32">
+        {/* One wide feature, then two side by side; captions sit below, never on the image */}
+        <ul className="grid-page gap-y-12 md:gap-y-16">
           {PROJECTS_DATA.slice(0, 3).map((project, i) => {
             const layout = WORK_LAYOUT[i];
             return (
@@ -373,17 +435,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       </section>
 
       {/* Sun study: a model to turn, under the real sun for Wayanad */}
-      <section className="page-x pb-28 md:pb-44" aria-labelledby="sun-heading">
-        <div className="grid-page gap-y-10">
-          <h2 id="sun-heading" className="col-span-12 md:col-span-3 label pt-2">Sun study</h2>
-          <div className="col-span-12 md:col-span-9">
+      <section className={SECTION} aria-labelledby="sun-heading">
+        <div className="grid-page gap-y-8">
+          <SectionLabel id="sun-heading" className="col-span-12 md:col-span-2 pt-2">Sun study</SectionLabel>
+          <div className="col-span-12 md:col-span-10">
             <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12] max-w-[22ch]">
               Deep eaves and a courtyard, through a day of sun.
             </p>
             <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
               A courtyard house at Wayanad’s latitude. Move the time and the season to see where the shade falls.
             </p>
-            <div ref={sunRef} className="mt-10 md:mt-14">
+            <div ref={sunRef} className="mt-8 md:mt-10">
               {showSun ? (
                 <Suspense fallback={<div className="w-full aspect-square sm:aspect-[16/10]" />}>
                   <SunStudy />
@@ -397,10 +459,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       </section>
 
       {/* Process: a real sequence on a shared axis, with the design months drawn larger */}
-      <section className="page-x pb-28 md:pb-44" aria-labelledby="process-heading">
-        <div className="grid-page gap-y-10 mb-14 md:mb-20">
-          <h2 id="process-heading" className="col-span-12 md:col-span-3 label pt-2">Process</h2>
-          <div className="col-span-12 md:col-span-9 lg:col-span-8">
+      <section className={SECTION} aria-labelledby="process-heading">
+        <div className="grid-page gap-y-8 mb-8 md:mb-12">
+          <SectionLabel id="process-heading" className="col-span-12 md:col-span-2 pt-2">Process</SectionLabel>
+          <div className="col-span-12 md:col-span-10 lg:col-span-9">
             <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">From idea to built form.</p>
             <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
               A typical house takes about fourteen months from first site visit to handover. Most of that is building.
@@ -410,14 +472,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
         <ol>
           {PROCESS.map((step, i) => (
-            <li key={step.title} className="grid-page gap-y-3 border-t border-line py-6 md:py-8">
-              <span className="col-span-1 text-[15px] text-ink-muted tabular-nums">{i + 1}</span>
-              <div className="col-span-11 md:col-span-3">
-                <h3 className="text-[20px] md:text-[22px] tracking-tight">{step.title}</h3>
-                <p className="label mt-1">{step.duration}</p>
+            <li key={step.title} className="grid-page gap-y-3 items-center border-t border-line py-5 md:py-6">
+              {/* One more box per step: the house stands by the last one */}
+              <div className="col-span-3 md:col-span-1">
+                <BoxStack count={i + 1} size={19} />
               </div>
-              <p className="col-span-11 col-start-2 md:col-span-4 text-[15px] leading-relaxed text-ink-muted max-w-[46ch]">{step.body}</p>
-              <div className="col-span-11 col-start-2 md:col-span-4 md:self-center relative h-2 mt-2 md:mt-0" aria-hidden="true">
+              <div className="col-span-9 md:col-span-3">
+                <h3 className="text-[20px] md:text-[22px] tracking-tight">{step.title}</h3>
+                <p className="label mt-1">Step {i + 1}, {step.duration}</p>
+              </div>
+              <p className="col-span-12 md:col-span-4 text-[15px] leading-relaxed text-ink-muted max-w-[46ch]">{step.body}</p>
+              <div className="col-span-12 md:col-span-4 relative h-2 mt-2 md:mt-0" aria-hidden="true">
                 {/* Two track segments with a gap at the scale change */}
                 <div className="absolute inset-y-[3px] left-0 right-[calc(50%+3px)] bg-stone-1" />
                 <div className="absolute inset-y-[3px] left-[calc(50%+3px)] right-0 bg-stone-1" />
@@ -430,26 +495,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           ))}
         </ol>
         <div className="grid-page" aria-hidden="true">
-          <div className="col-span-11 col-start-2 md:col-start-9 md:col-span-4 relative h-7 label border-t border-line">
+          <div className="col-span-12 md:col-start-9 md:col-span-4 relative h-7 label border-t border-line">
             <span className="absolute left-0 top-2">Start</span>
             <span className="absolute left-1/2 top-2 -translate-x-1/2">Month 3</span>
             <span className="absolute right-0 top-2">Month 14</span>
           </div>
-          <p className="col-span-11 col-start-2 md:col-start-9 md:col-span-4 label mt-2">
+          <p className="col-span-12 md:col-start-9 md:col-span-4 label mt-2">
             The first three months are drawn at a larger scale.
           </p>
         </div>
       </section>
 
-      {/* Client words */}
-      <section className="bg-plaster page-x py-24 md:py-36" aria-labelledby="clients-heading">
-        <div className="grid-page gap-y-10">
-          <h2 id="clients-heading" className="col-span-12 md:col-span-3 label pt-3">Client words</h2>
-          <figure className="col-span-12 md:col-span-9 lg:col-span-8" aria-live="polite">
-            <blockquote key={current} className="prose-serif text-[26px] sm:text-[36px] lg:text-[44px] leading-[1.18] animate-in">
+      {/* Client words and where we work share one band */}
+      <div className="bg-plaster page-x py-16 md:py-24 mt-16 md:mt-24">
+        <div className="grid-page gap-y-16">
+        <section className="col-span-12 md:col-span-7" aria-labelledby="clients-heading">
+          <SectionLabel id="clients-heading" className="mb-6 md:mb-8">Client words</SectionLabel>
+          <figure aria-live="polite">
+            <blockquote key={current} className="prose-serif text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.18] animate-in">
               “{t.quote}”
             </blockquote>
-            <figcaption className="mt-10 flex flex-wrap items-end justify-between gap-6 border-t border-line pt-5">
+            <figcaption className="mt-8 flex flex-wrap items-end justify-between gap-6 border-t border-line pt-5">
               <div className="text-[15px]">
                 <p>{t.author}</p>
                 <p className="text-ink-muted">{t.role}</p>
@@ -461,71 +527,76 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               </div>
             </figcaption>
           </figure>
-        </div>
-      </section>
+        </section>
 
-      {/* Where we work */}
-      <section className="page-x py-28 md:py-44" aria-labelledby="areas-heading">
-        <div className="grid-page gap-y-10">
-          <h2 id="areas-heading" className="col-span-12 md:col-span-3 label pt-2">Where we work</h2>
-          {([['Wayanad studio, Kalpetta', PLACES.wayanad], ['Bengaluru studio, Jayanagar', PLACES.bengaluru]] as const).map(([title, places]) => (
-            <div key={title} className="col-span-12 md:col-span-4 lg:col-span-4">
-              <h3 className="text-[15px] text-ink-muted mb-4">{title}</h3>
-              <p className="text-[24px] sm:text-[28px] leading-[1.3] tracking-tight font-light">{places.join(', ')}</p>
-            </div>
-          ))}
-          <p className="col-span-12 md:col-start-4 md:col-span-8 text-[17px] text-ink-muted max-w-[52ch]">
+        <section className="col-span-12 md:col-start-9 md:col-span-4" aria-labelledby="areas-heading">
+          <SectionLabel id="areas-heading" className="mb-6 md:mb-8">Where we work</SectionLabel>
+          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-1">
+            {([['Wayanad studio, Kalpetta', PLACES.wayanad], ['Bengaluru studio, Jayanagar', PLACES.bengaluru]] as const).map(([title, places]) => (
+              <div key={title}>
+                <h3 className="text-[15px] text-ink-muted mb-2">{title}</h3>
+                <p className="text-[19px] sm:text-[21px] leading-[1.35] tracking-tight font-light">{places.join(', ')}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-[15px] text-ink-muted max-w-[40ch]">
             Building somewhere else in Kerala or Karnataka? Ask us. We travel for the right project.
           </p>
+        </section>
         </div>
-      </section>
+      </div>
 
-      {/* Research */}
-      <section className="page-x pb-28 md:pb-44" aria-labelledby="research-heading">
-        <div className="grid-page items-baseline mb-10 md:mb-14">
-          <h2 id="research-heading" className="col-span-6 md:col-span-3 label">Research</h2>
-          <a href="#/research" className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px]">All research</a>
-        </div>
-        <ul className="grid-page gap-y-10">
-          {RESEARCH_DATA.slice(0, 3).map((r) => (
-            <li key={r.id} className="col-span-12 md:col-span-4">
-              <a href={`#/research/${r.id}`} className="group block">
-                <div className="aspect-[4/3] overflow-hidden bg-line">
-                  <img src={r.image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]" />
-                </div>
-                <p className="label mt-4">{r.type}, {r.year}</p>
-                <h3 className="mt-2 text-[20px] sm:text-[22px] leading-[1.2] tracking-tight transition-colors group-hover:text-accent">{r.title}</h3>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* Research and Journal side by side, both as lists */}
+      <div className={SECTION}>
+        <div className="grid-page gap-y-16">
+          <section className="col-span-12 md:col-span-6" aria-labelledby="research-heading">
+            <div className="flex items-center justify-between gap-6 mb-6 md:mb-8">
+              <SectionLabel id="research-heading">Research</SectionLabel>
+              <a href="#/research" className="text-link text-[15px]">All research</a>
+            </div>
+            <ul className="border-b border-line">
+              {RESEARCH_DATA.slice(0, 3).map((r) => (
+                <li key={r.id} className="border-t border-line">
+                  <a href={`#/research/${r.id}`} className="group grid grid-cols-[6.5rem_1fr] sm:grid-cols-[8.5rem_1fr] gap-5 py-5 items-center">
+                    <div className="aspect-[4/3] overflow-hidden bg-line">
+                      <img src={r.image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]" />
+                    </div>
+                    <div>
+                      <p className="label">{r.type}, {r.year}</p>
+                      <h3 className="mt-1 text-[18px] sm:text-[20px] leading-[1.25] tracking-tight transition-colors group-hover:text-accent">{r.title}</h3>
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-      {/* Journal */}
-      <section className="page-x pb-28 md:pb-44" aria-labelledby="journal-heading">
-        <div className="grid-page items-baseline mb-10 md:mb-14">
-          <h2 id="journal-heading" className="col-span-6 md:col-span-3 label">Journal</h2>
-          <a href="#/journal" className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px]">All articles</a>
+          <section className="col-span-12 md:col-span-6" aria-labelledby="journal-heading">
+            <div className="flex items-center justify-between gap-6 mb-6 md:mb-8">
+              <SectionLabel id="journal-heading">Journal</SectionLabel>
+              <a href="#/journal" className="text-link text-[15px]">All articles</a>
+            </div>
+            <ul className="border-b border-line">
+              {JOURNAL.map((item) => (
+                <li key={item.title} className="border-t border-line">
+                  <a href={item.href} className="group block py-5">
+                    <span className="label block">{item.date}</span>
+                    <span className="mt-1 block text-[20px] sm:text-[24px] leading-[1.22] tracking-tight transition-colors group-hover:text-accent">
+                      {item.title}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
-        <ul className="border-b border-line">
-          {JOURNAL.map((item) => (
-            <li key={item.title} className="border-t border-line">
-              <a href={item.href} className="group grid-page gap-y-2 py-6 md:py-8 items-baseline">
-                <span className="col-span-12 md:col-span-3 label">{item.date}</span>
-                <span className="col-span-12 md:col-span-9 text-[22px] sm:text-[28px] lg:text-[32px] leading-[1.2] tracking-tight transition-colors group-hover:text-accent">
-                  {item.title}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
+      </div>
 
       {/* Questions */}
-      <section className="page-x pb-32 md:pb-48" aria-labelledby="faq-heading">
-        <div className="grid-page gap-y-10">
+      <section className={`${SECTION} pb-24 md:pb-32`} aria-labelledby="faq-heading">
+        <div className="grid-page gap-y-8">
           <div className="col-span-12 md:col-span-3">
-            <h2 id="faq-heading" className="label pt-2">Questions</h2>
+            <SectionLabel id="faq-heading" className="pt-2">Questions</SectionLabel>
             <p className="mt-6 text-[15px] text-ink-muted max-w-[30ch] leading-relaxed">
               Happy to talk on a call, or welcome you to our studios in Kalpetta or Jayanagar.
             </p>

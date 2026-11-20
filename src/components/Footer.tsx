@@ -29,11 +29,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             Have a project in mind? Let’s create something lasting.
           </h2>
           <div className="col-span-12 lg:col-span-3 lg:self-end flex flex-col gap-4 text-[15px]">
-            <a href="mailto:hello@flowspacearchitects.com" className="text-link self-start text-[17px]">
-              hello@flowspacearchitects.com
+            <a href="mailto:flowspacearchitects@gmail.com" className="text-link self-start text-[17px]">
+              flowspacearchitects@gmail.com
             </a>
             <a
-              href="https://wa.me/919447000000"
+              href="https://wa.me/919747859991"
               target="_blank"
               rel="noreferrer"
               className="text-link self-start text-lime/70 hover:text-lime"
@@ -57,12 +57,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div className="col-span-6 md:col-span-3">
             <p className="text-lime/60 text-[13px] mb-2">Wayanad studio</p>
             <p>Kalpetta, Wayanad<br />Kerala 673122, India</p>
-            <a href="tel:+919447000000" className="block mt-2 text-lime/70 hover:text-lime">+91 94470 00000</a>
           </div>
           <div className="col-span-6 md:col-span-3">
             <p className="text-lime/60 text-[13px] mb-2">Bengaluru studio</p>
-            <p>Jayanagar, Bengaluru<br />Karnataka 560011, India</p>
-            <a href="tel:+919845000000" className="block mt-2 text-lime/70 hover:text-lime">+91 98450 00000</a>
+            <p>3rd Floor, 1 Krishna Rajendra Road<br />7th Block, Jayanagar<br />Bengaluru 560070, India</p>
+            <a href="tel:+919747859991" className="block mt-2 text-lime/70 hover:text-lime">+91 97478 59991</a>
           </div>
           <div className="col-span-12 md:col-span-2">
             <p className="text-lime/60 text-[13px] mb-2">Follow</p>

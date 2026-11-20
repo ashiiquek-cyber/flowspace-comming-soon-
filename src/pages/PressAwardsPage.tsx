@@ -182,12 +182,14 @@ export const PressAwardsPage: React.FC<PressAwardsPageProps> = ({ onNavigate }) 
     // Create text file bundle representation
     const content = `FLOWSPACE ARCHITECTS — PRESS KIT 2026
 --------------------------------------------------
+Founded: 2016
 Founder & Chief Architect: Ar. Rashid Ali
 Locations:
   - Kalpetta, Wayanad (Kerala 673122)
-  - Jayanagar, Bengaluru (Karnataka 560011)
+  - 3rd Floor, 1 Krishna Rajendra Road, 7th Block, Jayanagar, Bengaluru 560070
 
-Press Enquiries: hello@flowspacearchitects.com
+Press Enquiries: flowspacearchitects@gmail.com
+Phone: +91 97478 59991
 Registration: COA Reg. CA/2016/76777
 
 Included Assets:
@@ -299,8 +301,8 @@ Thank you for featuring Flowspace Architects.`;
             </p>
             <p className="label mt-3">
               Press enquiries:{' '}
-              <a href="mailto:hello@flowspacearchitects.com" className="text-link text-ink">
-                hello@flowspacearchitects.com
+              <a href="mailto:flowspacearchitects@gmail.com" className="text-link text-ink">
+                flowspacearchitects@gmail.com
               </a>
             </p>
           </div>

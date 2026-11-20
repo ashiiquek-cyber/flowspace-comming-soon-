@@ -17,4 +17,7 @@ export const ASSETS = {
   iconWhatsapp: "/assets/5b3241bcc4318e2408320a816d48e8d3144fdf7e.svg",
   founderPhoto: "/assets/7155325e22fad3760a9e6f94f38d125f0e51cea8.png",
   iconDrag: "/assets/fb6fe17392caf53874ee69f0a30e664782d0d49f.svg",
+  portraitRashid: "/assets/team/rashid-ali.jpg",
+  avatarRashid: "/assets/team/rashid-ali-avatar.jpg",
+  portraitAmana: "/assets/team/amana-fida.jpg",
 };
