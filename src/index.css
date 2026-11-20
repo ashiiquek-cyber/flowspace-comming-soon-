@@ -164,6 +164,13 @@ html.lenis, html.lenis body { height: auto; }
   margin-bottom: -0.08em;
 }
 
+/* Sun study time slider: a hairline track with an ink thumb */
+.sun-range { -webkit-appearance: none; appearance: none; height: 20px; background: transparent; cursor: pointer; }
+.sun-range::-webkit-slider-runnable-track { height: 1px; background: var(--color-ink-muted); }
+.sun-range::-moz-range-track { height: 1px; background: var(--color-ink-muted); }
+.sun-range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -6.5px; border-radius: 50%; background: var(--color-ink); }
+.sun-range::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--color-ink); }
+
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { scrollbar-width: none; }
 

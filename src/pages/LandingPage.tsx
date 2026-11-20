@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ASSETS } from '../constants/assets';
 import { Aperture } from '../components/Aperture';
@@ -6,6 +6,8 @@ import { RouteLink } from '../components/RouteLink';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
 import { RESEARCH_DATA } from '../data/research';
+
+const SunStudy = lazy(() => import('../components/SunStudy'));
 
 interface LandingPageProps {
   onNavigate: (target: NavigateTarget) => void;
@@ -178,6 +180,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const [current, setCurrent] = useState(0);
   const t = TESTIMONIALS[current];
 
+  // The 3D model (and three.js) is fetched only when the visitor gets near it
+  const sunRef = useRef<HTMLDivElement>(null);
+  const [showSun, setShowSun] = useState(false);
+  useEffect(() => {
+    const el = sunRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setShowSun(true); io.disconnect(); }
+    }, { rootMargin: '800px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
     // Block layout on purpose: GSAP disables pin spacing when the pinned hero's parent is flex
     <div>
@@ -251,6 +266,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             );
           })}
         </ul>
+      </section>
+
+      {/* Sun study: a model to turn, under the real sun for Wayanad */}
+      <section className="page-x pb-28 md:pb-44" aria-labelledby="sun-heading">
+        <div className="grid-page gap-y-10">
+          <h2 id="sun-heading" className="col-span-12 md:col-span-3 label pt-2">Sun study</h2>
+          <div className="col-span-12 md:col-span-9">
+            <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12] max-w-[22ch]">
+              Deep eaves and a courtyard, through a day of sun.
+            </p>
+            <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
+              A courtyard house at Wayanad’s latitude. Move the time and the season to see where the shade falls.
+            </p>
+            <div ref={sunRef} className="mt-10 md:mt-14">
+              {showSun ? (
+                <Suspense fallback={<div className="w-full aspect-square sm:aspect-[16/10]" />}>
+                  <SunStudy />
+                </Suspense>
+              ) : (
+                <div className="w-full aspect-square sm:aspect-[16/10]" />
+              )}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Process: a real sequence on a shared axis, with the design months drawn larger */}
