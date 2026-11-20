@@ -109,14 +109,7 @@ const crumbFor = ({ section, param }: AdminRoute) => {
   return BREADCRUMBS[section];
 };
 
-// The CMS face: requested only when this chunk loads, never on public pages
-const CMS_FONT = 'https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap';
-if (!document.querySelector(`link[href="${CMS_FONT}"]`)) {
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = CMS_FONT;
-  document.head.appendChild(link);
-}
+// The CMS face (DM Sans) is self-hosted in src/index.css; browsers fetch it only once CMS text uses it
 
 export const AdminApp: React.FC = () => {
   const [route, setRoute] = useState<AdminRoute>(() => parseAdminHash(window.location.hash));

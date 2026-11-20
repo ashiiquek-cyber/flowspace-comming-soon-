@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { srcSet } from '../constants/assets';
 import { RESEARCH_DATA, type ResearchType } from '../data/research';
 
 const FILTERS: ('All' | ResearchType)[] = ['All', 'Study', 'Paper'];
@@ -48,7 +49,7 @@ export const ResearchPage: React.FC = () => {
               {r.href && <a href={r.href} className="text-link mt-6 inline-block text-[15px]">Read the full {r.type.toLowerCase()}</a>}
             </div>
             <div className="col-span-12 md:col-span-4 aspect-[4/3] overflow-hidden bg-line">
-              <img src={r.image} alt="" loading="lazy" className="size-full object-cover" />
+              <img src={r.image} srcSet={srcSet(r.image)} sizes="(max-width: 767px) 100vw, 33vw" alt="" loading="lazy" decoding="async" className="size-full object-cover" />
             </div>
           </li>
         ))}

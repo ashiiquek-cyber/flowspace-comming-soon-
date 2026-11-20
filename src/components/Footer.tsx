@@ -61,14 +61,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div className="col-span-6 md:col-span-3">
             <p className="text-lime/60 text-[13px] mb-2">Bengaluru studio</p>
             <p>3rd Floor, 1 Krishna Rajendra Road<br />7th Block, Jayanagar<br />Bengaluru 560070, India</p>
-            <a href="tel:+919747859991" className="block mt-2 text-lime/70 hover:text-lime">+91 97478 59991</a>
+            <a href="tel:+919747859991" className="inline-block mt-1 py-1 text-lime/70 hover:text-lime">+91 97478 59991</a>
           </div>
           <div className="col-span-12 md:col-span-2">
             <p className="text-lime/60 text-[13px] mb-2">Follow</p>
-            <ul className="flex md:flex-col gap-x-6 gap-y-1">
+            <ul className="flex md:flex-col gap-x-6">
               {SOCIAL.map((s) => (
                 <li key={s.label}>
-                  <a href={s.href} target="_blank" rel="noreferrer" className="text-lime/80 hover:text-lime">
+                  <a href={s.href} target="_blank" rel="noreferrer" className="inline-block py-1.5 text-lime/80 hover:text-lime">
                     {s.label}
                   </a>
                 </li>
@@ -80,7 +80,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13px] text-lime/60">
           <p>© 2026 Flowspace Architects</p>
           <p>COA Reg. CA/2016/76777, IIA Fellow Member</p>
-          <button onClick={() => scrollTo(0)} className="self-start sm:self-auto hover:text-lime transition-colors">
+          <button onClick={() => scrollTo(0)} className="self-start sm:self-auto py-2 hover:text-lime transition-colors">
             Back to top
           </button>
         </div>

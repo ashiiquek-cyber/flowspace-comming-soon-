@@ -101,6 +101,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = () => {
                     src={project.image}
                     alt={project.title}
                     focus={project.focus}
+                    sizes="(max-width: 767px) 100vw, 60vw"
                     className={PLACEMENTS[i % PLACEMENTS.length].match(/aspect-\S+/)?.[0]}
                     imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]"
                   />

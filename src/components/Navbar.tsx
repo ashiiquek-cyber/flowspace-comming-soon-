@@ -57,6 +57,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
     flipState.current = null;
   }, [spread]);
 
+  // Over the darkened opening frame of the home hero the bar's text turns light to stay legible
+  const onDark = currentPage === 'home' && !hero.docked && !menuOpen;
+
   const hidden = isScrolled && direction === 1 && !menuOpen && !hero.active;
 
   // Sticky sub-bars (e.g. project filters) dock under the header while it is showing
@@ -123,7 +126,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   to={link.id}
                   onNavigate={go}
                   aria-current={active ? 'page' : undefined}
-                  className={`relative py-1 transition-colors ${active ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
+                  className={`relative py-1 transition-colors duration-500 ${
+                    onDark ? 'text-lime/85 hover:text-lime' : active ? 'text-ink' : 'text-ink-muted hover:text-ink'
+                  }`}
                 >
                   {link.label}
                   <span
@@ -136,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
 
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            className="lg:hidden text-[15px] text-ink py-2 pl-4"
+            className={`lg:hidden text-[15px] py-3 pl-6 -mr-1 pr-1 transition-colors duration-500 ${onDark ? 'text-lime' : 'text-ink'}`}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
           >
