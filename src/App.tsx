@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback } from 'react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -12,11 +12,13 @@ import { ArticlePage } from './pages/ArticlePage';
 import { ResearchPage } from './pages/ResearchPage';
 import { PressAwardsPage } from './pages/PressAwardsPage';
 import { PROJECTS_DATA, type NavigateTarget, type Page } from './data/projects';
-import { AdminApp } from './admin/AdminApp';
+import { hrefFor } from './components/RouteLink';
 
 interface Route {
   page: Page;
   projectId?: string;
+  /** A journal article open in the reader */
+  articleId?: string;
   section?: string;
 }
 
@@ -30,9 +32,9 @@ const parseHash = (): Route => {
     case 'studio':
     case 'about': return { page: 'studio' };
     case 'contact': return { page: 'studio', section: 'contact-section' };
-    case 'journal': return { page: 'journal' };
+    case 'journal': return { page: 'journal', articleId: param || undefined };
     case 'article': return { page: 'article' };
-    case 'research': return { page: 'research' };
+    case 'research': return param ? { page: 'research', section: `research-${param}` } : { page: 'research' };
     case 'press':
     case 'awards': return { page: 'press' };
     default: return { page: 'home' };
@@ -52,6 +54,8 @@ const TITLES: Record<Page, string> = {
 
 function AppContent() {
   const [route, setRoute] = useState<Route>(parseHash);
+  // Bumped when a link to the current address is clicked, so the page still resets or re-jumps
+  const [visit, setVisit] = useState(0);
   const { scrollTo } = useSmoothScroll();
 
   useEffect(() => {
@@ -63,7 +67,8 @@ function AppContent() {
   // On every route: reset scroll, retitle, recompute triggers, then jump to a section if asked
   useEffect(() => {
     const project = route.projectId ? PROJECTS_DATA.find((p) => p.id === route.projectId) : undefined;
-    document.title = project ? `${project.title} — Flowspace Architects` : TITLES[route.page];
+    // An open journal article titles the page itself (and its effect runs first on a fresh load)
+    if (!route.articleId) document.title = project ? `${project.title} — Flowspace Architects` : TITLES[route.page];
     // Native reset too: keyboard scrolling can leave Lenis thinking it is already at the top
     window.scrollTo(0, 0);
     scrollTo(0, { immediate: true, force: true });
@@ -75,12 +80,13 @@ function AppContent() {
       }
     }, 60);
     return () => window.clearTimeout(id);
-  }, [route, scrollTo]);
+    // Not keyed on articleId: opening or closing a journal article keeps the reader's place in the list
+  }, [route.page, route.projectId, route.section, visit, scrollTo]);
 
   const navigate = useCallback((target: NavigateTarget) => {
-    const hash = target === 'home' ? '/' : target === 'project-detail' ? `/project/${PROJECTS_DATA[0].id}` : `/${target}`;
-    if (window.location.hash === `#${hash}`) setRoute(parseHash());
-    else window.location.hash = hash;
+    const href = hrefFor(target);
+    if (window.location.hash === href) setVisit((v) => v + 1);
+    else window.location.hash = href.slice(1);
   }, []);
 
   const openProject = useCallback((id: string) => {
@@ -104,7 +110,7 @@ function AppContent() {
         {page === 'projects' && <ProjectsPage onNavigate={navigate} onOpenProject={openProject} />}
         {page === 'project-detail' && <ProjectDetailPage onNavigate={navigate} onOpenProject={openProject} projectId={route.projectId} />}
         {page === 'studio' && <AboutContactPage onNavigate={navigate} />}
-        {page === 'journal' && <JournalPage onNavigate={navigate} />}
+        {page === 'journal' && <JournalPage onNavigate={navigate} articleId={route.articleId} />}
         {page === 'article' && <ArticlePage onNavigate={navigate} />}
         {page === 'research' && <ResearchPage />}
         {page === 'press' &&<PressAwardsPage onNavigate={navigate} />}
@@ -115,6 +121,9 @@ function AppContent() {
     </div>
   );
 }
+
+// The CMS loads on demand, so public visitors never download it (or its DM Sans font)
+const AdminApp = lazy(() => import('./admin/AdminApp').then((m) => ({ default: m.AdminApp })));
 
 const isAdminHash = () => /^#\/?admin(\/|$)/.test(window.location.hash);
 
@@ -128,7 +137,7 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  if (isAdmin) return <AdminApp />;
+  if (isAdmin) return <Suspense fallback={null}><AdminApp /></Suspense>;
 
   return (
     <SmoothScrollProvider>

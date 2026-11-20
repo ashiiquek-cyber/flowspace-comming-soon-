@@ -37,7 +37,7 @@ Recurring 2025–26 traits: restraint, one signature move, framed images, captio
 
 ## 4. System
 
-- **Color:** limewash `#ECEBE5` (ground), plaster `#F6F5F1` (raised), wet stone `#1D201E` (text), mist `#7D827C` (secondary), rule `#D2D1C9`, kadappa `#202421` (footer and dark band), moss `#4B5B45` (the only accent: focus and active state).
+- **Color:** limewash `#ECEBE5` (ground), plaster `#F6F5F1` (raised), wet stone `#1D201E` (text), mist `#5F645E` (secondary; darkened from `#7D827C` to pass AA on limewash and plaster), rule `#D2D1C9`, kadappa `#202421` (footer and dark band), moss `#4B5B45` (the only accent: focus and active state).
 - **Type:** Hanken Grotesk 300/400/500 for display and UI; Newsreader for the studio's voice (statements, quotes, article body); Didact Gothic only for the wordmark.
 - **Grid:** 12 columns, 24px gutter on mobile and 40px on desktop. Text is left-aligned and hangs from column 4 or 7 on desktop.
 - **Labels:** sentence case, small, mist colored. No all-caps eyebrows, no middle-dot meta strings. Numbers appear only for the process, which is a real sequence.

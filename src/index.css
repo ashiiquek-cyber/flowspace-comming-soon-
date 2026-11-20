@@ -6,7 +6,7 @@
   --color-lime: #ecebe5;
   --color-plaster: #f6f5f1;
   --color-ink: #1d201e;
-  --color-ink-muted: #6e736d;
+  --color-ink-muted: #5f645e;
   --color-line: #d2d1c9;
   --color-kadappa: #202421;
   --color-accent: #4b5b45;
@@ -45,9 +45,19 @@ body {
   outline-offset: 3px;
 }
 
-/* Hide the page scrollbar (scrolling still works) */
-html { scrollbar-width: none; -ms-overflow-style: none; }
-html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+/* Moss is about 2:1 on the dark grounds; switch the ring to limewash there */
+footer :focus-visible,
+.bg-kadappa :focus-visible,
+.bg-ink :focus-visible {
+  outline-color: var(--color-lime);
+}
+
+/* A quiet scrollbar in the stone palette: visitors keep their sense of length and place */
+/* Chrome and Firefox use scrollbar-color; the -webkit rules only reach Safari. Same thumb in both. */
+html { scrollbar-width: thin; scrollbar-color: #a9a8a0 var(--color-lime); }
+html::-webkit-scrollbar { width: 10px; }
+html::-webkit-scrollbar-track { background: var(--color-lime); }
+html::-webkit-scrollbar-thumb { background: #a9a8a0; border: 3px solid var(--color-lime); border-radius: 10px; }
 
 /* Lenis */
 html.lenis, html.lenis body { height: auto; }
@@ -153,6 +163,70 @@ html.lenis, html.lenis body { height: auto; }
   padding-bottom: 0.08em;
   margin-bottom: -0.08em;
 }
+
+/* Home hero, stage 2: the studio's name drifting behind the gallery */
+@keyframes hero-marquee {
+  to { transform: translateX(-50%); }
+}
+.hero-marquee { animation: hero-marquee 80s linear infinite; }
+
+/* Massing boxes (components/Massing.tsx): solid faces, hairline edges, lit from above */
+.cube { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
+.cube__face {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--color-ink);
+  background: var(--color-lime);
+}
+.cube__face--top { background: var(--color-plaster); }
+.cube__face--left,
+.cube__face--right { background: #dcdbd3; }
+.cube--accent .cube__face { border-color: var(--color-accent); background: #c3cbbd; }
+.cube--accent .cube__face--top { background: #d9dfd4; }
+.cube--accent .cube__face--left,
+.cube--accent .cube__face--right { background: #aab5a3; }
+
+.box-marker {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  perspective: 300px;
+}
+.box-marker__turn {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 11px;
+  height: 11px;
+  transform-style: preserve-3d;
+  transform: rotateX(-30deg) rotateY(-135deg);
+  transition: transform 1.6s var(--ease-out-expo) 0.15s;
+}
+.box-marker[data-in] .box-marker__turn { transform: rotateX(-30deg) rotateY(-45deg); }
+
+.box-stack { position: relative; display: inline-block; perspective: 700px; }
+.box-stack__model {
+  position: absolute;
+  left: calc(50% - var(--s));
+  top: calc(50% - var(--s) * 0.15);
+  transform-style: preserve-3d;
+  transform: rotateX(-28deg) rotateY(-38deg);
+}
+.box-stack__slot { position: absolute; inset: 0; transform-style: preserve-3d; }
+.box-stack__slot--new .cube {
+  transform: translateY(calc(var(--s) * -2.2));
+  transition: transform 1s var(--ease-out-expo) 0.2s;
+}
+.box-stack[data-in] .box-stack__slot--new .cube { transform: none; }
+
+/* Sun study time slider: a hairline track with an ink thumb */
+.sun-range { -webkit-appearance: none; appearance: none; height: 20px; background: transparent; cursor: pointer; }
+.sun-range::-webkit-slider-runnable-track { height: 1px; background: var(--color-ink-muted); }
+.sun-range::-moz-range-track { height: 1px; background: var(--color-ink-muted); }
+.sun-range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -6.5px; border-radius: 50%; background: var(--color-ink); }
+.sun-range::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--color-ink); }
 
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { scrollbar-width: none; }

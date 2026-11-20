@@ -9,17 +9,25 @@ interface AboutContactPageProps {
 
 const PRINCIPLES = [
   {
-    title: 'Context and topography',
-    body: 'We do not impose foreign templates onto land. Whether designing for steep mountain slopes in Wayanad or dense urban plots in Bengaluru, the land dictates the orientation, elevation levels, and water flow.',
+    title: 'Boxes and flowing lines',
+    body: 'Rectangular volumes hold the different functions of a project. Flowing lines of circulation, access, natural light and ventilation weave through every one of them. It is the idea our emblem draws, and the one every plan starts from.',
   },
   {
-    title: 'Material honesty',
-    body: 'We work with materials that age with dignity: exposed laterite, red terracotta bricks, lime wash, river stone, and locally salvaged timber. No artificial cladding, no cosmetic skins.',
+    title: 'Rooted in site and story',
+    body: 'Whatever the scale or type, from a budget home to an eco village, each project starts from its site conditions and the client’s brief, and is a chance to find an approach and a narrative of its own.',
   },
   {
-    title: 'Passive climate design',
-    body: 'Kerala’s intense monsoon rains and Bengaluru’s dry summers require specific architectural responses: deep roof overhangs, central courtyards for cross ventilation, and shaded verandas.',
+    title: 'Comfort in the detail',
+    body: 'A fresh, forward-looking aesthetic where comfort and function sit together. We explore new materials and detail them with care down to the smallest element, so spaces answer to the people in them and the place around them.',
   },
+];
+
+const SERVICES = [
+  { title: 'Architecture', body: 'Buildings that work with their microclimate and respond to natural forces, for comfort, sustainability and everyday function.' },
+  { title: 'Interior design', body: 'Comfortable, functional interiors tailored to each client’s brief, with form, function and use in balance.' },
+  { title: 'Landscape design', body: 'Theme-led outdoor spaces built on flowing lines and storytelling, made to be felt as much as seen.' },
+  { title: 'Master planning', body: 'Theme-driven plans with clear access, smooth circulation and well-integrated services.' },
+  { title: 'Product design', body: 'Research-led products developed for a specific project or subject, where usability and context come first.' },
 ];
 
 const RECOGNITION = [
@@ -30,7 +38,15 @@ const RECOGNITION = [
   { year: '2022', title: 'Architectural Digest and Houzz featured practice', note: 'Featured for innovative courtyard design and natural material palettes in South India.' },
 ];
 
-const PROJECT_TYPES = ['Residential', 'Commercial', 'Apartments', 'Interiors', 'Other'];
+/** Studio team. Add `portrait` once a photo is matched to a name. */
+const TEAM: { name: string; role: string; portrait?: string }[] = [
+  { name: 'Muhammed Salman', role: 'Senior Designer' },
+  { name: 'Vibhav P', role: 'Architect' },
+  { name: 'Amana Fida', role: 'Architect', portrait: ASSETS.portraitAmana },
+  { name: 'Eldho Johny', role: 'Junior Designer' },
+];
+
+const PROJECT_TYPES =['Residential', 'Commercial', 'Apartments', 'Interiors', 'Other'];
 
 const inputClass =
   'w-full bg-transparent border-0 border-b border-line px-0 py-3 text-[17px] text-ink placeholder:text-stone-2 focus:outline-none focus:border-ink focus-visible:outline-none transition-colors';
@@ -60,9 +76,14 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
         <h1 className="display text-[22vw] md:text-[14vw] lg:text-[12vw]">Studio</h1>
         <div className="grid-page gap-y-6 mt-10 md:mt-16">
           <h2 className="col-span-12 md:col-span-3 label pt-2">About</h2>
-          <p className="col-span-12 md:col-span-9 lg:col-span-8 prose-serif text-[26px] sm:text-[34px] lg:text-[42px] leading-[1.15]">
-            Flowspace Architects is an architecture and design studio founded by Chief Architect Ar. Rashid Ali, with studios in Kalpetta, Wayanad (Kerala) and Jayanagar, Bengaluru (Karnataka).
-          </p>
+          <div className="col-span-12 md:col-span-9 lg:col-span-8">
+            <p className="prose-serif text-[26px] sm:text-[34px] lg:text-[42px] leading-[1.15]">
+              Flowspace Architects is an architecture and design studio founded in 2016 by Chief Architect Ar. Rashid Ali, with studios in Kalpetta, Wayanad (Kerala) and Jayanagar, Bengaluru (Karnataka).
+            </p>
+            <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
+              We see architecture as more than building: it is a narrative, a response and a reflection. Every space should tell its own story to the people who live and work in it.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -82,27 +103,67 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
               </div>
             ))}
           </div>
+          <p className="col-span-12 md:col-start-4 md:col-span-8 lg:col-start-4 lg:col-span-7 prose-serif text-[22px] sm:text-[26px] leading-snug">
+            The flowing lines carry the same elements through every plan: air and ventilation, pockets of natural light, courtyards, interactive spaces, water bodies, Vastu and easy access. Each project is also a piece of research, shaped by its microclimate.
+          </p>
+        </div>
+      </section>
+
+      <section className="page-x pb-24 md:pb-36" aria-labelledby="services-heading">
+        <div className="grid-page gap-y-8">
+          <h2 id="services-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">Services</h2>
+          <ul className="col-span-12 md:col-span-9 border-b border-line">
+            {SERVICES.map((s) => (
+              <li key={s.title} className="grid sm:grid-cols-[14rem_1fr] gap-x-6 gap-y-1 border-t border-line py-5">
+                <h3 className="text-[20px] sm:text-[22px] tracking-tight">{s.title}</h3>
+                <p className="text-[15px] text-ink-muted leading-relaxed max-w-[60ch] sm:pt-1">{s.body}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
       <section className="page-x pb-24 md:pb-36" aria-labelledby="people-heading">
         <div className="grid-page gap-y-10">
           <h2 id="people-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">People</h2>
-          <div className="col-span-12 md:col-span-9 grid sm:grid-cols-2 gap-x-10 gap-y-12">
-            <div className="border-t border-ink pt-5">
-              <h3 className="text-[26px] tracking-tight">Ar. Rashid Ali</h3>
-              <p className="text-ink-muted text-[15px] mt-1">Founder and Chief Architect</p>
-              <p className="prose-serif text-[19px] leading-snug mt-6 max-w-[34ch]">
-                Leads every project from the first site walk to handover, across both studios.
-              </p>
-              <p className="label mt-6">COA Reg. CA/2016/76777, Indian Institute of Architects</p>
+          <div className="col-span-12 md:col-span-9 flex flex-col gap-16 md:gap-24">
+            <div className="border-t border-ink pt-5 grid sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-x-10 gap-y-8">
+              <Aperture
+                src={ASSETS.portraitRashid}
+                alt="Ar. Rashid Ali, Founder and Chief Architect"
+                className="w-full max-w-[400px] aspect-[4/5]"
+              />
+              <div className="flex flex-col">
+                <h3 className="text-[26px] tracking-tight">Ar. Rashid Ali</h3>
+                <p className="text-ink-muted text-[15px] mt-1">Founder and Chief Architect</p>
+                <p className="prose-serif text-[19px] leading-snug mt-6 max-w-[34ch]">
+                  Leads every project from the first site walk to handover, across both studios.
+                </p>
+                <p className="text-[15px] leading-relaxed text-ink-muted mt-6 max-w-[46ch]">
+                  Bachelor of Architecture, Visvesvaraya Technological University (VTU). Before founding Flowspace in 2016 he worked with studios including K2 India, Thirdspace, Arcon Intlands, and Sahil and Sarthak.
+                </p>
+                <p className="label mt-6">COA Reg. CA/2016/76777, Indian Institute of Architects</p>
+              </div>
             </div>
-            <div className="border-t border-ink pt-5">
-              <h3 className="text-[26px] tracking-tight">Architecture and interior studio</h3>
-              <p className="text-ink-muted text-[15px] mt-1">Architectural associates and site engineers</p>
-              <p className="prose-serif text-[19px] leading-snug mt-6 max-w-[34ch]">
-                A full-service team working across Wayanad and Bengaluru.
-              </p>
+
+            <div>
+              <div className="border-t border-ink pt-5 flex flex-wrap items-baseline justify-between gap-x-10 gap-y-2">
+                <h3 className="text-[26px] tracking-tight">Studio team</h3>
+                <p className="text-ink-muted text-[15px]">A full-service team working across Wayanad and Bengaluru.</p>
+              </div>
+              <ul className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 mt-8">
+                {TEAM.map((m) => (
+                  <li key={m.name}>
+                    {m.portrait ? (
+                      <Aperture src={m.portrait} alt={`${m.name}, ${m.role}`} className="w-full aspect-[4/5]" />
+                    ) : (
+                      <div className="w-full aspect-[4/5] bg-stone-1" aria-hidden="true" />
+                    )}
+                    <p className="text-[17px] tracking-tight mt-4">{m.name}</p>
+                    <p className="text-ink-muted text-[14px] mt-0.5">{m.role}</p>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
@@ -135,17 +196,16 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
               <div>
                 <h3 className="text-[19px] tracking-tight mb-2">Wayanad studio</h3>
                 <p className="text-ink-muted">Kalpetta, Wayanad<br />Kerala 673122, India</p>
-                <a href="tel:+919447000000" className="text-link mt-3">+91 94470 00000</a>
               </div>
               <div>
                 <h3 className="text-[19px] tracking-tight mb-2">Bengaluru studio</h3>
-                <p className="text-ink-muted">Jayanagar, Bengaluru<br />Karnataka 560011, India</p>
-                <a href="tel:+919845000000" className="text-link mt-3">+91 98450 00000</a>
+                <p className="text-ink-muted">3rd Floor, 1 Krishna Rajendra Road<br />7th Block, Jayanagar<br />Bengaluru 560070, India</p>
+                <a href="tel:+919747859991" className="text-link mt-3">+91 97478 59991</a>
               </div>
             </div>
             <div className="flex flex-wrap gap-x-8 gap-y-3 text-[15px]">
-              <a href="mailto:hello@flowspacearchitects.com" className="text-link">hello@flowspacearchitects.com</a>
-              <a href="https://wa.me/919447000000" target="_blank" rel="noreferrer" className="text-link">Chat on WhatsApp</a>
+              <a href="mailto:flowspacearchitects@gmail.com" className="text-link">flowspacearchitects@gmail.com</a>
+              <a href="https://wa.me/919747859991" target="_blank" rel="noreferrer" className="text-link">Chat on WhatsApp</a>
             </div>
           </div>
 
@@ -167,14 +227,14 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
 
                 <fieldset>
                   <legend className="label mb-3">Project type</legend>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-x-6 gap-y-3 text-[15px]">
                     {PROJECT_TYPES.map((type) => {
                       const checked = formData.projectType === type;
                       return (
                         <label
                           key={type}
-                          className={`cursor-pointer px-4 py-2 text-[14px] border transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent outline-offset-2 ${
-                            checked ? 'bg-ink text-lime border-ink' : 'border-line hover:border-ink'
+                          className={`cursor-pointer pb-0.5 border-b transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent outline-offset-4 ${
+                            checked ? 'text-ink border-ink' : 'text-ink-muted border-transparent hover:text-ink'
                           }`}
                         >
                           <input

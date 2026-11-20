@@ -4,6 +4,7 @@ import { Flip } from 'gsap/Flip';
 import { MovingEmblem, Wordmark } from './Brand';
 import { useSmoothScroll } from '../context/SmoothScrollContext';
 import { HERO_EVENT, getHeroState } from '../lib/heroSignal';
+import { RouteLink } from './RouteLink';
 import type { NavigateTarget, Page } from '../data/projects';
 
 gsap.registerPlugin(Flip);
@@ -19,12 +20,14 @@ const NAV_LINKS: { id: NavigateTarget; label: string; match: Page[] }[] = [
   { id: 'journal', label: 'Journal', match: ['journal', 'article'] },
   { id: 'research', label: 'Research', match: ['research'] },
   { id: 'press', label: 'Press', match: ['press'] },
+  // Contact lives on the studio page, so it never claims the active state itself
+  { id: 'contact', label: 'Contact', match: [] },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isScrolled, direction, lenis } = useSmoothScroll();
-  const firstLinkRef = useRef<HTMLButtonElement>(null);
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const flipState = useRef<Flip.FlipState | null>(null);
   const [hero, setHero] = useState(getHeroState);
@@ -93,30 +96,32 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
         }`}
       >
         <div className="relative page-x h-[68px] md:h-[76px] flex items-center justify-between">
-          <button
-            onClick={() => go('home')}
+          <RouteLink
+            to="home"
+            onNavigate={go}
             className="flex items-center gap-3 text-ink"
             aria-label="Flowspace Architects, home"
           >
             <span data-nav-emblem className="block">
               <MovingEmblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
             </span>
-            <span data-nav-wordmark className="block"><Wordmark /></span>
-          </button>
+            <span data-nav-wordmark className="block"><Wordmark className="block" /></span>
+          </RouteLink>
 
           <nav
             ref={navRef}
             aria-label="Primary"
             className={`hidden lg:flex items-center text-[15px] ${
-              spread ? 'absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] justify-between' : 'gap-12'
+              spread ? 'absolute inset-y-0 left-[var(--gutter)] right-[var(--gutter)] justify-between' : 'gap-10 xl:gap-12'
             }`}
           >
             {NAV_LINKS.map((link) => {
               const active = link.match.includes(currentPage);
               return (
-                <button
+                <RouteLink
                   key={link.id}
-                  onClick={() => go(link.id)}
+                  to={link.id}
+                  onNavigate={go}
                   aria-current={active ? 'page' : undefined}
                   className={`relative py-1 transition-colors ${active ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
                 >
@@ -124,7 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   <span
                     className={`absolute left-0 -bottom-0.5 h-px bg-current transition-[width] duration-500 ease-out-expo ${active ? 'w-full' : 'w-0'}`}
                   />
-                </button>
+                </RouteLink>
               );
             })}
           </nav>
@@ -151,11 +156,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
         }`}
       >
         <nav aria-label="Mobile" className="flex flex-col">
-          {[{ id: 'home' as NavigateTarget, label: 'Home', match: ['home'] as Page[] }, ...NAV_LINKS, { id: 'contact' as NavigateTarget, label: 'Contact', match: [] as Page[] }].map((link, i) => (
-            <button
+          {[{ id: 'home' as NavigateTarget, label: 'Home', match: ['home'] as Page[] }, ...NAV_LINKS].map((link, i) => (
+            <RouteLink
               key={link.id}
               ref={i === 0 ? firstLinkRef : undefined}
-              onClick={() => go(link.id)}
+              to={link.id}
+              onNavigate={go}
               aria-current={link.match.includes(currentPage) ? 'page' : undefined}
               className={`text-left display text-[13vw] sm:text-[64px] py-1.5 border-b border-line transition-[transform,opacity] duration-700 ease-out-expo ${
                 menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
@@ -163,19 +169,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
               style={{ transitionDelay: menuOpen ? `${80 + i * 45}ms` : '0ms' }}
             >
               {link.label}
-            </button>
+            </RouteLink>
           ))}
         </nav>
         <div className="grid grid-cols-2 gap-6 text-[14px] leading-relaxed">
           <div>
             <p className="label mb-1">Wayanad</p>
             <p>Kalpetta, Kerala 673122</p>
-            <a href="tel:+919447000000" className="text-link mt-1">+91 94470 00000</a>
           </div>
           <div>
             <p className="label mb-1">Bengaluru</p>
-            <p>Jayanagar, Karnataka 560011</p>
-            <a href="tel:+919845000000" className="text-link mt-1">+91 98450 00000</a>
+            <p>7th Block, Jayanagar, Bengaluru 560070</p>
+            <a href="tel:+919747859991" className="text-link mt-1">+91 97478 59991</a>
           </div>
         </div>
       </div>

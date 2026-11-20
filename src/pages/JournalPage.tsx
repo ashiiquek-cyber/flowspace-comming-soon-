@@ -1,10 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { RouteLink } from '../components/RouteLink';
 import type { NavigateTarget } from "../data/projects";
 import { ASSETS } from '../constants/assets';
-import { X, Send, CheckCircle2, ChevronRight } from 'lucide-react';
+import { X, CheckCircle2 } from 'lucide-react';
+import { useDialog } from '../lib/useDialog';
 
 interface JournalPageProps {
   onNavigate: (target: NavigateTarget) => void;
+  /** Set by the address #/journal/<id>: opens that article in the reader */
+  articleId?: string;
 }
 
 type Category =
@@ -53,7 +57,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectCloudHouse,
     imageTag: 'Design visualisation',
@@ -99,7 +103,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectHover,
     imageTag: 'Design visualisation',
@@ -134,7 +138,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     isCoverPlaceholder: true,
     content: {
@@ -170,7 +174,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     isCoverPlaceholder: true,
     content: {
@@ -204,7 +208,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectInterior,
     imageTag: 'Design visualisation',
@@ -235,7 +239,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectHover,
     imageTag: 'Design visualisation',
@@ -270,7 +274,7 @@ const ARTICLES_DATA: Article[] = [
     author: {
       name: 'Ar. Rashid Ali',
       role: 'Founder & Chief Architect',
-      avatar: ASSETS.authorAvatar,
+      avatar: ASSETS.avatarRashid,
     },
     image: ASSETS.projectCloudHouse,
     imageTag: 'Design visualisation',
@@ -327,21 +331,50 @@ const CATEGORIES: Category[] = [
   'Case studies',
 ];
 
-export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
+export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate, articleId }) => {
   const [selectedCategory, setSelectedCategory] = useState<Category>('All');
   const [expandedFaqId, setExpandedFaqId] = useState<string | null>('faq-1');
-  const [activeArticle, setActiveArticle] = useState<Article | null>(null);
-  
-  // Ask Studio modal state
+
+  // The open article comes from the address (#/journal/<id>), so it can be linked and shared
+  const activeArticle = useMemo(() => ARTICLES_DATA.find((a) => a.id === articleId) ?? null, [articleId]);
+  // Closing should not leave a history entry that Back would reopen. Opened from this list:
+  // step back to the list's entry. Arrived open (a shared link): swap the entry for the list.
+  // (A mount-time flag, not an effect: StrictMode re-runs effects and would misreport it.)
+  const arrivedOpen = useRef(!!articleId);
+  const closeArticle = () => {
+    if (arrivedOpen.current) {
+      arrivedOpen.current = false;
+      window.location.replace('#/journal');
+    } else {
+      window.history.back();
+    }
+  };
+  const articleCloseRef = useRef<HTMLButtonElement>(null);
+  useDialog(!!activeArticle, closeArticle, articleCloseRef);
+
+  useEffect(() => {
+    if (!activeArticle) return;
+    document.title = `${activeArticle.title} — Flowspace Architects`;
+    // Not a captured "previous": on a direct visit this runs before App sets the page title.
+    // When leaving the journal entirely, App's own title effect runs after this and wins.
+    return () => { document.title = 'Journal — Flowspace Architects'; };
+  }, [activeArticle]);
+
+  // Ask the studio modal state
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [askFormData, setAskFormData] = useState({ name: '', email: '', question: '' });
   const [askSubmitted, setAskSubmitted] = useState(false);
+  const askCloseRef = useRef<HTMLButtonElement>(null);
+  useDialog(isAskModalOpen, () => setIsAskModalOpen(false), askCloseRef);
 
-  // Filter latest articles
+  const counts = useMemo(
+    () => Object.fromEntries(CATEGORIES.map((c) => [c, c === 'All' ? ARTICLES_DATA.length : ARTICLES_DATA.filter((a) => a.category === c).length])),
+    [],
+  );
+
+  // With no filter the first article is featured above, so the list starts from the second
   const filteredLatestArticles = useMemo(() => {
-    // Exclude the first featured article from latest list, unless filtered
-    const rest = ARTICLES_DATA.slice(1);
-    if (selectedCategory === 'All') return rest;
+    if (selectedCategory === 'All') return ARTICLES_DATA.slice(1);
     return ARTICLES_DATA.filter((a) => a.category === selectedCategory);
   }, [selectedCategory]);
 
@@ -358,243 +391,143 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="bg-lime text-ink flex flex-col items-start w-full relative selection:bg-ink selection:text-lime">
-      {/* 1. HEADER SECTION (Figma: Header / node 22:865) */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-12 md:pb-16">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 md:gap-12">
-          {/* Main Title + Counter */}
-          <div className="flex items-start gap-4 sm:gap-6">
-            <h1 className="display text-7xl sm:text-9xl md:text-[140px] lg:text-[200px] leading-[0.86] text-ink">
-              Journal
-            </h1>
-            <span className="font-dm-sans font-medium text-[12px] text-ink-muted pt-2 sm:pt-4">
-              (07)
-            </span>
-          </div>
-
-          {/* Subtitle / Intro Description */}
-          <p className="font-dm-sans font-normal text-lg sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink max-w-[460px]">
-            Notes from the studio on building in Kerala and Karnataka — costs, climate, permits and the projects on our desk.
+    <div className="bg-lime text-ink w-full relative">
+      {/* Header */}
+      <section className="page-x pt-16 md:pt-24 pb-12 md:pb-16">
+        <div className="grid-page gap-y-8">
+          <h1 className="col-span-12 md:col-span-8 display text-[16vw] md:text-[9vw]">Journal</h1>
+          <p className="col-span-12 md:col-span-4 md:self-end label max-w-[34ch] leading-relaxed">
+            Notes from the studio on building in Kerala and Karnataka: costs, climate, permits and the projects on our desk.
           </p>
         </div>
       </section>
 
-      {/* 2. FILTER PILLS (Figma: Filters / node 22:870) */}
-      <section className="w-full border-y border-line">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-10 py-5">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {CATEGORIES.map((cat) => {
-              const isActive = selectedCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 sm:px-[18px] py-2 sm:py-[10px] text-[14px] sm:text-[15px] font-medium tracking-[-0.075px] whitespace-nowrap transition-all duration-200 cursor-pointer focus:outline-none ${
-                    isActive
-                      ? 'bg-ink text-lime shadow-sm'
-                      : 'border border-line text-ink hover:border-ink hover:bg-stone-1/60'
-                  }`}
-                >
-                  {cat}
-                </button>
-              );
-            })}
-          </div>
+      {/* Filters */}
+      <section className="border-y border-line">
+        <div
+          role="group"
+          aria-label="Filter articles by topic"
+          className="page-x py-5 flex items-center gap-x-6 sm:gap-x-8 overflow-x-auto scrollbar-none text-[15px]"
+        >
+          {CATEGORIES.map((cat) => {
+            const active = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                aria-pressed={active}
+                className={`whitespace-nowrap transition-colors ${active ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
+              >
+                <span className={active ? 'border-b border-ink pb-0.5' : ''}>{cat}</span>
+                <sup className="ml-0.5 text-[10px] tabular-nums">{counts[cat]}</sup>
+              </button>
+            );
+          })}
         </div>
       </section>
 
-      {/* 3. FEATURED ARTICLE SECTION (Figma: Featured / node 22:883) */}
+      {/* Featured article */}
       {selectedCategory === 'All' && (
-        <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pt-12 md:pt-16 pb-20 md:pb-28">
-          <div
-            onClick={() => onNavigate('article')}
-            className="group cursor-pointer flex flex-col lg:flex-row items-stretch lg:items-end gap-8 lg:gap-10"
-          >
-            {/* Featured Image */}
-            <div className="relative w-full lg:w-[840px] h-[360px] sm:h-[460px] lg:h-[560px] shrink-0 overflow-hidden bg-stone-1 flex flex-col justify-end p-4 sm:p-5">
+        <section className="page-x pt-12 md:pt-16 pb-20 md:pb-28">
+          <RouteLink to="article" onNavigate={onNavigate} className="group grid-page gap-y-8 items-end">
+            <div className="col-span-12 lg:col-span-8 aspect-[4/3] lg:aspect-[3/2] overflow-hidden bg-stone-1">
               <img
-                alt={featuredArticle.title}
-                className="absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                alt=""
+                className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                 src={featuredArticle.image}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 pointer-events-none" />
-              <span className="relative z-10 font-dm-sans font-medium text-[12px] text-lime">
-                {featuredArticle.imageTag}
-              </span>
             </div>
 
-            {/* Featured Text */}
-            <div className="flex-1 flex flex-col gap-5 sm:gap-6 items-start lg:pb-2">
-              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-                Featured · {featuredArticle.meta}
-              </span>
-
-              <h2 className="font-dm-sans font-medium text-3xl sm:text-4xl md:text-5xl lg:text-[56px] leading-[1.05] tracking-[-1.68px] text-ink transition-colors group-hover:text-accent">
+            <div className="col-span-12 lg:col-span-4 flex flex-col gap-5 items-start lg:pb-1">
+              <p className="label">Featured</p>
+              <h2 className="text-[32px] sm:text-[40px] leading-[1.08] tracking-[-0.03em] transition-colors group-hover:text-accent">
                 {featuredArticle.title}
               </h2>
-
-              <p className="font-dm-sans font-normal text-lg sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink-muted">
-                {featuredArticle.excerpt}
-              </p>
-
-              {/* Author Chip */}
-              <div className="flex items-center gap-3 pt-2">
-                <div className="size-10 rounded-full overflow-hidden bg-stone-1 border border-line shrink-0">
-                  <img
-                    alt={featuredArticle.author.name}
-                    className="size-full object-cover"
-                    src={featuredArticle.author.avatar}
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-dm-sans font-medium text-[15px] leading-tight text-ink tracking-[-0.075px]">
-                    {featuredArticle.author.name}
-                  </span>
-                  <span className="font-dm-sans font-normal text-[14px] sm:text-[15px] text-ink-muted">
-                    {featuredArticle.date} · {featuredArticle.readTime}
-                  </span>
-                </div>
-              </div>
-
-              {/* Read article link */}
-              <div className="inline-flex items-center gap-3 border-b border-ink pb-1 pt-2 group-hover:border-neutral-500 transition-colors">
-                <span className="font-dm-sans font-medium text-[15px] tracking-[-0.075px] text-ink">
-                  Read article
-                </span>
+              <p className="text-[18px] leading-[1.45] text-ink-muted">{featuredArticle.excerpt}</p>
+              <div className="flex items-center gap-3 pt-1">
                 <img
                   alt=""
-                  className="size-4 transition-transform duration-200 group-hover:translate-x-1"
-                  src={ASSETS.iconArrowRightDark}
+                  className="size-10 rounded-full object-cover bg-stone-1 shrink-0"
+                  src={featuredArticle.author.avatar}
                 />
+                <div className="flex flex-col">
+                  <span className="text-[15px] leading-tight">{featuredArticle.author.name}</span>
+                  <span className="label">
+                    {featuredArticle.date}, {featuredArticle.readTime}
+                  </span>
+                </div>
               </div>
+              <span className="text-link text-[15px] mt-1">Read article</span>
             </div>
-          </div>
+          </RouteLink>
         </section>
       )}
 
-      {/* 4. LATEST ARTICLES SECTION (Figma: Latest / node 22:899) */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        {/* Latest Header with top border */}
-        <div className="border-t border-ink pt-5 flex items-start justify-between mb-12 md:mb-16">
-          <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-none tracking-[-1.68px] text-ink">
-            {selectedCategory === 'All' ? 'Latest' : selectedCategory}
-          </h2>
-          <span className="font-dm-sans font-medium text-[12px] text-ink-muted pt-1">
-            ({filteredLatestArticles.length.toString().padStart(2, '0')})
-          </span>
+      {/* Latest articles */}
+      <section className="page-x pb-28 md:pb-40">
+        <div className="border-t border-line pt-5 mb-10 md:mb-14">
+          <h2 className="label">{selectedCategory === 'All' ? 'Latest' : selectedCategory}</h2>
         </div>
 
-        {/* 3-Column Articles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-16 sm:gap-y-20">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-x-10 gap-y-16 sm:gap-y-20">
           {filteredLatestArticles.map((article) => (
-            <article
-              key={article.id}
-              onClick={() => setActiveArticle(article)}
-              className="group cursor-pointer flex flex-col gap-4 items-start"
-            >
-              {/* Card Image */}
-              <div className={`relative w-full h-[240px] sm:h-[280px] lg:h-[293px] overflow-hidden flex flex-col justify-end p-4 pb-[14px] pt-[16px] px-[16px] ${
-                article.image ? 'bg-stone-1' : 'bg-[#d9d9d6]'
-              }`}>
+            <li key={article.id}>
+              <a href={`#/journal/${article.id}`} className="group flex flex-col gap-4 items-start">
                 {article.image ? (
-                  <>
+                  <div className="w-full aspect-[4/3] overflow-hidden bg-stone-1 mb-1">
                     <img
-                      alt={article.title}
-                      className="absolute inset-0 size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                      alt=""
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                       src={article.image}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none" />
-                    <span className="relative z-10 font-dm-sans font-medium text-[12px] text-lime">
-                      {article.imageTag || 'Design visualisation'}
-                    </span>
-                  </>
-                ) : (
-                  <div className="size-full flex flex-col justify-end">
-                    <span className="font-dm-sans font-medium text-[12px] text-[#8c8c88]">
-                      Cover image
-                    </span>
                   </div>
+                ) : (
+                  // No cover yet: a text-only card with the rule the image would have sat on
+                  <span aria-hidden className="block w-full border-t border-ink" />
                 )}
-              </div>
-
-              {/* Metadata category */}
-              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-                {article.meta}
-              </span>
-
-              {/* Title */}
-              <h3 className="font-dm-sans font-medium text-2xl sm:text-[28px] lg:text-[32px] leading-[1.15] tracking-[-0.64px] text-ink transition-colors group-hover:text-accent">
-                {article.title}
-              </h3>
-
-              {/* Excerpt */}
-              <p className="font-dm-sans font-normal text-[15px] sm:text-[16px] leading-[1.5] text-ink-muted">
-                {article.excerpt}
-              </p>
-
-              {/* Read time */}
-              <span className="font-dm-sans font-medium text-[14px] sm:text-[15px] tracking-[-0.075px] text-ink pt-1">
-                {article.readTime}
-              </span>
-            </article>
+                <p className="label">
+                  {article.category}, {article.date}
+                </p>
+                <h3 className="text-[24px] sm:text-[28px] leading-[1.15] tracking-[-0.02em] transition-colors group-hover:text-accent">
+                  {article.title}
+                </h3>
+                <p className="text-[16px] leading-[1.5] text-ink-muted">{article.excerpt}</p>
+                <span className="label text-ink">{article.readTime}</span>
+              </a>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
-      {/* 5. FAQ SECTION (Figma: FAQ / node 22:948) */}
-      <section className="w-full max-w-[1440px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-10 lg:gap-16">
-          {/* FAQ Left Column */}
-          <div className="flex flex-col items-start gap-5 shrink-0">
-            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-              FAQ
-            </span>
-            <h2 className="font-dm-sans font-medium text-4xl sm:text-5xl md:text-[56px] leading-tight tracking-[-1.68px] text-ink">
-              Questions<br />clients ask us
-            </h2>
-          </div>
-
-          {/* FAQ Right Column: Accordion */}
-          <div className="w-full lg:w-[840px] flex flex-col">
-            {FAQ_ITEMS.map((faq) => {
+      {/* FAQ */}
+      <section className="page-x pb-28 md:pb-40">
+        <div className="grid-page gap-y-8 border-t border-line pt-5">
+          <h2 className="col-span-12 lg:col-span-3 label">Questions clients ask</h2>
+          <div className="col-span-12 lg:col-span-8 lg:col-start-5 flex flex-col">
+            {FAQ_ITEMS.map((faq, i) => {
               const isOpen = expandedFaqId === faq.id;
               return (
-                <div
-                  key={faq.id}
-                  className="border-t border-line py-6 transition-colors"
-                >
+                <div key={faq.id} className={`py-6 ${i > 0 ? 'border-t border-line' : ''}`}>
                   <button
                     onClick={() => setExpandedFaqId(isOpen ? null : faq.id)}
-                    className="w-full flex items-start justify-between text-left gap-6 group cursor-pointer focus:outline-none"
+                    className="w-full flex items-start justify-between text-left gap-6 group"
                     aria-expanded={isOpen}
+                    aria-controls={`${faq.id}-answer`}
                   >
-                    <span className="font-dm-sans font-normal text-xl sm:text-[22px] leading-[1.4] tracking-[-0.22px] text-ink group-hover:text-accent transition-colors">
+                    <span className="text-[20px] sm:text-[22px] leading-[1.4] tracking-[-0.01em] group-hover:text-accent transition-colors">
                       {faq.question}
                     </span>
-                    <span className="shrink-0 size-6 flex items-center justify-center pt-1 text-ink">
-                      {isOpen ? (
-                        <img
-                          alt="Collapse"
-                          className="size-5 transition-transform duration-200"
-                          src={ASSETS.iconMinus}
-                        />
-                      ) : (
-                        <img
-                          alt="Expand"
-                          className="size-5 transition-transform duration-200 group-hover:scale-110"
-                          src={ASSETS.iconPlus}
-                        />
-                      )}
-                    </span>
+                    <img
+                      alt=""
+                      className="size-5 shrink-0 mt-1.5"
+                      src={isOpen ? ASSETS.iconMinus : ASSETS.iconPlus}
+                    />
                   </button>
-
-                  {/* Accordion Answer Content */}
                   {isOpen && (
-                    <div className="pt-3.5 pr-8 animate-in fade-in duration-200">
-                      <p className="font-dm-sans font-normal text-[16px] leading-[1.5] text-ink-muted">
-                        {faq.answer}
-                      </p>
-                    </div>
+                    <p id={`${faq.id}-answer`} className="pt-3.5 pr-8 text-[16px] leading-[1.6] text-ink-muted max-w-[62ch] animate-in">
+                      {faq.answer}
+                    </p>
                   )}
                 </div>
               );
@@ -603,212 +536,162 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* 6. "HAVE A QUESTION" STRIP (Figma: Ask / node 22:977) */}
-      <section className="w-full bg-surface border-t border-line">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-10 py-12 md:py-14 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <h3 className="font-dm-sans font-medium text-2xl sm:text-3xl md:text-[32px] tracking-[-0.64px] text-ink">
+      {/* Ask the studio */}
+      <section className="bg-plaster border-t border-line">
+        <div className="page-x py-12 md:py-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <h2 className="prose-serif text-[28px] sm:text-[36px] leading-[1.15]">
             Have a question we should answer here?
-          </h3>
-          <button
-            onClick={() => setIsAskModalOpen(true)}
-            className="inline-flex items-center gap-3.5 px-7 py-4 bg-ink text-lime text-[15px] font-medium tracking-[-0.075px] hover:bg-accent transition-colors cursor-pointer shrink-0"
-          >
-            <span>Ask the studio</span>
-            <img alt="" className="size-4" src={ASSETS.iconArrowRightWhite} />
+          </h2>
+          <button onClick={() => setIsAskModalOpen(true)} className="btn-solid shrink-0">
+            Ask the studio
           </button>
         </div>
       </section>
 
-      {/* 7. FIXED FLOATING WHATSAPP BUTTON (Figma: WhatsApp (fixed) / node 41:1592) */}
-      <a
-        href="https://wa.me/919447000000"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-8 right-6 md:right-10 z-40 bg-ink text-lime flex items-center gap-2.5 pl-4 pr-5 py-3 hover:bg-accent transition-all duration-300 group"
-        aria-label="Chat on WhatsApp"
-      >
-        <img alt="WhatsApp" className="size-5 shrink-0" src={ASSETS.iconWhatsapp} />
-        <span className="font-dm-sans font-medium text-[14px] sm:text-[15px] tracking-[-0.075px] whitespace-nowrap">
-          Chat on WhatsApp
-        </span>
-      </a>
-
-      {/* 8. ARTICLE READER MODAL (Interactive reader for all articles) */}
+      {/* Article reader */}
       {activeArticle && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-plaster w-full max-w-3xl my-8 p-6 sm:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            {/* Close Button */}
+        <div
+          className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in"
+          onClick={(e) => e.target === e.currentTarget && closeArticle()}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="article-title"
+            data-lenis-prevent
+            className="bg-plaster w-full max-w-3xl p-6 sm:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain"
+          >
             <button
-              onClick={() => setActiveArticle(null)}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-stone-1 text-ink transition-colors cursor-pointer"
+              ref={articleCloseRef}
+              onClick={closeArticle}
+              className="absolute top-5 right-5 p-2 text-ink hover:text-accent transition-colors"
               aria-label="Close article"
             >
               <X size={22} />
             </button>
 
-            {/* Modal Header */}
-            <div className="mb-6 pr-8">
-              <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-                {activeArticle.meta}
-              </span>
-              <h2 className="font-dm-sans font-medium text-2xl sm:text-4xl tracking-tight text-ink mt-2 mb-4 leading-tight">
+            <div className="mb-6 pr-10">
+              <p className="label">{activeArticle.category}</p>
+              <h2 id="article-title" className="text-[28px] sm:text-[40px] leading-[1.1] tracking-[-0.03em] mt-2 mb-5">
                 {activeArticle.title}
               </h2>
-              <div className="flex items-center gap-3 pt-1 border-b border-line pb-6">
-                <div className="size-10 rounded-full overflow-hidden bg-stone-1 border border-line">
-                  <img
-                    alt={activeArticle.author.name}
-                    className="size-full object-cover"
-                    src={activeArticle.author.avatar}
-                  />
-                </div>
+              <div className="flex items-center gap-3 border-b border-line pb-6">
+                <img alt="" className="size-10 rounded-full object-cover bg-stone-1" src={activeArticle.author.avatar} />
                 <div>
-                  <p className="font-dm-sans font-medium text-[15px] text-ink">
-                    {activeArticle.author.name}
-                  </p>
-                  <p className="font-dm-sans font-normal text-[13px] text-ink-muted">
-                    {activeArticle.author.role} · {activeArticle.date} · {activeArticle.readTime}
+                  <p className="text-[15px]">{activeArticle.author.name}, {activeArticle.author.role}</p>
+                  <p className="label">
+                    {activeArticle.date}, {activeArticle.readTime}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Modal Image if present */}
             {activeArticle.image && (
-              <div className="w-full h-64 sm:h-80 overflow-hidden mb-8 bg-stone-1">
-                <img
-                  alt={activeArticle.title}
-                  className="size-full object-cover"
-                  src={activeArticle.image}
-                />
+              <div className="w-full aspect-[16/9] overflow-hidden mb-8 bg-stone-1">
+                <img alt="" className="size-full object-cover" src={activeArticle.image} />
               </div>
             )}
 
-            {/* Article Content */}
-            <div className="space-y-6 text-ink">
-              <p className="font-dm-sans font-normal text-lg sm:text-xl leading-relaxed text-ink/90 border-l-2 border-ink pl-4 italic">
-                {activeArticle.content.lead}
-              </p>
-
-              {activeArticle.content.sections.map((section, sIdx) => (
-                <div key={sIdx} className="pt-4 space-y-3">
-                  <h4 className="font-dm-sans font-medium text-xl sm:text-2xl text-ink">
-                    {section.heading}
-                  </h4>
-                  {section.paragraphs.map((para, pIdx) => (
-                    <p key={pIdx} className="font-dm-sans font-normal text-[16px] leading-[1.6] text-ink/80">
-                      {para}
-                    </p>
+            <div className="space-y-6">
+              <p className="prose-serif text-[20px] sm:text-[22px] leading-relaxed">{activeArticle.content.lead}</p>
+              {activeArticle.content.sections.map((section) => (
+                <div key={section.heading} className="pt-4 space-y-3">
+                  <h3 className="text-[20px] sm:text-[24px] leading-snug">{section.heading}</h3>
+                  {section.paragraphs.map((para) => (
+                    <p key={para} className="text-[16px] leading-[1.65] text-ink/80">{para}</p>
                   ))}
                   {section.highlight && (
-                    <div className="bg-surface p-4 sm:p-5 border-l-4 border-ink my-4">
-                      <p className="font-dm-sans font-medium text-[15px] text-ink">
-                        {section.highlight}
-                      </p>
-                    </div>
+                    <p className="border-l-2 border-accent pl-4 my-5 text-[16px] leading-[1.55]">{section.highlight}</p>
                   )}
                 </div>
               ))}
             </div>
 
-            {/* Article Modal Footer CTA */}
-            <div className="mt-10 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="font-dm-sans text-sm text-ink-muted text-center sm:text-left">
-                Want to discuss this topic for your project in Wayanad or Bengaluru?
-              </p>
-              <button
-                onClick={() => {
-                  setActiveArticle(null);
-                  onNavigate('contact');
-                }}
-                className="px-6 py-3 bg-ink text-lime text-[14px] font-medium hover:bg-accent transition-colors cursor-pointer shrink-0"
-              >
+            <div className="mt-10 pt-6 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <p className="label">Want to talk this through for your project in Wayanad or Bengaluru?</p>
+              <RouteLink to="contact" onNavigate={onNavigate} className="btn-solid shrink-0">
                 Book a consultation
-              </button>
+              </RouteLink>
             </div>
           </div>
         </div>
       )}
 
-      {/* 9. ASK THE STUDIO MODAL */}
+      {/* Ask the studio dialog */}
       {isAskModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-          <div className="bg-plaster w-full max-w-lg p-6 sm:p-8 shadow-2xl relative">
+        <div
+          className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in"
+          onClick={(e) => e.target === e.currentTarget && setIsAskModalOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ask-title"
+            data-lenis-prevent
+            className="bg-plaster w-full max-w-lg p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+          >
             <button
+              ref={askCloseRef}
               onClick={() => setIsAskModalOpen(false)}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-stone-1 text-ink transition-colors cursor-pointer"
+              className="absolute top-5 right-5 p-2 text-ink hover:text-accent transition-colors"
               aria-label="Close"
             >
               <X size={20} />
             </button>
 
-            <span className="font-dm-sans font-medium text-[12px] text-ink-muted">
-              Studio Inquiry
-            </span>
-            <h3 className="font-dm-sans font-medium text-2xl sm:text-3xl tracking-tight text-ink mt-1 mb-2">
-              Ask the Studio
-            </h3>
-            <p className="font-dm-sans font-normal text-sm text-ink-muted mb-6">
-              Have a question on building permits, construction rates, or climate design? We feature community questions in upcoming journal essays.
+            <h2 id="ask-title" className="text-[26px] sm:text-[30px] tracking-[-0.02em] mb-2 pr-10">
+              Ask the studio
+            </h2>
+            <p className="label leading-relaxed mb-6">
+              A question on permits, building costs or climate design? We answer the most common ones in the journal.
             </p>
 
             {askSubmitted ? (
-              <div className="py-8 flex flex-col items-center justify-center text-center space-y-3">
-                <CheckCircle2 className="size-12 text-ink stroke-[1.5]" />
-                <h4 className="font-dm-sans font-medium text-xl text-ink">
-                  Question Received
-                </h4>
-                <p className="text-sm text-ink-muted max-w-xs">
-                  Thank you! Ar. Rashid Ali and the design team will review your question for our next journal publication.
-                </p>
+              <div role="status" className="py-8 flex flex-col items-center text-center gap-3">
+                <CheckCircle2 className="size-10 text-accent stroke-[1.5]" />
+                <p className="text-[20px]">Question received</p>
+                <p className="label max-w-xs">Thank you. We will look at it for an upcoming journal piece.</p>
               </div>
             ) : (
               <form onSubmit={handleAskSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[13px] font-medium text-ink mb-1">
-                    Your Name
-                  </label>
+                  <label htmlFor="ask-name" className="block label text-ink mb-1">Your name</label>
                   <input
+                    id="ask-name"
                     type="text"
                     required
+                    autoComplete="name"
                     value={askFormData.name}
                     onChange={(e) => setAskFormData({ ...askFormData, name: e.target.value })}
-                    placeholder="e.g. Rahul Menon"
-                    className="w-full px-3.5 py-2.5 border border-line focus:border-ink focus:outline-none text-[15px]"
+                    className="w-full px-3.5 py-2.5 bg-transparent border border-line focus:border-ink focus:outline-none text-[15px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-medium text-ink mb-1">
-                    Email Address
-                  </label>
+                  <label htmlFor="ask-email" className="block label text-ink mb-1">Email</label>
                   <input
+                    id="ask-email"
                     type="email"
                     required
+                    autoComplete="email"
                     value={askFormData.email}
                     onChange={(e) => setAskFormData({ ...askFormData, email: e.target.value })}
-                    placeholder="name@example.com"
-                    className="w-full px-3.5 py-2.5 border border-line focus:border-ink focus:outline-none text-[15px]"
+                    className="w-full px-3.5 py-2.5 bg-transparent border border-line focus:border-ink focus:outline-none text-[15px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-medium text-ink mb-1">
-                    Your Question or Topic
-                  </label>
+                  <label htmlFor="ask-question" className="block label text-ink mb-1">Your question</label>
                   <textarea
+                    id="ask-question"
                     rows={4}
                     required
                     value={askFormData.question}
                     onChange={(e) => setAskFormData({ ...askFormData, question: e.target.value })}
-                    placeholder="e.g. What are the foundation considerations for building on black cotton soil in Karnataka?"
-                    className="w-full px-3.5 py-2.5 border border-line focus:border-ink focus:outline-none text-[15px] resize-none"
+                    placeholder="For example: what foundations suit black cotton soil in Karnataka?"
+                    className="w-full px-3.5 py-2.5 bg-transparent border border-line focus:border-ink focus:outline-none text-[15px] resize-none"
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="w-full py-3.5 bg-ink text-lime font-medium text-[15px] hover:bg-accent transition-colors flex items-center justify-center gap-2 cursor-pointer mt-2"
-                >
-                  <span>Submit Question</span>
-                  <Send size={15} />
+                <button type="submit" className="btn-solid w-full mt-2">
+                  Send question
                 </button>
               </form>
             )}

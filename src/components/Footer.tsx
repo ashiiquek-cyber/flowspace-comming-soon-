@@ -1,6 +1,7 @@
 import React from 'react';
 import { Emblem, Wordmark } from './Brand';
 import { useSmoothScroll } from '../context/SmoothScrollContext';
+import { RouteLink } from './RouteLink';
 import type { NavigateTarget } from '../data/projects';
 
 interface FooterProps {
@@ -28,20 +29,20 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             Have a project in mind? Let’s create something lasting.
           </h2>
           <div className="col-span-12 lg:col-span-3 lg:self-end flex flex-col gap-4 text-[15px]">
-            <a href="mailto:hello@flowspacearchitects.com" className="text-link self-start text-[17px]">
-              hello@flowspacearchitects.com
+            <a href="mailto:flowspacearchitects@gmail.com" className="text-link self-start text-[17px]">
+              flowspacearchitects@gmail.com
             </a>
             <a
-              href="https://wa.me/919447000000"
+              href="https://wa.me/919747859991"
               target="_blank"
               rel="noreferrer"
               className="text-link self-start text-lime/70 hover:text-lime"
             >
               Chat on WhatsApp
             </a>
-            <button onClick={() => onNavigate('contact')} className="text-link self-start text-lime/70 hover:text-lime">
+            <RouteLink to="contact" onNavigate={onNavigate} className="text-link self-start text-lime/70 hover:text-lime">
               Book a consultation
-            </button>
+            </RouteLink>
           </div>
         </div>
 
@@ -50,21 +51,20 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <Emblem className="size-9 text-lime" />
             <div>
               <Wordmark className="block" />
-              <p className="text-lime/50 text-[13px] mt-1">Architects</p>
+              <p className="text-lime/60 text-[13px] mt-1">Architects</p>
             </div>
           </div>
           <div className="col-span-6 md:col-span-3">
-            <p className="text-lime/50 text-[13px] mb-2">Wayanad studio</p>
+            <p className="text-lime/60 text-[13px] mb-2">Wayanad studio</p>
             <p>Kalpetta, Wayanad<br />Kerala 673122, India</p>
-            <a href="tel:+919447000000" className="block mt-2 text-lime/70 hover:text-lime">+91 94470 00000</a>
           </div>
           <div className="col-span-6 md:col-span-3">
-            <p className="text-lime/50 text-[13px] mb-2">Bengaluru studio</p>
-            <p>Jayanagar, Bengaluru<br />Karnataka 560011, India</p>
-            <a href="tel:+919845000000" className="block mt-2 text-lime/70 hover:text-lime">+91 98450 00000</a>
+            <p className="text-lime/60 text-[13px] mb-2">Bengaluru studio</p>
+            <p>3rd Floor, 1 Krishna Rajendra Road<br />7th Block, Jayanagar<br />Bengaluru 560070, India</p>
+            <a href="tel:+919747859991" className="block mt-2 text-lime/70 hover:text-lime">+91 97478 59991</a>
           </div>
           <div className="col-span-12 md:col-span-2">
-            <p className="text-lime/50 text-[13px] mb-2">Follow</p>
+            <p className="text-lime/60 text-[13px] mb-2">Follow</p>
             <ul className="flex md:flex-col gap-x-6 gap-y-1">
               {SOCIAL.map((s) => (
                 <li key={s.label}>
@@ -77,7 +77,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13px] text-lime/45">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13px] text-lime/60">
           <p>© 2026 Flowspace Architects</p>
           <p>COA Reg. CA/2016/76777, IIA Fellow Member</p>
           <button onClick={() => scrollTo(0)} className="self-start sm:self-auto hover:text-lime transition-colors">

@@ -31,7 +31,7 @@ export const ResearchPage: React.FC = () => {
 
       <ul className="border-b border-line">
         {items.map((r) => (
-          <li key={r.id} className="border-t border-line grid-page gap-y-5 py-8 md:py-12">
+          <li key={r.id} id={`research-${r.id}`} className="border-t border-line grid-page gap-y-5 py-8 md:py-12">
             <div className="col-span-12 md:col-span-3 flex md:flex-col gap-x-4 gap-y-1 label">
               <span>{r.type}</span>
               <span>{r.year}</span>
