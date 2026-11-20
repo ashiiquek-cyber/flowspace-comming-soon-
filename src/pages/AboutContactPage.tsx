@@ -9,16 +9,16 @@ interface AboutContactPageProps {
 
 const PRINCIPLES = [
   {
-    title: 'Context and topography',
-    body: 'We do not impose foreign templates onto land. Whether designing for steep mountain slopes in Wayanad or dense urban plots in Bengaluru, the land dictates the orientation, elevation levels, and water flow.',
+    title: 'Boxes and flowing lines',
+    body: 'Rectangular volumes hold the different functions of a project. Flowing lines of circulation, access, natural light and ventilation weave through every one of them. It is the idea our emblem draws, and the one every plan starts from.',
   },
   {
-    title: 'Material honesty',
-    body: 'We work with materials that age with dignity: exposed laterite, red terracotta bricks, lime wash, river stone, and locally salvaged timber. No artificial cladding, no cosmetic skins.',
+    title: 'Rooted in site and story',
+    body: 'Whatever the scale or type, from a budget home to an eco village, each project starts from its site conditions and the client’s brief, and is a chance to find an approach and a narrative of its own.',
   },
   {
-    title: 'Passive climate design',
-    body: 'Kerala’s intense monsoon rains and Bengaluru’s dry summers require specific architectural responses: deep roof overhangs, central courtyards for cross ventilation, and shaded verandas.',
+    title: 'Comfort in the detail',
+    body: 'A fresh, forward-looking aesthetic where comfort and function sit together. We explore new materials and detail them with care down to the smallest element, so spaces answer to the people in them and the place around them.',
   },
 ];
 
@@ -60,9 +60,14 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
         <h1 className="display text-[22vw] md:text-[14vw] lg:text-[12vw]">Studio</h1>
         <div className="grid-page gap-y-6 mt-10 md:mt-16">
           <h2 className="col-span-12 md:col-span-3 label pt-2">About</h2>
-          <p className="col-span-12 md:col-span-9 lg:col-span-8 prose-serif text-[26px] sm:text-[34px] lg:text-[42px] leading-[1.15]">
-            Flowspace Architects is an architecture and design studio founded by Chief Architect Ar. Rashid Ali, with studios in Kalpetta, Wayanad (Kerala) and Jayanagar, Bengaluru (Karnataka).
-          </p>
+          <div className="col-span-12 md:col-span-9 lg:col-span-8">
+            <p className="prose-serif text-[26px] sm:text-[34px] lg:text-[42px] leading-[1.15]">
+              Flowspace Architects is an architecture and design studio founded by Chief Architect Ar. Rashid Ali, with studios in Kalpetta, Wayanad (Kerala) and Jayanagar, Bengaluru (Karnataka).
+            </p>
+            <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
+              We see architecture as more than building: it is a narrative, a response and a reflection. Every space should tell its own story to the people who live and work in it.
+            </p>
+          </div>
         </div>
       </section>
 

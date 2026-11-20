@@ -40,7 +40,7 @@ const TESTIMONIALS = [
 // Positions in months from the first site visit; durations are written as lengths so they never fight the axis
 const PROCESS = [
   { title: 'Site visit and brief', body: 'We walk the plot with you, listen to how your family lives, and agree a budget before a single line is drawn.', duration: '2 weeks', start: 0, end: 0.5 },
-  { title: 'Concept and form', body: 'Climate orientation, spatial flow diagrams, and 3D massing presented with tangible material samples.', duration: '4 weeks', start: 0.5, end: 1.5 },
+  { title: 'Concept and form', body: 'We find the story the site and your brief suggest, then test it through light, ventilation and circulation studies and 3D massing, presented with material samples.', duration: '4 weeks', start: 0.5, end: 1.5 },
   { title: 'Detailing and approvals', body: 'Complete structural, electrical, and plumbing documentation alongside municipality clearances in Kerala and Karnataka.', duration: '6 weeks', start: 1.5, end: 3 },
   { title: 'Realization', body: 'Periodic on-site supervision, artisan collaboration, and handover with full post-occupancy care.', duration: '11 months', start: 3, end: 14 },
 ];
@@ -204,10 +204,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           <h2 id="studio-heading" className="col-span-12 md:col-span-3 label pt-2">The studio</h2>
           <div className="col-span-12 md:col-span-9 lg:col-span-8">
             <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">
-              We design for the climate first: deep eaves for the monsoon, courtyards that pull air through, and stone and timber from within a day’s drive of the site.
+              We draw every building as boxes and lines: a box for each part of life, and flowing lines of movement, light and air weaving through them all.
             </p>
             <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
-              Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, designing homes, workplaces and interiors from Wayanad and Bengaluru.
+              Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, working across architecture, interiors, landscape, master planning and research from Wayanad and Bengaluru.
             </p>
             <a href="#/studio" className="text-link mt-8 text-[15px]">About the studio</a>
           </div>
@@ -217,7 +217,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           {[
             ['Studios', 'Kalpetta, Wayanad and Jayanagar, Bengaluru'],
             ['Services', 'Over twenty, from house plans to conservation and urban work'],
-            ['Project types', 'Homes, apartments, commercial, retail, interiors and furniture'],
+            ['Project types', 'Homes from budget to weekend retreats, apartments, resorts and eco villages, cafés, breweries and club houses, retail, interiors and furniture'],
             ['Honours', 'Design & Vision Firm of the Year 2026, South India; Vanitha Veedu Young Architect Award; FOAID Design Week'],
           ].map(([term, desc]) => (
             <div key={term} className="col-span-12 md:col-start-4 md:col-span-9 grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] gap-4 border-t border-line py-4">
