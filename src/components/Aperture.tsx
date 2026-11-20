@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { srcSet } from '../constants/assets';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 
 interface ApertureProps {
@@ -10,6 +11,8 @@ interface ApertureProps {
   imgClassName?: string;
   focus?: string;
   eager?: boolean;
+  /** Rendered width hint for the srcset; defaults to full width */
+  sizes?: string;
   children?: React.ReactNode;
 }
 
@@ -18,7 +21,7 @@ interface ApertureProps {
  * bottom edge once, as it enters the viewport, while the photograph settles.
  */
 export const Aperture: React.FC<ApertureProps> = ({
-  src, alt, className = '', imgClassName = '', focus, eager = false, children,
+  src, alt, className = '', imgClassName = '', focus, eager = false, sizes = '100vw', children,
 }) => {
   const frameRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -41,6 +44,8 @@ export const Aperture: React.FC<ApertureProps> = ({
       <img
         ref={imgRef}
         src={src}
+        srcSet={srcSet(src)}
+        sizes={sizes}
         alt={alt}
         loading={eager ? 'eager' : 'lazy'}
         decoding="async"

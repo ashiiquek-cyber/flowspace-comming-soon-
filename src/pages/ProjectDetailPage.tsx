@@ -82,7 +82,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate
           <div className="grid-page gap-y-12 items-start">
             {project.gallery.map((g, i) => (
               <figure key={g.caption} className={i === 0 ? 'col-span-12 md:col-span-7' : 'col-span-12 md:col-start-9 md:col-span-4 md:mt-48'}>
-                <Aperture src={g.src} alt={g.caption} className={i === 0 ? 'aspect-[4/3]' : 'aspect-[3/4]'} />
+                <Aperture src={g.src} alt={g.caption} sizes="(max-width: 767px) 100vw, 50vw" className={i === 0 ? 'aspect-[4/3]' : 'aspect-[3/4]'} />
                 <figcaption className="label mt-3">{g.caption}</figcaption>
               </figure>
             ))}
@@ -108,7 +108,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate
             <p className="display text-[13vw] md:text-[7.5vw] mt-3 group-hover:text-accent transition-colors">{next.title}</p>
             <p className="label mt-3">{next.location}, {next.year}</p>
           </div>
-          <Aperture src={next.image} alt="" focus={next.focus} className="col-span-12 md:col-start-10 md:col-span-3 aspect-[4/5]" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.04]" />
+          <Aperture src={next.image} alt="" focus={next.focus} sizes="(max-width: 767px) 100vw, 25vw" className="col-span-12 md:col-start-10 md:col-span-3 aspect-[4/5]" imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.04]" />
         </a>
         <div className="mt-16 flex flex-wrap gap-8 text-[15px]">
           <a href="#/projects" className="text-link">All projects</a>

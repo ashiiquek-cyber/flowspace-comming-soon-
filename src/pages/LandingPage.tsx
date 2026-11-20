@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { ASSETS } from '../constants/assets';
+import { ASSETS, srcSet } from '../constants/assets';
 import { Aperture } from '../components/Aperture';
 import { RouteLink } from '../components/RouteLink';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
@@ -251,7 +251,7 @@ const Hero: React.FC = () => {
           </h1>
         </div>
         <div className="relative h-[80svh]">
-          <img src={ASSETS.heroBg} alt="Double-height living room opening onto a garden courtyard" className="absolute inset-0 size-full object-cover object-[22%_50%] md:object-center" />
+          <img src={ASSETS.heroBg} srcSet={srcSet(ASSETS.heroBg)} sizes="(max-width: 767px) 200vw, 100vw" alt="Double-height living room opening onto a garden courtyard" className="absolute inset-0 size-full object-cover object-[22%_50%] md:object-center" />
         </div>
       </section>
     );
@@ -273,8 +273,12 @@ const Hero: React.FC = () => {
           <img
             data-hero-image
             src={ASSETS.heroBg}
+            srcSet={srcSet(ASSETS.heroBg)}
+            // Matches the static first frame in index.html, so the browser reuses the same file
+            sizes="(max-width: 767px) 240vh, 112vw"
             alt="Double-height living room opening onto a garden courtyard"
             {...{ fetchpriority: 'high' }}
+            decoding="async"
             className="absolute left-0 top-0 w-[112%] h-[112%] max-w-none object-cover origin-top-left"
           />
           <div data-hero-scrim className="absolute inset-0 bg-black/50" />
@@ -293,6 +297,8 @@ const Hero: React.FC = () => {
           <span className="block size-full overflow-hidden bg-stone-1">
             <img
               src={p.image}
+              srcSet={srcSet(p.image)}
+              sizes="(max-width: 767px) 42vw, 20vw"
               alt=""
               decoding="async"
               style={{ objectPosition: p.focus }}
@@ -559,7 +565,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 <li key={r.id} className="border-t border-line">
                   <a href={`#/research/${r.id}`} className="group grid grid-cols-[6.5rem_1fr] sm:grid-cols-[8.5rem_1fr] gap-5 py-5 items-center">
                     <div className="aspect-[4/3] overflow-hidden bg-line">
-                      <img src={r.image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]" />
+                      <img src={r.image} srcSet={srcSet(r.image)} sizes="9rem" alt="" loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]" />
                     </div>
                     <div>
                       <p className="label">{r.type}, {r.year}</p>

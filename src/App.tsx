@@ -1,18 +1,42 @@
-import React, { Suspense, lazy, useState, useEffect, useCallback } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { SmoothScrollProvider, useSmoothScroll } from './context/SmoothScrollContext';
 import { LandingPage } from './pages/LandingPage';
-import { ProjectsPage } from './pages/ProjectsPage';
-import { ProjectDetailPage } from './pages/ProjectDetailPage';
-import { AboutContactPage } from './pages/AboutContactPage';
-import { JournalPage } from './pages/JournalPage';
-import { ArticlePage } from './pages/ArticlePage';
-import { ResearchPage } from './pages/ResearchPage';
-import { PressAwardsPage } from './pages/PressAwardsPage';
 import { PROJECTS_DATA, type NavigateTarget, type Page } from './data/projects';
 import { hrefFor } from './components/RouteLink';
+
+// Only the home page ships in the first bundle; every other page loads on demand
+const loadProjects = () => import('./pages/ProjectsPage');
+const loadProjectDetail = () => import('./pages/ProjectDetailPage');
+const loadAbout = () => import('./pages/AboutContactPage');
+const loadJournal = () => import('./pages/JournalPage');
+const loadArticle = () => import('./pages/ArticlePage');
+const loadResearch = () => import('./pages/ResearchPage');
+const loadPress = () => import('./pages/PressAwardsPage');
+
+const ProjectsPage = lazy(() => loadProjects().then((m) => ({ default: m.ProjectsPage })));
+const ProjectDetailPage = lazy(() => loadProjectDetail().then((m) => ({ default: m.ProjectDetailPage })));
+const AboutContactPage = lazy(() => loadAbout().then((m) => ({ default: m.AboutContactPage })));
+const JournalPage = lazy(() => loadJournal().then((m) => ({ default: m.JournalPage })));
+const ArticlePage = lazy(() => loadArticle().then((m) => ({ default: m.ArticlePage })));
+const ResearchPage = lazy(() => loadResearch().then((m) => ({ default: m.ResearchPage })));
+const PressAwardsPage = lazy(() => loadPress().then((m) => ({ default: m.PressAwardsPage })));
+
+/** Warm the other pages once the visitor's first view has settled, so later clicks are instant */
+const prefetchPages = () => {
+  const run = () => [loadProjects, loadProjectDetail, loadAbout, loadJournal, loadArticle, loadResearch, loadPress].forEach((load) => load().catch(() => {}));
+  const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+  const id = window.setTimeout(() => (idle ? idle(run, { timeout: 4000 }) : run()), 4000);
+  return () => window.clearTimeout(id);
+};
+
+/** Mounted alongside each page inside Suspense, so it runs once a lazily loaded page is on screen */
+const PageReady: React.FC<{ onReady: () => void }> = ({ onReady }) => {
+  useLayoutEffect(onReady, [onReady]);
+  return null;
+};
 
 interface Route {
   page: Page;
@@ -64,7 +88,9 @@ function AppContent() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  // On every route: reset scroll, retitle, recompute triggers, then jump to a section if asked
+  useEffect(prefetchPages, []);
+
+  // On every route: reset scroll and retitle
   useEffect(() => {
     const project = route.projectId ? PROJECTS_DATA.find((p) => p.id === route.projectId) : undefined;
     // An open journal article titles the page itself (and its effect runs first on a fresh load)
@@ -72,16 +98,22 @@ function AppContent() {
     // Native reset too: keyboard scrolling can leave Lenis thinking it is already at the top
     window.scrollTo(0, 0);
     scrollTo(0, { immediate: true, force: true });
-    const id = window.setTimeout(() => {
+    // Not keyed on articleId: opening or closing a journal article keeps the reader's place in the list
+  }, [route.page, route.projectId, route.section, visit, scrollTo]);
+
+  // Once the page is mounted (it may have loaded lazily): recompute triggers, then jump to a section if asked
+  const readyTimer = useRef(0);
+  const onPageReady = useCallback(() => {
+    window.clearTimeout(readyTimer.current);
+    readyTimer.current = window.setTimeout(() => {
       ScrollTrigger.refresh();
       if (route.section) {
         const el = document.getElementById(route.section);
         if (el) scrollTo(el, { offset: -80 });
       }
     }, 60);
-    return () => window.clearTimeout(id);
-    // Not keyed on articleId: opening or closing a journal article keeps the reader's place in the list
   }, [route.page, route.projectId, route.section, visit, scrollTo]);
+  useEffect(() => () => window.clearTimeout(readyTimer.current), []);
 
   const navigate = useCallback((target: NavigateTarget) => {
     const href = hrefFor(target);
@@ -95,6 +127,10 @@ function AppContent() {
 
   const { page } = route;
   const routeKey = `${page}-${route.projectId ?? ''}`;
+  // The first page appears as painted (a fade would hold back its largest paint); later routes fade in
+  const [initialKey] = useState(routeKey);
+  const navigated = useRef(false);
+  if (routeKey !== initialKey) navigated.current = true;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -105,7 +141,9 @@ function AppContent() {
 
       {/* main stays opaque so the curtain footer never shows through; only its content fades in */}
       <main id="main" className={`relative z-10 flex-1 w-full bg-lime ${page === 'home' ? '' : 'pt-[68px] md:pt-[76px]'}`}>
-        <div key={routeKey} className="page-enter">
+        <div key={routeKey} className={navigated.current ? 'page-enter' : undefined}>
+        <Suspense fallback={<div className="min-h-[100svh]" aria-busy="true" />}>
+        <PageReady onReady={onPageReady} />
         {page === 'home' && <LandingPage onNavigate={navigate} onOpenProject={openProject} />}
         {page === 'projects' && <ProjectsPage onNavigate={navigate} onOpenProject={openProject} />}
         {page === 'project-detail' && <ProjectDetailPage onNavigate={navigate} onOpenProject={openProject} projectId={route.projectId} />}
@@ -114,6 +152,7 @@ function AppContent() {
         {page === 'article' && <ArticlePage onNavigate={navigate} />}
         {page === 'research' && <ResearchPage />}
         {page === 'press' &&<PressAwardsPage onNavigate={navigate} />}
+        </Suspense>
         </div>
       </main>
 
@@ -122,7 +161,7 @@ function AppContent() {
   );
 }
 
-// The CMS loads on demand, so public visitors never download it (or its DM Sans font)
+// The CMS loads on demand, so public visitors never download it (or its DM Sans files)
 const AdminApp = lazy(() => import('./admin/AdminApp').then((m) => ({ default: m.AdminApp })));
 
 const isAdminHash = () => /^#\/?admin(\/|$)/.test(window.location.hash);
