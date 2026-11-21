@@ -122,10 +122,10 @@ const PARTS: Part[] = [
   },
 ];
 
-// The stair winds up round a post from the podium to the slab, a quarter turn short of two
 /** How much of each box's tumble it keeps while apart: the composition floats, it never spins */
 const TUMBLE = 0.45;
 
+// The stair winds up round a post from the podium to the slab, a quarter turn short of two
 const STAIR = { steps: 20, axis: [2.0, 1.7] as [number, number], radius: 1.25, from: -1.8 * Math.PI, to: -0.5 * Math.PI, rise: 0.16 };
 
 /** Board-marked concrete: pale, warm, with pores, faint form-board joints and tie holes */
