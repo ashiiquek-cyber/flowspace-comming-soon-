@@ -242,6 +242,33 @@ html.lenis, html.lenis body { height: auto; }
   margin-bottom: -0.08em;
 }
 
+/* The same mask for titles split by LineRise (components/TextMotion.tsx) */
+.rise-line-mask {
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+/* Hairline rules, drawn left to right as they arrive (lib/useRuleDraw.ts).
+   Drawn by default: only the script hides them, so they show under reduced motion or without JS */
+.rule { position: relative; }
+.rule::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: var(--rule-color, var(--color-line));
+  transform-origin: left;
+  pointer-events: none;
+}
+.rule-ink { --rule-color: var(--color-ink); }
+.rule[data-rule='wait']::before { transform: scaleX(0); }
+.rule[data-rule='in']::before {
+  transform: scaleX(1);
+  transition: transform 1.3s var(--ease-out-expo) calc(var(--rule-i, 0) * 70ms);
+}
+
 /* Home hero, stage 2: the studio's name drifting behind the gallery */
 @keyframes hero-marquee {
   to { transform: translateX(-50%); }
@@ -298,6 +325,8 @@ html.lenis, html.lenis body { height: auto; }
   transition: transform 1s var(--ease-out-expo) 0.2s;
 }
 .box-stack[data-in] .box-stack__slot--new .cube { transform: none; }
+/* Home Process, pinned: the scroll timeline drops the boxes, so no transition may smear it */
+.process--driven .box-stack__slot--new .cube { transition: none; }
 
 /* Sun study time slider: a hairline track with an ink thumb */
 .sun-range { -webkit-appearance: none; appearance: none; height: 20px; background: transparent; cursor: pointer; }

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Aperture } from '../components/Aperture';
+import { LineRise } from '../components/TextMotion';
 import { prefersReducedMotion, useSmoothScroll } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget, type ProjectItem } from '../data/projects';
 
@@ -48,7 +49,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = () => {
     <div className="flex flex-col">
       <section className="page-x pt-16 md:pt-24 pb-12 md:pb-16">
         <div className="grid-page gap-y-8 items-end">
-          <h1 className="col-span-12 lg:col-span-8 display text-[22vw] md:text-[14vw] lg:text-[12vw]">Projects</h1>
+          <LineRise className="col-span-12 lg:col-span-8 display text-[22vw] md:text-[14vw] lg:text-[12vw]">Projects</LineRise>
           <p className="col-span-12 lg:col-span-4 text-[19px] sm:text-[22px] leading-[1.35] tracking-tight max-w-[30ch] lg:pb-4">
             Homes, apartments, commercial spaces, interiors and furniture, designed in Kerala and Karnataka.
           </p>

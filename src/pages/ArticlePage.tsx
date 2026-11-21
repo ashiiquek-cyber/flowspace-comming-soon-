@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { RouteLink } from '../components/RouteLink';
+import { LineRise } from '../components/TextMotion';
 import type { NavigateTarget } from "../data/projects";
 import { ASSETS } from '../constants/assets';
 import { Check, Copy } from 'lucide-react';
@@ -129,12 +130,12 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
         </RouteLink>
 
         {/* Headline */}
-        <h1 className="display text-4xl sm:text-6xl md:text-7xl lg:text-[96px] leading-[0.94] text-ink max-w-[1140px] mb-10">
+        <LineRise className="display text-4xl sm:text-6xl md:text-7xl lg:text-[96px] leading-[0.94] text-ink max-w-[1140px] mb-10">
           How much does it cost to build a house in Wayanad in 2026?
-        </h1>
+        </LineRise>
 
         {/* Metadata Bar */}
-        <div className="border-t border-ink pt-6 flex flex-wrap items-center gap-8 sm:gap-12 lg:gap-16">
+        <div className="rule rule-ink pt-6 flex flex-wrap items-center gap-8 sm:gap-12 lg:gap-16">
           {/* Author Chip */}
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-full overflow-hidden bg-stone-1 border border-line shrink-0">
@@ -234,7 +235,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Share Widget */}
-            <div className="pt-6 border-t border-line flex flex-col gap-2.5">
+            <div className="pt-6 rule flex flex-col gap-2.5">
               <span className="label">
                 Share
               </span>
@@ -418,7 +419,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
                 {ARTICLE_FAQS.map((faq) => {
                   const isOpen = expandedFaqId === faq.id;
                   return (
-                    <div key={faq.id} className="border-t border-line py-5">
+                    <div key={faq.id} className="rule py-5">
                       <button
                         onClick={() => setExpandedFaqId(isOpen ? null : faq.id)}
                         className="w-full flex items-start justify-between text-left gap-4 cursor-pointer focus:outline-none group"
@@ -483,7 +484,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
 
       {/* More from the journal */}
       <section className="w-full page-x pb-28 md:pb-36">
-        <div className="grid-page items-baseline border-t border-line pt-5 mb-10 md:mb-14">
+        <div className="grid-page items-baseline rule pt-5 mb-10 md:mb-14">
           <h2 className="col-span-6 md:col-span-3 label">More from the journal</h2>
           <RouteLink to="journal" onNavigate={onNavigate} className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px]">
             All articles
@@ -503,7 +504,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({ onNavigate }) => {
                     <img alt="" loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" src={a.image} />
                   </span>
                 ) : (
-                  <span aria-hidden className="block w-full border-t border-ink" />
+                  <span aria-hidden className="block w-full rule rule-ink" />
                 )}
                 <span className="label">{a.label}</span>
                 <h3 className="text-[24px] sm:text-[28px] leading-[1.15] tracking-[-0.02em] group-hover:text-accent transition-colors">{a.title}</h3>

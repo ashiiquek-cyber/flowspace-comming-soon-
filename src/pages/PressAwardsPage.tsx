@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { RouteLink } from '../components/RouteLink';
+import { LineRise } from '../components/TextMotion';
 import type { NavigateTarget } from "../data/projects";
 import { ASSETS } from '../constants/assets';
 import { useDialog } from '../lib/useDialog';
@@ -129,8 +130,7 @@ export const PressAwardsPage: React.FC<PressAwardsPageProps> = ({ onNavigate }) 
   const [isPressKitOpen, setIsPressKitOpen] = useState(false);
   const [pressKitDownloaded, setPressKitDownloaded] = useState(false);
 
-  // Motion annotation 1: Title mask reveal (700ms)
-  const [titleRevealed, setTitleRevealed] = useState(false);
+  // Motion annotation 1: the title rises from a mask (LineRise)
 
   // Motion annotation 2: Staggered award rows + Year counting in
 
@@ -142,14 +142,6 @@ export const PressAwardsPage: React.FC<PressAwardsPageProps> = ({ onNavigate }) 
   const pressKitCloseRef = useRef<HTMLButtonElement>(null);
   useDialog(!!activeFeature, () => setActiveFeature(null), featureCloseRef);
   useDialog(isPressKitOpen, () => setIsPressKitOpen(false), pressKitCloseRef);
-
-  // 1. Trigger Title Mask Reveal
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setTitleRevealed(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   // 4. Button Magnet effect (eases up to 4px toward cursor on hover)
   const handleButtonMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -221,14 +213,8 @@ Thank you for featuring Flowspace Architects.`;
       {/* Header */}
       <section className="page-x pt-16 md:pt-24 pb-16 md:pb-24">
         <div className="grid-page gap-y-8">
-          <div className="col-span-12 md:col-span-8 overflow-hidden">
-            <h1
-              className={`display text-[14vw] md:text-[9vw] transition-[transform,opacity] duration-700 ease-out-expo ${
-                titleRevealed ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-              }`}
-            >
-              Press and awards
-            </h1>
+          <div className="col-span-12 md:col-span-8">
+            <LineRise className="display text-[14vw] md:text-[9vw]">Press and awards</LineRise>
           </div>
           <p className="col-span-12 md:col-span-4 md:self-end label max-w-[34ch] leading-relaxed">
             Recognition for Flowspace Architects and Ar. Rashid Ali, and the places the studio’s work has been featured.
@@ -238,13 +224,13 @@ Thank you for featuring Flowspace Architects.`;
 
       {/* Awards */}
       <section className="page-x pb-28 md:pb-36">
-        <h2 className="label border-t border-line pt-5 mb-6 md:mb-8">Awards</h2>
+        <h2 className="label rule pt-5 mb-6 md:mb-8">Awards</h2>
         <ul className="border-b border-line">
           {AWARDS_DATA.map((award, index) => (
             <li
               key={award.id}
               style={{ animationDelay: `${index * 80}ms` }}
-              className="border-t border-line py-7 grid-page gap-y-2 items-baseline group animate-in"
+              className="rule py-7 grid-page gap-y-2 items-baseline group animate-in"
             >
               <span className="col-span-12 md:col-span-2 label tabular-nums">{award.targetYear}</span>
               <h3 className="col-span-12 md:col-span-5 text-[24px] sm:text-[28px] leading-[1.15] tracking-[-0.02em] group-hover:text-accent transition-colors">
@@ -259,7 +245,7 @@ Thank you for featuring Flowspace Architects.`;
 
       {/* Featured in */}
       <section className="page-x pb-28 md:pb-36">
-        <h2 className="label border-t border-line pt-5 mb-10 md:mb-12">Featured in</h2>
+        <h2 className="label rule pt-5 mb-10 md:mb-12">Featured in</h2>
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-x-10 gap-y-14">
           {FEATURES_DATA.map((item, idx) => (
             <li key={item.id} style={{ animationDelay: `${idx * 120}ms` }} className="animate-in">
@@ -278,7 +264,7 @@ Thank you for featuring Flowspace Architects.`;
                     />
                   </span>
                 ) : (
-                  <span aria-hidden className="block w-full border-t border-ink" />
+                  <span aria-hidden className="block w-full rule rule-ink" />
                 )}
                 <span className="label">{item.meta}</span>
                 <span className="text-[24px] sm:text-[28px] leading-[1.15] tracking-[-0.02em] group-hover:text-accent transition-colors">
@@ -370,7 +356,7 @@ Thank you for featuring Flowspace Architects.`;
               ))}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mt-8 pt-6 rule flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               {activeFeature.details.url ? (
                 <a href={activeFeature.details.url} target="_blank" rel="noopener noreferrer" className="text-link text-[15px]">
                   {activeFeature.details.linkText || 'Visit the feature'}
@@ -422,7 +408,7 @@ Thank you for featuring Flowspace Architects.`;
                 { Icon: ImageIcon, title: 'High-resolution visualisations', note: 'The Cloud House, Terra Villa and Courtyard Studio' },
                 { Icon: Sparkles, title: 'Brand identity', note: 'Emblem and wordmark, SVG and PNG' },
               ].map(({ Icon, title, note }) => (
-                <li key={title} className="flex items-start gap-3 py-3 border-t border-line">
+                <li key={title} className="flex items-start gap-3 py-3 rule">
                   <Icon className="size-4 mt-1 text-ink-muted shrink-0" aria-hidden />
                   <div>
                     <p className="text-[15px]">{title}</p>
