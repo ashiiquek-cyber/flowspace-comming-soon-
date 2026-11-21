@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { srcSet } from '../constants/assets';
+import { LineRise } from '../components/TextMotion';
 import { RESEARCH_DATA, type ResearchType } from '../data/research';
 
 const FILTERS: ('All' | ResearchType)[] = ['All', 'Study', 'Paper'];
@@ -11,7 +12,7 @@ export const ResearchPage: React.FC = () => {
   return (
     <div className="page-x pt-16 md:pt-24 pb-28 md:pb-44">
       <div className="grid-page gap-y-8 mb-14 md:mb-20">
-        <h1 className="col-span-12 md:col-span-8 display text-[16vw] md:text-[9vw]">Research</h1>
+        <LineRise className="col-span-12 md:col-span-8 display text-[16vw] md:text-[9vw]">Research</LineRise>
         <p className="col-span-12 md:col-span-4 md:self-end label max-w-[34ch] leading-relaxed">
           Papers and field studies from the studio, on climate, materials and the courtyard house.
         </p>
@@ -32,7 +33,7 @@ export const ResearchPage: React.FC = () => {
 
       <ul className="border-b border-line">
         {items.map((r) => (
-          <li key={r.id} id={`research-${r.id}`} className="border-t border-line grid-page gap-y-5 py-8 md:py-12">
+          <li key={r.id} id={`research-${r.id}`} className="rule grid-page gap-y-5 py-8 md:py-12">
             <div className="col-span-12 md:col-span-3 flex md:flex-col gap-x-4 gap-y-1 label">
               <span>{r.type}</span>
               <span>{r.year}</span>

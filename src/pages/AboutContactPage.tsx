@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ASSETS } from '../constants/assets';
 import { Aperture } from '../components/Aperture';
+import { LineRise, WordFill } from '../components/TextMotion';
 import type { NavigateTarget } from '../data/projects';
 
 interface AboutContactPageProps {
@@ -73,7 +74,7 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
   return (
     <div className="flex flex-col">
       <section className="page-x pt-16 md:pt-24 pb-16 md:pb-24">
-        <h1 className="display text-[22vw] md:text-[14vw] lg:text-[12vw]">Studio</h1>
+        <LineRise className="display text-[22vw] md:text-[14vw] lg:text-[12vw]">Studio</LineRise>
         <div className="grid-page gap-y-6 mt-10 md:mt-16">
           <h2 className="col-span-12 md:col-span-3 label pt-2">About</h2>
           <div className="col-span-12 md:col-span-9 lg:col-span-8">
@@ -88,33 +89,33 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
       </section>
 
       <figure className="pb-24 md:pb-36">
-        <Aperture src={ASSETS.heroBg} alt="Double-height studio space opening onto a planted courtyard" className="w-full aspect-[4/3] md:aspect-[21/9]" />
+        <Aperture mode="open" src={ASSETS.heroBg} alt="Double-height studio space opening onto a planted courtyard" className="w-full aspect-[4/3] md:aspect-[21/9]" />
         <figcaption className="page-x label mt-3">Wayanad studio, Kalpetta</figcaption>
       </figure>
 
       <section className="page-x pb-24 md:pb-36" aria-labelledby="approach-heading">
         <div className="grid-page gap-y-10">
-          <h2 id="approach-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">Approach</h2>
+          <LineRise as="h2" inView id="approach-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">Approach</LineRise>
           <div className="col-span-12 md:col-span-9 grid md:grid-cols-3 gap-x-10 gap-y-12">
             {PRINCIPLES.map((p) => (
-              <div key={p.title} className="border-t border-ink pt-5">
+              <div key={p.title} className="rule rule-ink pt-5">
                 <h3 className="text-[22px] tracking-tight leading-tight">{p.title}</h3>
                 <p className="text-[15px] leading-relaxed text-ink-muted mt-4">{p.body}</p>
               </div>
             ))}
           </div>
-          <p className="col-span-12 md:col-start-4 md:col-span-8 lg:col-start-4 lg:col-span-7 prose-serif text-[22px] sm:text-[26px] leading-snug">
+          <WordFill className="col-span-12 md:col-start-4 md:col-span-8 lg:col-start-4 lg:col-span-7 prose-serif text-[22px] sm:text-[26px] leading-snug">
             The flowing lines carry the same elements through every plan: air and ventilation, pockets of natural light, courtyards, interactive spaces, water bodies, Vastu and easy access. Each project is also a piece of research, shaped by its microclimate.
-          </p>
+          </WordFill>
         </div>
       </section>
 
       <section className="page-x pb-24 md:pb-36" aria-labelledby="services-heading">
         <div className="grid-page gap-y-8">
-          <h2 id="services-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">Services</h2>
+          <LineRise as="h2" inView id="services-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">Services</LineRise>
           <ul className="col-span-12 md:col-span-9 border-b border-line">
             {SERVICES.map((s) => (
-              <li key={s.title} className="grid sm:grid-cols-[14rem_1fr] gap-x-6 gap-y-1 border-t border-line py-5">
+              <li key={s.title} className="grid sm:grid-cols-[14rem_1fr] gap-x-6 gap-y-1 rule py-5">
                 <h3 className="text-[20px] sm:text-[22px] tracking-tight">{s.title}</h3>
                 <p className="text-[15px] text-ink-muted leading-relaxed max-w-[60ch] sm:pt-1">{s.body}</p>
               </li>
@@ -125,9 +126,9 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
 
       <section className="page-x pb-24 md:pb-36" aria-labelledby="people-heading">
         <div className="grid-page gap-y-10">
-          <h2 id="people-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">People</h2>
+          <LineRise as="h2" inView id="people-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">People</LineRise>
           <div className="col-span-12 md:col-span-9 flex flex-col gap-16 md:gap-24">
-            <div className="border-t border-ink pt-5 grid sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-x-10 gap-y-8">
+            <div className="rule rule-ink pt-5 grid sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-x-10 gap-y-8">
               <Aperture
                 src={ASSETS.portraitRashid}
                 alt="Ar. Rashid Ali, Founder and Chief Architect"
@@ -147,7 +148,7 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
             </div>
 
             <div>
-              <div className="border-t border-ink pt-5 flex flex-wrap items-baseline justify-between gap-x-10 gap-y-2">
+              <div className="rule rule-ink pt-5 flex flex-wrap items-baseline justify-between gap-x-10 gap-y-2">
                 <h3 className="text-[26px] tracking-tight">Studio team</h3>
                 <p className="text-ink-muted text-[15px]">A full-service team working across Wayanad and Bengaluru.</p>
               </div>
@@ -171,10 +172,10 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
 
       <section id="recognition-section" className="page-x pb-24 md:pb-36" aria-labelledby="recognition-heading">
         <div className="grid-page gap-y-8">
-          <h2 id="recognition-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">Recognition</h2>
+          <LineRise as="h2" inView id="recognition-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">Recognition</LineRise>
           <ul className="col-span-12 md:col-span-9 border-b border-line">
             {RECOGNITION.map((a) => (
-              <li key={a.title} className="grid grid-cols-[4rem_1fr] sm:grid-cols-[6rem_1fr] gap-4 border-t border-line py-6">
+              <li key={a.title} className="grid grid-cols-[4rem_1fr] sm:grid-cols-[6rem_1fr] gap-4 rule py-6">
                 <span className="text-ink-muted tabular-nums text-[15px] pt-1">{a.year}</span>
                 <div>
                   <h3 className="text-[20px] sm:text-[22px] tracking-tight">{a.title}</h3>
@@ -191,7 +192,7 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
       <section id="contact-section" className="bg-plaster page-x py-24 md:py-36" aria-labelledby="contact-heading">
         <div className="grid-page gap-y-16">
           <div className="col-span-12 lg:col-span-5 flex flex-col gap-12">
-            <h2 id="contact-heading" className="display text-[56px] sm:text-[80px] lg:text-[96px]">Start a conversation.</h2>
+            <LineRise as="h2" inView id="contact-heading" className="display text-[56px] sm:text-[80px] lg:text-[96px]">Start a conversation.</LineRise>
             <div className="grid sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-10 text-[15px] leading-relaxed">
               <div>
                 <h3 className="text-[19px] tracking-tight mb-2">Wayanad studio</h3>
@@ -211,7 +212,7 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
 
           <div className="col-span-12 lg:col-start-7 lg:col-span-6">
             {formSubmitted ? (
-              <div className="border-t border-ink pt-8" role="status">
+              <div className="rule rule-ink pt-8" role="status">
                 <h3 className="text-[30px] tracking-tight font-light">Thank you, {formData.name.split(' ')[0] || 'we have your message'}.</h3>
                 <p className="text-[16px] text-ink-muted mt-4 max-w-[44ch] leading-relaxed">
                   Ar. Rashid Ali or our studio lead will review your project brief and reply to {formData.email || 'you'} within 24 hours.
@@ -219,7 +220,7 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
                 <button onClick={() => setFormSubmitted(false)} className="text-link mt-8 text-[15px]">Send another enquiry</button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-8 border-t border-ink pt-8">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-8 rule rule-ink pt-8">
                 <div>
                   <h3 className="text-[24px] tracking-tight">Book a consultation</h3>
                   <p className="text-[15px] text-ink-muted mt-1">Tell us about your site, requirements, and timeline.</p>

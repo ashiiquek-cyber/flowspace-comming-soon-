@@ -13,45 +13,61 @@ interface ApertureProps {
   eager?: boolean;
   /** Rendered width hint for the srcset; defaults to full width */
   sizes?: string;
+  /**
+   * rise: the frame unclips from its bottom edge once, as it enters.
+   * open: for full-width images; the frame starts inset from both sides and opens with the scroll, like the hero.
+   */
+  mode?: 'rise' | 'open';
   children?: React.ReactNode;
 }
 
 /**
- * An image that opens like a courtyard to the sky: the frame unclips from its
- * bottom edge once, as it enters the viewport, while the photograph settles.
+ * An image that opens like a courtyard to the sky. Scroll motion scales an inner wrapper,
+ * never the image, so the image's own hover zoom keeps its CSS transition.
  */
 export const Aperture: React.FC<ApertureProps> = ({
-  src, alt, className = '', imgClassName = '', focus, eager = false, sizes = '100vw', children,
+  src, alt, className = '', imgClassName = '', focus, eager = false, sizes = '100vw', mode = 'rise', children,
 }) => {
   const frameRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const depthRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (prefersReducedMotion() || !frameRef.current) return;
+    const frame = frameRef.current;
     const ctx = gsap.context(() => {
+      if (mode === 'open') {
+        const tl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: { trigger: frame, start: 'top 92%', end: 'top 22%', scrub: 0.6 },
+        });
+        tl.fromTo(frame, { clipPath: 'inset(0% 9% 0% 9%)' }, { clipPath: 'inset(0% 0% 0% 0%)' })
+          .fromTo(depthRef.current, { scale: 1.16 }, { scale: 1 }, 0);
+        return;
+      }
       const tl = gsap.timeline({
-        scrollTrigger: { trigger: frameRef.current, start: 'top 88%', once: true },
+        scrollTrigger: { trigger: frame, start: 'top 88%', once: true },
         defaults: { duration: 1.25, ease: 'expo.out' },
       });
-      tl.fromTo(frameRef.current, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)' })
-        .fromTo(imgRef.current, { scale: 1.12 }, { scale: 1, duration: 1.6 }, 0);
+      tl.fromTo(frame, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)' })
+        .fromTo(depthRef.current, { scale: 1.12 }, { scale: 1, duration: 1.6 }, 0);
     }, frameRef);
     return () => ctx.revert();
-  }, []);
+  }, [mode]);
 
   return (
     <div ref={frameRef} className={`relative overflow-hidden bg-stone-1 ${className}`}>
-      <img
-        ref={imgRef}
-        src={src}
-        srcSet={srcSet(src)}
-        sizes={sizes}
-        alt={alt}
-        loading={eager ? 'eager' : 'lazy'}
-        decoding="async"
-        className={`absolute inset-0 size-full object-cover ${imgClassName}`}
-        style={focus ? { objectPosition: focus } : undefined}
-      />
+      <div ref={depthRef} className="absolute inset-0">
+        <img
+          src={src}
+          srcSet={srcSet(src)}
+          sizes={sizes}
+          alt={alt}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          className={`absolute inset-0 size-full object-cover ${imgClassName}`}
+          style={focus ? { objectPosition: focus } : undefined}
+        />
+      </div>
       {children}
     </div>
   );

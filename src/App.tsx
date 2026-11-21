@@ -6,6 +6,7 @@ import { SmoothScrollProvider, useSmoothScroll } from './context/SmoothScrollCon
 import { LandingPage } from './pages/LandingPage';
 import { PROJECTS_DATA, type NavigateTarget, type Page } from './data/projects';
 import { hrefFor } from './components/RouteLink';
+import { RuleDraw } from './lib/useRuleDraw';
 
 // Only the home page ships in the first bundle; every other page loads on demand
 const loadProjects = () => import('./pages/ProjectsPage');
@@ -152,6 +153,7 @@ function AppContent() {
         {page === 'article' && <ArticlePage onNavigate={navigate} />}
         {page === 'research' && <ResearchPage />}
         {page === 'press' &&<PressAwardsPage onNavigate={navigate} />}
+        <RuleDraw />
         </Suspense>
         </div>
       </main>

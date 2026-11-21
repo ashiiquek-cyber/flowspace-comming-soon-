@@ -67,3 +67,5 @@ Recurring 2025–26 traits: restraint, one signature move, framed images, captio
 | Footer | Scroll | Revealed by the page lifting off it (CSS sticky) | Native |
 
 All of it is skipped under `prefers-reduced-motion`. Lenis is driven from the GSAP ticker so ScrollTrigger stays in sync.
+
+The scroll interactions added in November 2026 (the Process assembly, statements that fill as you read, the sun following scroll, wide images opening, hairlines drawing in, rising page titles) are researched and specified in [SCROLL-INTERACTIONS.md](SCROLL-INTERACTIONS.md).

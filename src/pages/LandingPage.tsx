@@ -9,6 +9,7 @@ import { RESEARCH_DATA } from '../data/research';
 import { MovingEmblem } from '../components/Brand';
 import { setHeroState } from '../lib/heroSignal';
 import { BoxMarker, BoxStack } from '../components/Massing';
+import { WordFill } from '../components/TextMotion';
 
 const SunStudy = lazy(() => import('../components/SunStudy'));
 
@@ -347,6 +348,107 @@ const Hero: React.FC = () => {
 
 /* -------------------------------------------------------------------------- */
 
+const STACK_SIZE = 19;
+// Pinned only where the four steps and their axis fit on one screen; the footer curtain uses the same bound
+const PROCESS_PIN = '(min-width: 1024px) and (min-height: 800px)';
+
+/**
+ * The house assembles: on large screens the steps pin, and as you scroll each one lights in turn,
+ * drops its new box onto the stack and draws its bar along the timeline. Elsewhere each row
+ * plays once as it arrives. Everything renders finished until the script takes over.
+ */
+const ProcessSequence: React.FC = () => {
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root || prefersReducedMotion()) return;
+    const ctx = gsap.context(() => {
+      const rows = gsap.utils.toArray<HTMLElement>('[data-step]', root);
+      const bars = rows.map((r) => r.querySelector<HTMLElement>('[data-step-bar]')!);
+      gsap.set(bars, { transformOrigin: 'left center' });
+
+      const mm = gsap.matchMedia();
+      mm.add(PROCESS_PIN, () => {
+        // Scrubbed boxes can't share the CSS drop transition, so the stacks hand it to the timeline
+        root.classList.add('process--driven');
+        const cubes = rows.map((r) => r.querySelector<HTMLElement>('.box-stack__slot--new .cube')!);
+        const tl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: root,
+            start: 'center center',
+            end: '+=140%',
+            scrub: 0.6,
+            pin: true,
+            pinSpacing: true,
+            invalidateOnRefresh: true,
+          },
+        });
+        rows.forEach((row, i) => {
+          tl.fromTo(row.querySelectorAll('[data-step-part]'), { opacity: 0.2 }, { opacity: 1, duration: 0.35 }, i)
+            .fromTo(cubes[i], { y: -STACK_SIZE * 2.2, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, i + 0.05)
+            .fromTo(bars[i], { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: 'power1.inOut' }, i + 0.2);
+        });
+        tl.to({}, { duration: 0.4 }); // a beat with the house standing before the pin lets go
+        return () => root.classList.remove('process--driven');
+      });
+
+      mm.add(`not all and ${PROCESS_PIN}`, () => {
+        rows.forEach((row, i) => {
+          gsap.fromTo(bars[i], { scaleX: 0 }, {
+            scaleX: 1, duration: 1.2, ease: 'expo.out', delay: 0.25,
+            scrollTrigger: { trigger: row, start: 'top 86%', once: true },
+          });
+        });
+      });
+    }, root);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <div ref={rootRef}>
+      <ol>
+        {PROCESS.map((step, i) => (
+          <li key={step.title} data-step className="grid-page gap-y-3 items-center rule py-5 md:py-6">
+            {/* One more box per step: the house stands by the last one */}
+            <div data-step-part className="col-span-3 md:col-span-1">
+              <BoxStack count={i + 1} size={STACK_SIZE} />
+            </div>
+            <div data-step-part className="col-span-9 md:col-span-3">
+              <h3 className="text-[20px] md:text-[22px] tracking-tight">{step.title}</h3>
+              <p className="label mt-1">Step {i + 1}, {step.duration}</p>
+            </div>
+            <p data-step-part className="col-span-12 md:col-span-4 text-[15px] leading-relaxed text-ink-muted max-w-[46ch]">{step.body}</p>
+            <div className="col-span-12 md:col-span-4 relative h-2 mt-2 md:mt-0" aria-hidden="true">
+              {/* Two track segments with a gap at the scale change */}
+              <div className="absolute inset-y-[3px] left-0 right-[calc(50%+3px)] bg-stone-1" />
+              <div className="absolute inset-y-[3px] left-[calc(50%+3px)] right-0 bg-stone-1" />
+              <div
+                data-step-bar
+                className="absolute inset-y-0 bg-ink"
+                style={{ left: `${processX(step.start)}%`, width: `${processX(step.end) - processX(step.start)}%` }}
+              />
+            </div>
+          </li>
+        ))}
+      </ol>
+      <div className="grid-page" aria-hidden="true">
+        <div className="col-span-12 md:col-start-9 md:col-span-4 relative h-7 label rule">
+          <span className="absolute left-0 top-2">Start</span>
+          <span className="absolute left-1/2 top-2 -translate-x-1/2">Month 3</span>
+          <span className="absolute right-0 top-2">Month 14</span>
+        </div>
+        <p className="col-span-12 md:col-start-9 md:col-span-4 label mt-2">
+          The first three months are drawn at a larger scale.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [current, setCurrent] = useState(0);
@@ -375,9 +477,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <div className="grid-page gap-y-8">
           <SectionLabel id="studio-heading" className="col-span-12 md:col-span-2 pt-2">The studio</SectionLabel>
           <div className="col-span-12 md:col-span-10 lg:col-span-9">
-            <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">
+            <WordFill className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">
               We draw every building as boxes and lines: a box for each part of life, and flowing lines of movement, light and air weaving through them all.
-            </p>
+            </WordFill>
             <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
               Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, working across architecture, interiors, landscape, master planning and research from Wayanad and Bengaluru.
             </p>
@@ -392,7 +494,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             ['Project types', 'Homes from budget to weekend retreats, apartments, resorts and eco villages, cafés, breweries and club houses, retail, interiors and furniture'],
             ['Honours', 'Design & Vision Firm of the Year 2026, South India; Vanitha Veedu Young Architect Award; FOAID Design Week'],
           ].map(([term, desc]) => (
-            <div key={term} className="col-span-12 md:col-start-3 md:col-span-10 grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] gap-4 border-t border-line py-4">
+            <div key={term} className="col-span-12 md:col-start-3 md:col-span-10 grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] gap-4 rule py-4">
               <dt className="text-ink-muted">{term}</dt>
               <dd>
                 {term === 'Honours' ? <a href="#/press" className="hover:text-accent transition-colors">{desc}</a> : desc}
@@ -421,6 +523,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     alt={project.title}
                     focus={project.focus}
                     className={layout.aspect}
+                    mode={layout.wide ? 'open' : 'rise'}
                     imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]"
                   />
                   <div className={`mt-5 grid grid-cols-1 gap-x-10 gap-y-3 ${layout.wide ? 'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]' : ''}`}>
@@ -445,9 +548,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <div className="grid-page gap-y-8">
           <SectionLabel id="sun-heading" className="col-span-12 md:col-span-2 pt-2">Sun study</SectionLabel>
           <div className="col-span-12 md:col-span-10">
-            <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12] max-w-[22ch]">
+            <WordFill className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12] max-w-[22ch]">
               Deep eaves and a courtyard, through a day of sun.
-            </p>
+            </WordFill>
             <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
               A courtyard house at Wayanad’s latitude. Move the time and the season to see where the shade falls.
             </p>
@@ -469,47 +572,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <div className="grid-page gap-y-8 mb-8 md:mb-12">
           <SectionLabel id="process-heading" className="col-span-12 md:col-span-2 pt-2">Process</SectionLabel>
           <div className="col-span-12 md:col-span-10 lg:col-span-9">
-            <p className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">From idea to built form.</p>
+            <WordFill className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">From idea to built form.</WordFill>
             <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
               A typical house takes about fourteen months from first site visit to handover. Most of that is building.
             </p>
           </div>
         </div>
 
-        <ol>
-          {PROCESS.map((step, i) => (
-            <li key={step.title} className="grid-page gap-y-3 items-center border-t border-line py-5 md:py-6">
-              {/* One more box per step: the house stands by the last one */}
-              <div className="col-span-3 md:col-span-1">
-                <BoxStack count={i + 1} size={19} />
-              </div>
-              <div className="col-span-9 md:col-span-3">
-                <h3 className="text-[20px] md:text-[22px] tracking-tight">{step.title}</h3>
-                <p className="label mt-1">Step {i + 1}, {step.duration}</p>
-              </div>
-              <p className="col-span-12 md:col-span-4 text-[15px] leading-relaxed text-ink-muted max-w-[46ch]">{step.body}</p>
-              <div className="col-span-12 md:col-span-4 relative h-2 mt-2 md:mt-0" aria-hidden="true">
-                {/* Two track segments with a gap at the scale change */}
-                <div className="absolute inset-y-[3px] left-0 right-[calc(50%+3px)] bg-stone-1" />
-                <div className="absolute inset-y-[3px] left-[calc(50%+3px)] right-0 bg-stone-1" />
-                <div
-                  className="absolute inset-y-0 bg-ink"
-                  style={{ left: `${processX(step.start)}%`, width: `${processX(step.end) - processX(step.start)}%` }}
-                />
-              </div>
-            </li>
-          ))}
-        </ol>
-        <div className="grid-page" aria-hidden="true">
-          <div className="col-span-12 md:col-start-9 md:col-span-4 relative h-7 label border-t border-line">
-            <span className="absolute left-0 top-2">Start</span>
-            <span className="absolute left-1/2 top-2 -translate-x-1/2">Month 3</span>
-            <span className="absolute right-0 top-2">Month 14</span>
-          </div>
-          <p className="col-span-12 md:col-start-9 md:col-span-4 label mt-2">
-            The first three months are drawn at a larger scale.
-          </p>
-        </div>
+        <ProcessSequence />
       </section>
 
       {/* Client words and where we work share one band */}
@@ -521,7 +591,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             <blockquote key={current} className="prose-serif text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.18] animate-in">
               “{t.quote}”
             </blockquote>
-            <figcaption className="mt-8 flex flex-wrap items-end justify-between gap-6 border-t border-line pt-5">
+            <figcaption className="mt-8 flex flex-wrap items-end justify-between gap-6 rule pt-5">
               <div className="text-[15px]">
                 <p>{t.author}</p>
                 <p className="text-ink-muted">{t.role}</p>
@@ -562,7 +632,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             </div>
             <ul className="border-b border-line">
               {RESEARCH_DATA.slice(0, 3).map((r) => (
-                <li key={r.id} className="border-t border-line">
+                <li key={r.id} className="rule">
                   <a href={`#/research/${r.id}`} className="group grid grid-cols-[6.5rem_1fr] sm:grid-cols-[8.5rem_1fr] gap-5 py-5 items-center">
                     <div className="aspect-[4/3] overflow-hidden bg-line">
                       <img src={r.image} srcSet={srcSet(r.image)} sizes="9rem" alt="" loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]" />
@@ -584,7 +654,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             </div>
             <ul className="border-b border-line">
               {JOURNAL.map((item) => (
-                <li key={item.title} className="border-t border-line">
+                <li key={item.title} className="rule">
                   <a href={item.href} className="group block py-5">
                     <span className="label block">{item.date}</span>
                     <span className="mt-1 block text-[20px] sm:text-[24px] leading-[1.22] tracking-tight transition-colors group-hover:text-accent">
@@ -612,7 +682,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             {FAQS.map((faq, i) => {
               const open = openFaq === i;
               return (
-                <div key={faq.q} className="border-t border-line">
+                <div key={faq.q} className="rule">
                   <h3>
                     <button
                       onClick={() => setOpenFaq(open ? null : i)}

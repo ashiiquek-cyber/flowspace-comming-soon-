@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RouteLink } from '../components/RouteLink';
 import { Aperture } from '../components/Aperture';
+import { LineRise, WordFill } from '../components/TextMotion';
 import { getNextProject, getProject, type NavigateTarget } from '../data/projects';
 
 interface ProjectDetailPageProps {
@@ -26,14 +27,14 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate
     <article className="flex flex-col">
       <header className="page-x pt-12 md:pt-20 pb-12 md:pb-16">
         <a href="#/projects" className="label hover:text-ink transition-colors">Projects, {project.category.toLowerCase()}</a>
-        <h1 className="display text-[15vw] md:text-[10vw] lg:text-[8.6vw] mt-6 md:mt-8 max-w-[14ch]">{project.title}</h1>
+        <LineRise key={project.id} className="display text-[15vw] md:text-[10vw] lg:text-[8.6vw] mt-6 md:mt-8 max-w-[14ch]">{project.title}</LineRise>
         <div className="grid-page gap-y-10 mt-10 md:mt-16">
           <p className="col-span-12 md:col-span-6 prose-serif text-[24px] sm:text-[30px] leading-[1.18] max-w-[30ch]">
             {project.lead ?? project.description}
           </p>
           <dl className="col-span-12 md:col-start-8 md:col-span-5 grid grid-cols-2 gap-x-6 text-[15px]">
             {specs.map(([k, v]) => (
-              <div key={k} className="border-t border-line py-3">
+              <div key={k} className="rule py-3">
                 <dt className="text-ink-muted">{k}</dt>
                 <dd>{v}</dd>
               </div>
@@ -43,7 +44,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate
       </header>
 
       <figure className="pb-24 md:pb-36">
-        <Aperture src={project.image} alt={`${project.title}, exterior`} focus={project.focus} eager className="w-full aspect-[4/3] md:aspect-[21/9]" />
+        <Aperture key={project.id} mode="open" src={project.image} alt={`${project.title}, exterior`} focus={project.focus} eager className="w-full aspect-[4/3] md:aspect-[21/9]" />
         <figcaption className="page-x label mt-3">{project.title}, design visualisation and site integration</figcaption>
       </figure>
 
@@ -66,7 +67,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate
             {[['The challenge', project.challenge], ['Our response', project.solution]].map(([label, block], i) => {
               const b = block as { title: string; body: string };
               return (
-                <div key={label as string} className={`col-span-12 md:col-span-5 border-t border-ink pt-5 ${i === 0 ? 'md:col-start-4' : 'md:col-start-9 md:col-span-4'}`}>
+                <div key={label as string} className={`col-span-12 md:col-span-5 rule rule-ink pt-5 ${i === 0 ? 'md:col-start-4' : 'md:col-start-9 md:col-span-4'}`}>
                   <h2 className="label">{label as string}</h2>
                   <h3 className="text-[22px] md:text-[26px] leading-tight tracking-tight mt-3">{b.title}</h3>
                   <p className="text-[16px] leading-relaxed text-ink-muted mt-4">{b.body}</p>
@@ -94,9 +95,9 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ onNavigate
 
       <section className="bg-plaster page-x py-24 md:py-36">
         <figure className="grid-page gap-y-6">
-          <blockquote className="col-span-12 md:col-start-4 md:col-span-8 prose-serif text-[30px] sm:text-[44px] leading-[1.12]">
+          <WordFill as="blockquote" className="col-span-12 md:col-start-4 md:col-span-8 prose-serif text-[30px] sm:text-[44px] leading-[1.12]">
             “A space should speak for itself, without any description.”
-          </blockquote>
+          </WordFill>
           <figcaption className="col-span-12 md:col-start-4 md:col-span-8 label">Ar. Rashid Ali, Chief Architect</figcaption>
         </figure>
       </section>

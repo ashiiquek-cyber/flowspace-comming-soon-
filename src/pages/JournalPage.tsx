@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RouteLink } from '../components/RouteLink';
+import { LineRise } from '../components/TextMotion';
 import type { NavigateTarget } from "../data/projects";
 import { ASSETS } from '../constants/assets';
 import { X, CheckCircle2 } from 'lucide-react';
@@ -395,7 +396,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate, articleId 
       {/* Header */}
       <section className="page-x pt-16 md:pt-24 pb-12 md:pb-16">
         <div className="grid-page gap-y-8">
-          <h1 className="col-span-12 md:col-span-8 display text-[16vw] md:text-[9vw]">Journal</h1>
+          <LineRise className="col-span-12 md:col-span-8 display text-[16vw] md:text-[9vw]">Journal</LineRise>
           <p className="col-span-12 md:col-span-4 md:self-end label max-w-[34ch] leading-relaxed">
             Notes from the studio on building in Kerala and Karnataka: costs, climate, permits and the projects on our desk.
           </p>
@@ -465,7 +466,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate, articleId 
 
       {/* Latest articles */}
       <section className="page-x pb-28 md:pb-40">
-        <div className="border-t border-line pt-5 mb-10 md:mb-14">
+        <div className="rule pt-5 mb-10 md:mb-14">
           <h2 className="label">{selectedCategory === 'All' ? 'Latest' : selectedCategory}</h2>
         </div>
 
@@ -484,7 +485,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate, articleId 
                   </div>
                 ) : (
                   // No cover yet: a text-only card with the rule the image would have sat on
-                  <span aria-hidden className="block w-full border-t border-ink" />
+                  <span aria-hidden className="block w-full rule rule-ink" />
                 )}
                 <p className="label">
                   {article.category}, {article.date}
@@ -502,13 +503,13 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate, articleId 
 
       {/* FAQ */}
       <section className="page-x pb-28 md:pb-40">
-        <div className="grid-page gap-y-8 border-t border-line pt-5">
+        <div className="grid-page gap-y-8 rule pt-5">
           <h2 className="col-span-12 lg:col-span-3 label">Questions clients ask</h2>
           <div className="col-span-12 lg:col-span-8 lg:col-start-5 flex flex-col">
             {FAQ_ITEMS.map((faq, i) => {
               const isOpen = expandedFaqId === faq.id;
               return (
-                <div key={faq.id} className={`py-6 ${i > 0 ? 'border-t border-line' : ''}`}>
+                <div key={faq.id} className={`py-6 ${i > 0 ? 'rule' : ''}`}>
                   <button
                     onClick={() => setExpandedFaqId(isOpen ? null : faq.id)}
                     className="w-full flex items-start justify-between text-left gap-6 group"
@@ -607,7 +608,7 @@ export const JournalPage: React.FC<JournalPageProps> = ({ onNavigate, articleId 
               ))}
             </div>
 
-            <div className="mt-10 pt-6 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mt-10 pt-6 rule flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <p className="label">Want to talk this through for your project in Wayanad or Bengaluru?</p>
               <RouteLink to="contact" onNavigate={onNavigate} className="btn-solid shrink-0">
                 Book a consultation

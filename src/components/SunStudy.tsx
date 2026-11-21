@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 
 /**
  * A card-model courtyard house under the real sun for Wayanad (11.6° N).
+ * While it passes through the screen, the scroll carries the sun from 7 am to 5 pm;
+ * the moment the visitor drags, uses the slider or picks a season, the controls are theirs.
  * Drag to turn it, move the slider through the day, switch the season.
  * Loaded on demand: three.js never reaches visitors who do not scroll this far.
  */
@@ -154,12 +157,38 @@ const FRAME_FADE =
 
 export const SunStudy: React.FC = () => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [hour, setHour] = useState(15.5);
+  // With motion the scroll sets the hour, starting at sunrise; without it, an afternoon with long shadows
+  const [scrollDriven] = useState(() => !prefersReducedMotion());
+  const [hour, setHour] = useState(scrollDriven ? 7 : 15.5);
   const [season, setSeason] = useState<SeasonId>('December');
   const [failed, setFailed] = useState(false);
   const [touched, setTouched] = useState(false);
   const target = useRef({ hour, declination: SEASONS[0].declination as number });
   const wake = useRef<() => void>(() => {});
+  const scrub = useRef<ScrollTrigger | null>(null);
+
+  // Any control the visitor touches ends the scroll's hold on the sun
+  const takeControl = () => {
+    scrub.current?.kill();
+    scrub.current = null;
+  };
+
+  useEffect(() => {
+    if (!scrollDriven || !mountRef.current) return;
+    // Quarter-hour steps, matching the slider, so the page re-renders only when the reading changes
+    const follow = (self: ScrollTrigger) => {
+      const h = 7 + Math.round(self.progress * 40) / 4;
+      setHour((prev) => (prev === h ? prev : h));
+    };
+    scrub.current = ScrollTrigger.create({
+      trigger: mountRef.current,
+      start: 'top 80%',
+      end: 'bottom 30%',
+      onUpdate: follow,
+      onRefresh: follow,
+    });
+    return takeControl;
+  }, [scrollDriven]);
 
   const declination = SEASONS.find((s) => s.id === season)!.declination;
   useEffect(() => {
@@ -260,7 +289,7 @@ export const SunStudy: React.FC = () => {
 
     // Drag to turn. No zoom, so the wheel keeps scrolling the page.
     let drag: { x: number; y: number } | null = null;
-    const stopAuto = () => { if (auto) { auto = false; } setTouched(true); };
+    const stopAuto = () => { if (auto) { auto = false; } setTouched(true); takeControl(); };
     const onDown = (e: PointerEvent) => { drag = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); stopAuto(); };
     const onMove = (e: PointerEvent) => {
       if (!drag) return;
@@ -341,7 +370,7 @@ export const SunStudy: React.FC = () => {
               max={17}
               step={0.25}
               value={hour}
-              onChange={(e) => setHour(Number(e.target.value))}
+              onChange={(e) => { takeControl(); setHour(Number(e.target.value)); }}
               aria-valuetext={`${formatHour(hour)}, sun ${altitude} degrees above the horizon`}
               className="sun-range mt-3 w-full"
             />
@@ -354,7 +383,7 @@ export const SunStudy: React.FC = () => {
             {SEASONS.map((s) => (
               <button
                 key={s.id}
-                onClick={() => setSeason(s.id)}
+                onClick={() => { takeControl(); setSeason(s.id); }}
                 aria-pressed={season === s.id}
                 className={`transition-colors ${season === s.id ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
               >
@@ -365,7 +394,7 @@ export const SunStudy: React.FC = () => {
         </div>
       )}
       <p className={`label mt-4 transition-opacity duration-500 ${touched ? 'opacity-0' : ''}`} aria-hidden={touched}>
-        Drag the model to turn it.
+        {scrollDriven ? 'Scroll to carry the sun through the day, or drag the model to turn it.' : 'Drag the model to turn it.'}
       </p>
     </div>
   );
