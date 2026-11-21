@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ASSETS, srcSet } from '../constants/assets';
-import { Aperture } from '../components/Aperture';
+import { ProjectReel } from '../components/ProjectReel';
 import { RouteLink } from '../components/RouteLink';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
@@ -75,13 +75,6 @@ const PLACES = {
   wayanad: ['Kalpetta', 'Meppadi', 'Vythiri', 'Sulthan Bathery', 'Mananthavady', 'Panamaram', 'Ambalavayal', 'Pulpally', 'Meenangadi'],
   bengaluru: ['Jayanagar', 'JP Nagar', 'Basavanagudi', 'Banashankari', 'BTM Layout', 'HSR Layout', 'Koramangala'],
 };
-
-// Selected work on the home page: one wide feature, then two side by side, so no row is left half empty
-const WORK_LAYOUT = [
-  { col: 'md:col-span-12', aspect: 'aspect-[4/3] md:aspect-[21/9]', wide: true },
-  { col: 'md:col-span-6', aspect: 'aspect-[4/3]', wide: false },
-  { col: 'md:col-span-6', aspect: 'aspect-[4/3]', wide: false },
-];
 
 // One rhythm for the whole page: each section's top gap, and the gap from its label row to its content
 const SECTION = 'page-x pt-16 md:pt-24';
@@ -505,42 +498,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       </section>
 
       {/* Selected work */}
-      <section className={SECTION} aria-labelledby="work-heading">
-        <div className="grid-page items-center mb-8 md:mb-10">
+      <section className="pt-16 md:pt-24" aria-labelledby="work-heading">
+        <div className="page-x grid-page items-center mb-8 md:mb-10">
           <SectionLabel id="work-heading" className="col-span-6 md:col-span-3">Selected work</SectionLabel>
           <a href="#/projects" className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px] whitespace-nowrap">All projects ({PROJECTS_DATA.length})</a>
         </div>
 
-        {/* One wide feature, then two side by side; captions sit below, never on the image */}
-        <ul className="grid-page gap-y-12 md:gap-y-16">
-          {PROJECTS_DATA.slice(0, 3).map((project, i) => {
-            const layout = WORK_LAYOUT[i];
-            return (
-              <li key={project.id} className={`col-span-12 ${layout.col}`}>
-                <a href={`#/project/${project.id}`} className="group block">
-                  <Aperture
-                    src={project.image}
-                    alt={project.title}
-                    focus={project.focus}
-                    className={layout.aspect}
-                    mode={layout.wide ? 'open' : 'rise'}
-                    imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]"
-                  />
-                  <div className={`mt-5 grid grid-cols-1 gap-x-10 gap-y-3 ${layout.wide ? 'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]' : ''}`}>
-                    <div>
-                      <div className="flex items-baseline justify-between gap-4">
-                        <h3 className="text-[22px] md:text-[26px] tracking-tight transition-colors group-hover:text-accent">{project.title}</h3>
-                        <span className="label tabular-nums sm:hidden">{project.year}</span>
-                      </div>
-                      <p className="label mt-1">{project.location}<span className="max-sm:hidden">, {project.year}</span></p>
-                    </div>
-                    <p className="prose-serif text-[18px] md:text-[20px] leading-[1.35] max-w-[42ch]">{project.description}</p>
-                  </div>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
+        {/* Full-screen reel: each project's photo blurred behind a portrait card, the next wiping up as you scroll */}
+        <ProjectReel projects={PROJECTS_DATA.slice(0, 4)} />
       </section>
 
       {/* Sun study: a model to turn, under the real sun for Wayanad */}

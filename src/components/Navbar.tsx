@@ -98,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             : 'bg-transparent border-b border-transparent'
         }`}
       >
-        <div className="relative page-x h-[68px] md:h-[76px] flex items-center justify-between">
+        <div className="relative page-x h-[var(--header-h)] flex items-center justify-between">
           <RouteLink
             to="home"
             onNavigate={go}
@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             aria-label="Flowspace Architects, home"
           >
             <span data-nav-emblem className="block">
-              <MovingEmblem className="size-8 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
+              <MovingEmblem className="size-7 transition-transform duration-700 ease-out-expo hover:rotate-[30deg]" />
             </span>
             <span data-nav-wordmark className="block"><Wordmark className="block" /></span>
           </RouteLink>
