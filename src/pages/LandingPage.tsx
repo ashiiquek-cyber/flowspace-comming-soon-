@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ASSETS, srcSet } from '../constants/assets';
-import { Aperture } from '../components/Aperture';
+import { ProjectReel } from '../components/ProjectReel';
 import { RouteLink } from '../components/RouteLink';
 import { prefersReducedMotion } from '../context/SmoothScrollContext';
 import { PROJECTS_DATA, type NavigateTarget } from '../data/projects';
@@ -10,8 +10,10 @@ import { MovingEmblem } from '../components/Brand';
 import { setHeroState } from '../lib/heroSignal';
 import { BoxMarker, BoxStack } from '../components/Massing';
 import { WordFill } from '../components/TextMotion';
+import { createHeroModelState, type HeroModelState } from '../components/heroModelState';
 
 const SunStudy = lazy(() => import('../components/SunStudy'));
+const HeroTower = lazy(() => import('../components/HeroTower'));
 
 interface LandingPageProps {
   onNavigate: (target: NavigateTarget) => void;
@@ -44,7 +46,7 @@ const TESTIMONIALS = [
 // Positions in months from the first site visit; durations are written as lengths so they never fight the axis
 const PROCESS = [
   { title: 'Site visit and brief', body: 'We walk the plot with you, listen to how your family lives, and agree a budget before a single line is drawn.', duration: '2 weeks', start: 0, end: 0.5 },
-  { title: 'Concept and form', body: 'We find the story the site and your brief suggest, then test it through light, ventilation and circulation studies and 3D massing, presented with material samples.', duration: '4 weeks', start: 0.5, end: 1.5 },
+  { title: 'Concept and form', body: 'We find the story the site and your brief suggest, then shape it around light, ventilation, circulation, water and Vastu, tested in 3D massing and presented with material samples.', duration: '4 weeks', start: 0.5, end: 1.5 },
   { title: 'Detailing and approvals', body: 'Complete structural, electrical, and plumbing documentation alongside municipality clearances in Kerala and Karnataka.', duration: '6 weeks', start: 1.5, end: 3 },
   { title: 'Realization', body: 'Periodic on-site supervision, artisan collaboration, and handover with full post-occupancy care.', duration: '11 months', start: 3, end: 14 },
 ];
@@ -76,13 +78,6 @@ const PLACES = {
   bengaluru: ['Jayanagar', 'JP Nagar', 'Basavanagudi', 'Banashankari', 'BTM Layout', 'HSR Layout', 'Koramangala'],
 };
 
-// Selected work on the home page: one wide feature, then two side by side, so no row is left half empty
-const WORK_LAYOUT = [
-  { col: 'md:col-span-12', aspect: 'aspect-[4/3] md:aspect-[21/9]', wide: true },
-  { col: 'md:col-span-6', aspect: 'aspect-[4/3]', wide: false },
-  { col: 'md:col-span-6', aspect: 'aspect-[4/3]', wide: false },
-];
-
 // One rhythm for the whole page: each section's top gap, and the gap from its label row to its content
 const SECTION = 'page-x pt-16 md:pt-24';
 
@@ -95,11 +90,10 @@ const SectionLabel: React.FC<{ id: string; className?: string; children: React.R
 );
 
 const HEADLINE = ['Spaces that speak', 'for themselves.'];
-const HEADLINE_NARROW = ['Spaces that', 'speak for', 'themselves.'];
 
-// The gallery the hero settles into: the courtyard as the centre box, four other projects around it.
+// The gallery the hero settles into: the tower as the centre box, four projects around it.
 // Phones keep the first two, so the scatter never crowds the centre
-const HERO_GALLERY = PROJECTS_DATA.filter((p) => p.image !== ASSETS.heroBg).slice(0, 4);
+const HERO_GALLERY = PROJECTS_DATA.slice(0, 4);
 // Desktop boxes are large enough to fill the screen around the centre box, with no wide empty bands
 const HERO_CARD_LAYOUT = [
   'left-[6%] top-[11.5%] w-[42%] aspect-[4/3] md:left-[4%] md:top-[14%] md:w-[26%]',
@@ -108,12 +102,40 @@ const HERO_CARD_LAYOUT = [
   'max-md:hidden left-[70%] top-[49%] w-[26%] aspect-[16/10]',
 ];
 const HERO_MARQUEE = 'Flowspace Architects · Wayanad · Bengaluru · ';
+const INTRO = 'Architecture, interiors and landscape from Kalpetta, Wayanad and Jayanagar, Bengaluru. Led by Chief Architect Ar. Rashid Ali.';
+const STUDIO_STATEMENT = 'We draw every building as boxes and lines: a box for each part of life, and flowing lines of movement, light and air weaving through them all.';
+
+/**
+ * Text that the hero's timeline writes in word by word. Screen readers get the sentence whole from
+ * a hidden copy; the visible words are inline blocks the timeline can blur, lift and fade.
+ * `breakAfter` ends a line there on wide screens.
+ */
+const HeroWords: React.FC<{ text: string; group: string; breakAfter?: number }> = ({ text, group, breakAfter }) => {
+  const words = text.split(' ');
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {words.map((w, i) => (
+          <React.Fragment key={i}>
+            <span data-words={group} className="inline-block">{w}</span>
+            {breakAfter === i ? <br className="max-md:hidden" /> : i < words.length - 1 ? ' ' : null}
+          </React.Fragment>
+        ))}
+      </span>
+    </>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 
 const Hero: React.FC = () => {
   const rootRef = useRef<HTMLElement>(null);
   const [reduced] = useState(prefersReducedMotion);
+  // Under reduced motion the tower is drawn once, standing, stair built
+  const model = useRef<HeroModelState>(reduced ? { assemble: 1, stair: 1, rise: 0.3 } : createHeroModelState());
+  const [modelReady, setModelReady] = useState(false);
+  const [modelFailed, setModelFailed] = useState(false);
 
   useLayoutEffect(() => {
     if (reduced || !rootRef.current) return;
@@ -141,29 +163,18 @@ const Hero: React.FC = () => {
         };
       };
 
-      // How far the intro line drops to sit in the bottom-left corner before the dock
-      const liftFrom = () => {
-        const line = root.querySelector<HTMLElement>('[data-hero-fade]')!;
-        const bottomGap = window.innerWidth >= 768 ? 32 : 24;
-        return root.clientHeight - bottomGap - (line.offsetTop + line.offsetHeight);
-      };
-
       const mm = gsap.matchMedia();
       mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
         const { desktop } = c.conditions as { desktop: boolean };
-        const opening = desktop ? 'inset(12% 11% 38% 61% round 0px)' : 'inset(57% 6% 7% 36% round 0px)';
-        // Stage 2's centre box, which the other projects gather around
+        // The gallery's centre box, which the projects gather around
         const centre = desktop ? 'inset(14% 34% 16% 34% round 0px)' : 'inset(27% 18% 27% 18% round 0px)';
         gsap.set('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' });
         if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { autoAlpha: 0 });
 
-        // Stage 1 is played, not scrubbed: the first nudge of the wheel docks the emblem
-        // and lifts the intro line from the bottom-left corner to its place under the bar
+        // The dock is played, not scrubbed: the first nudge of the wheel flies the emblem into the bar
         const DOCKED_AT = 0.9;
         const dockTl = gsap.timeline({ paused: true, defaults: { ease: 'power3.inOut' } });
-        dockTl
-          .fromTo('[data-hero-emblem]', { x: 0, y: 0, scale: 1 }, { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, duration: DOCKED_AT }, 0)
-          .fromTo('[data-hero-fade]', { y: () => liftFrom() }, { y: 0, duration: DOCKED_AT }, 0);
+        dockTl.fromTo('[data-hero-emblem]', { x: 0, y: 0, scale: 1 }, { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, duration: DOCKED_AT }, 0);
         // The hand-over swaps are explicit fromTo pairs rather than .set(), which would restore whatever
         // opacity it happened to record (mid-entrance, or hidden after a refresh while docked) on the way back.
         // Their start values render up front (they match the page as it loads), so an invalidate can't leave
@@ -177,12 +188,14 @@ const Hero: React.FC = () => {
         }
         dockTl.eventCallback('onComplete', () => setHeroState({ docked: true }));
 
-        // Timeline units: 0–0.8 headline and window arrive, 1.1–2.1 the window becomes the centre box of a gallery
+        // Four scroll steps, in timeline units: 0–1 the tower gathers; 1.1–2.1 the headline is written
+        // and the stair climbs; 2.2–3.8 the studio statement is written as the view rises;
+        // 4–5 the frame closes round the tower and the projects gather
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: root,
             start: 'top top',
-            end: '+=170%',
+            end: '+=420%',
             scrub: 0.8,
             pin: true,
             pinSpacing: true,
@@ -208,25 +221,34 @@ const Hero: React.FC = () => {
           },
         });
 
-        // The full-bleed courtyard settles back into its small window; the scrim lifts as it goes
-        tl.fromTo('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: opening, ease: 'power2.inOut', duration: 0.9 }, 0)
-          .fromTo('[data-hero-image]', { scale: 1 }, { scale: 1.22, ease: 'power2.inOut', duration: 0.9 }, 0)
-          .to('[data-hero-scrim]', { autoAlpha: 0, duration: 0.9, ease: 'power1.inOut' }, 0)
-          .fromTo('[data-hero-emblem], [data-hero-fade]', { color: '#ffffff' }, { color: '#1d201e', duration: 0.9, ease: 'power1.inOut' }, 0)
-          // The headline stays out of the opening view and arrives once the window has settled
-          .fromTo('[data-hero-line]', { yPercent: 105 }, { yPercent: 0, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, 0.5)
-          .fromTo('[data-hero-pre]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.7);
+        const state = model.current;
+        const wordIn = { autoAlpha: 1, yPercent: 0, filter: 'blur(0px)', ease: 'power2.out', duration: 0.35 };
+        const wordFrom = { autoAlpha: 0, yPercent: 45, filter: 'blur(10px)' };
 
-        // Stage 2: the window moves to the centre and the other projects gather round it as boxes,
+        // 1. The intro line clears and the scattered boxes gather into the tower
+        tl.fromTo('[data-hero-fade]', { autoAlpha: 1, y: 0 }, { autoAlpha: 0, y: -16, ease: 'power1.in', duration: 0.35 }, 0)
+          .fromTo(state, { assemble: 0 }, { assemble: 1, ease: 'none', duration: 1 }, 0);
+
+        // 2. The tower steps back a little and the headline is written over it as the stair climbs
+        tl.fromTo('[data-hero-stage]', { opacity: 1 }, { opacity: 0.62, ease: 'power1.inOut', duration: 0.3 }, 1.0)
+          .fromTo('[data-words="head"]', wordFrom, { ...wordIn, stagger: 0.08 }, 1.1)
+          .fromTo(state, { stair: 0 }, { stair: 1, ease: 'none', duration: 0.95 }, 1.1);
+
+        // 3. The headline lifts away; the studio statement is written as the view rises
+        tl.fromTo('[data-words="head"]', { autoAlpha: 1, yPercent: 0, filter: 'blur(0px)' }, { autoAlpha: 0, yPercent: -35, filter: 'blur(8px)', ease: 'power1.in', duration: 0.25, stagger: 0.02, immediateRender: false }, 2.2)
+          .fromTo('[data-hero-studio-label]', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3 }, 2.45)
+          .fromTo('[data-words="studio"]', wordFrom, { ...wordIn, stagger: 0.035 }, 2.55)
+          .fromTo(state, { rise: 0 }, { rise: 1, ease: 'power1.inOut', duration: 1.5 }, 2.2);
+
+        // 4. The statement clears, the frame closes round the tower and the projects gather round it,
         // with the studio's name passing faintly underneath
-        const S2 = 1.1;
-        tl.to('[data-hero-aperture]', { clipPath: centre, ease: 'power2.inOut', duration: 0.65 }, S2)
-          .fromTo('[data-hero-image]', { scale: 1.22 }, { scale: 1.08, ease: 'power2.inOut', duration: 0.65 }, S2)
-          .to('[data-hero-copy]', { yPercent: -40, autoAlpha: 0, ease: 'power1.in', duration: 0.4 }, S2)
-          .to('[data-hero-pre]', { autoAlpha: 0, duration: 0.2 }, S2)
-          .fromTo('[data-hero-marquee]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, S2 + 0.15)
-          .fromTo('[data-hero-card]', { autoAlpha: 0, y: 80, scale: 0.92 }, { autoAlpha: 1, y: 0, scale: 1, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, S2 + 0.25)
-          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.3 }, S2 + 0.7);
+        const S4 = 4.0;
+        tl.fromTo('[data-hero-studio]', { opacity: 1, y: 0 }, { opacity: 0, y: -30, ease: 'power1.in', duration: 0.3, immediateRender: false }, S4)
+          .fromTo('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', backgroundColor: '#ecebe5' }, { clipPath: centre, backgroundColor: '#e3e2db', ease: 'power2.inOut', duration: 0.65 }, S4)
+          .to('[data-hero-stage]', { opacity: 1, scale: desktop ? 0.82 : 0.62, ease: 'power2.inOut', duration: 0.65 }, S4)
+          .fromTo('[data-hero-marquee]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, S4 + 0.15)
+          .fromTo('[data-hero-card]', { autoAlpha: 0, y: 80, scale: 0.92 }, { autoAlpha: 1, y: 0, scale: 1, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, S4 + 0.25)
+          .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.3 }, S4 + 0.7);
 
         return () => {
           if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { clearProps: 'all' });
@@ -240,19 +262,37 @@ const Hero: React.FC = () => {
     };
   }, [reduced]);
 
+  const tower = (still: boolean) =>
+    modelFailed ? (
+      <img
+        src={ASSETS.heroBg}
+        srcSet={srcSet(ASSETS.heroBg)}
+        sizes="100vw"
+        alt="Double-height living room opening onto a garden courtyard"
+        decoding="async"
+        className="absolute inset-0 size-full object-cover"
+      />
+    ) : (
+      <div className={`absolute inset-0 transition-opacity duration-1000 ease-out ${modelReady || still ? 'opacity-100' : 'opacity-0'}`}>
+        <Suspense fallback={null}>
+          <HeroTower state={model} still={still} onReady={() => setModelReady(true)} onFail={() => setModelFailed(true)} />
+        </Suspense>
+      </div>
+    );
+
   if (reduced) {
     return (
       <section className="pt-[120px] md:pt-[140px]">
         <div className="page-x grid-page gap-y-8 pb-10">
-          <p className="col-span-12 md:col-span-4 label max-w-[30ch]">
-            Architecture, interiors and landscape from Kalpetta, Wayanad and Jayanagar, Bengaluru.
-          </p>
-          <h1 className="col-span-12 display text-[15vw] md:text-[9.5vw]">
+          <p className="col-span-12 md:col-span-4 label max-w-[30ch]">{INTRO}</p>
+          <h1 className="col-span-12 display text-[13vw] md:text-[7vw]">
             {HEADLINE.map((l) => <span key={l} className="block">{l}</span>)}
           </h1>
         </div>
-        <div className="relative h-[80svh]">
-          <img src={ASSETS.heroBg} srcSet={srcSet(ASSETS.heroBg)} sizes="(max-width: 767px) 200vw, 100vw" alt="Double-height living room opening onto a garden courtyard" className="absolute inset-0 size-full object-cover object-[22%_50%] md:object-center" />
+        <div className="relative h-[80svh] bg-stone-1">{tower(true)}</div>
+        <div className="page-x pt-16 md:pt-24 text-center">
+          <h2 className="label">The studio</h2>
+          <p className="prose-serif mx-auto mt-6 max-w-[26ch] text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">{STUDIO_STATEMENT}</p>
         </div>
       </section>
     );
@@ -260,7 +300,7 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={rootRef} className="relative h-[100svh] overflow-hidden bg-lime" aria-label="Introduction">
-      {/* Stage 2 ground: the studio's name passing faintly under the boxes */}
+      {/* Gallery ground: the studio's name passing faintly under the boxes */}
       <div data-hero-marquee aria-hidden="true" className="invisible absolute inset-x-0 top-1/2 -translate-y-1/2 overflow-hidden pointer-events-none select-none">
         <div className="hero-marquee flex w-max whitespace-nowrap display text-ink/[0.06] text-[34vw] md:text-[21vw]">
           <span className="pr-[0.25em]">{HERO_MARQUEE}</span>
@@ -268,25 +308,14 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Aperture: the full-bleed image, clipped to a small opening at first */}
-      <div data-hero-aperture className="absolute inset-0 will-change-[clip-path]">
+      {/* Aperture: the tower, full screen behind the text, then framed as the gallery's centre box */}
+      <div data-hero-aperture className="absolute inset-0 bg-lime will-change-[clip-path]">
         <div data-hero-frame className="absolute inset-0 overflow-hidden">
-          <img
-            data-hero-image
-            src={ASSETS.heroBg}
-            srcSet={srcSet(ASSETS.heroBg)}
-            // Matches the static first frame in index.html, so the browser reuses the same file
-            sizes="(max-width: 767px) 240vh, 112vw"
-            alt="Double-height living room opening onto a garden courtyard"
-            {...{ fetchpriority: 'high' }}
-            decoding="async"
-            className="absolute left-0 top-0 w-[112%] h-[112%] max-w-none object-cover origin-top-left"
-          />
-          <div data-hero-scrim className="absolute inset-0 bg-black/50" />
+          <div data-hero-stage className="absolute inset-0 will-change-transform">{tower(false)}</div>
         </div>
       </div>
 
-      {/* Stage 2: the other projects as boxes around the courtyard */}
+      {/* Gallery: the projects as boxes around the tower */}
       {HERO_GALLERY.map((p, i) => (
         <a
           key={p.id}
@@ -310,31 +339,32 @@ const Hero: React.FC = () => {
         </a>
       ))}
       <p data-hero-post className="invisible absolute z-10 left-[18%] md:left-[34%] top-[calc(73%+0.5rem)] md:top-[calc(84%+0.6rem)] label text-ink">
-        Courtyard residence, Wayanad
+        The line principle
       </p>
       <div data-hero-post className="invisible absolute z-10 inset-x-0 bottom-5 md:bottom-8 page-x flex items-baseline justify-between gap-6">
         <p className="label">Selected work. Design visualisations.</p>
         <a href="#/projects" className="text-link text-[15px]">All projects</a>
       </div>
 
-      <div data-hero-copy className="relative z-10 h-full page-x pt-[96px] md:pt-[120px] pb-8 md:pb-10 flex flex-col justify-between pointer-events-none">
-        <p data-hero-fade className="label max-w-[30ch] md:max-w-[34ch] text-ink">
-          Architecture, interiors and landscape from Kalpetta, Wayanad and Jayanagar, Bengaluru. Led by Chief Architect Ar.&nbsp;Rashid&nbsp;Ali.
-        </p>
-        <h1 className="display text-[16vw] md:text-[9.6vw] max-md:mb-[44svh]">
-          <span className="sr-only">{HEADLINE.join(' ')}</span>
-          {HEADLINE.map((l) => (
-            <span key={l} aria-hidden="true" className="line-mask max-md:hidden"><span data-hero-line className="block">{l}</span></span>
-          ))}
-          {HEADLINE_NARROW.map((l) => (
-            <span key={l} aria-hidden="true" className="line-mask md:hidden"><span data-hero-line className="block">{l}</span></span>
-          ))}
+      {/* 1. The intro line, bottom left until the first scroll */}
+      <div className="absolute z-10 inset-x-0 bottom-0 page-x pb-6 md:pb-8 pointer-events-none">
+        <p data-hero-fade className="label max-w-[30ch] md:max-w-[34ch] text-ink">{INTRO}</p>
+      </div>
+
+      {/* 2. The headline, centred over the tower */}
+      <div className="absolute z-10 inset-0 page-x flex items-center justify-center pointer-events-none">
+        <h1 className="display text-center text-balance text-[13vw] md:text-[7vw]">
+          <HeroWords text={HEADLINE.join(' ')} group="head" breakAfter={2} />
         </h1>
       </div>
 
-      <p data-hero-pre className="hidden md:block absolute z-10 left-[61%] top-[calc(62%+0.75rem)] label">
-        Courtyard residence, Wayanad
-      </p>
+      {/* 3. The studio statement, centred over the tower */}
+      <div data-hero-studio className="absolute z-10 inset-0 page-x flex flex-col items-center justify-center text-center pointer-events-none">
+        <h2 data-hero-studio-label className="opacity-0 label">The studio</h2>
+        <p className="prose-serif mt-6 max-w-[24ch] text-[30px] sm:text-[38px] lg:text-[3.3vw] leading-[1.14]">
+          <HeroWords text={STUDIO_STATEMENT} group="studio" />
+        </p>
+      </div>
 
       {/* The emblem, centre stage until it docks in the navbar */}
       <div data-hero-emblem-wrap className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" aria-hidden="true">
@@ -472,16 +502,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
     <div>
       <Hero />
 
-      {/* Studio */}
-      <section className={SECTION} aria-labelledby="studio-heading">
+      {/* Studio: its label and statement are written over the tower in the hero; the detail follows here */}
+      <section className={SECTION} aria-label="About the studio">
         <div className="grid-page gap-y-8">
-          <SectionLabel id="studio-heading" className="col-span-12 md:col-span-2 pt-2">The studio</SectionLabel>
-          <div className="col-span-12 md:col-span-10 lg:col-span-9">
-            <WordFill className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12]">
-              We draw every building as boxes and lines: a box for each part of life, and flowing lines of movement, light and air weaving through them all.
-            </WordFill>
-            <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
-              Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, working across architecture, interiors, landscape, master planning and research from Wayanad and Bengaluru.
+          <div className="col-span-12 md:col-start-3 md:col-span-10 lg:col-span-9">
+            <p className="max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
+              Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, working across architecture, interiors, landscape, master planning and research from Wayanad and Bengaluru. Each project is designed around nature, the way people come together, and their well-being.
             </p>
             <a href="#/studio" className="text-link mt-8 text-[15px]">About the studio</a>
           </div>
@@ -505,42 +531,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       </section>
 
       {/* Selected work */}
-      <section className={SECTION} aria-labelledby="work-heading">
-        <div className="grid-page items-center mb-8 md:mb-10">
+      <section className="pt-16 md:pt-24" aria-labelledby="work-heading">
+        <div className="page-x grid-page items-center mb-8 md:mb-10">
           <SectionLabel id="work-heading" className="col-span-6 md:col-span-3">Selected work</SectionLabel>
           <a href="#/projects" className="col-span-6 md:col-span-9 justify-self-end text-link text-[15px] whitespace-nowrap">All projects ({PROJECTS_DATA.length})</a>
         </div>
 
-        {/* One wide feature, then two side by side; captions sit below, never on the image */}
-        <ul className="grid-page gap-y-12 md:gap-y-16">
-          {PROJECTS_DATA.slice(0, 3).map((project, i) => {
-            const layout = WORK_LAYOUT[i];
-            return (
-              <li key={project.id} className={`col-span-12 ${layout.col}`}>
-                <a href={`#/project/${project.id}`} className="group block">
-                  <Aperture
-                    src={project.image}
-                    alt={project.title}
-                    focus={project.focus}
-                    className={layout.aspect}
-                    mode={layout.wide ? 'open' : 'rise'}
-                    imgClassName="transition-transform duration-[1.4s] ease-out-expo group-hover:scale-[1.03]"
-                  />
-                  <div className={`mt-5 grid grid-cols-1 gap-x-10 gap-y-3 ${layout.wide ? 'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]' : ''}`}>
-                    <div>
-                      <div className="flex items-baseline justify-between gap-4">
-                        <h3 className="text-[22px] md:text-[26px] tracking-tight transition-colors group-hover:text-accent">{project.title}</h3>
-                        <span className="label tabular-nums sm:hidden">{project.year}</span>
-                      </div>
-                      <p className="label mt-1">{project.location}<span className="max-sm:hidden">, {project.year}</span></p>
-                    </div>
-                    <p className="prose-serif text-[18px] md:text-[20px] leading-[1.35] max-w-[42ch]">{project.description}</p>
-                  </div>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
+        {/* Full-screen reel: each project's photo blurred behind a portrait card, the next wiping up as you scroll */}
+        <ProjectReel projects={PROJECTS_DATA.slice(0, 4)} />
       </section>
 
       {/* Sun study: a model to turn, under the real sun for Wayanad */}

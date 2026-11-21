@@ -89,7 +89,7 @@
   --color-kadappa: #202421;
   --color-accent: #4b5b45;
   --gutter: 1.5rem;
-  --header-h: 68px;
+  --header-h: 56px;
   --header-offset: var(--header-h);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -97,7 +97,7 @@
 @media (min-width: 768px) {
   :root {
     --gutter: 2.5rem;
-    --header-h: 76px;
+    --header-h: 60px;
   }
 }
 

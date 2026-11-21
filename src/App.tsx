@@ -145,7 +145,7 @@ function AppContent() {
       <Navbar currentPage={page} onNavigate={navigate} />
 
       {/* main stays opaque so the curtain footer never shows through; only its content fades in */}
-      <main id="main" className={`relative z-10 flex-1 w-full bg-lime ${page === 'home' ? '' : 'pt-[68px] md:pt-[76px]'}`}>
+      <main id="main" className={`relative z-10 flex-1 w-full bg-lime ${page === 'home' ? '' : 'pt-[var(--header-h)]'}`}>
         <div key={routeKey} className={navigated.current ? 'page-enter' : undefined}>
         <Suspense fallback={<div className="min-h-[100svh]" aria-busy="true" />}>
         <PageReady onReady={onPageReady} />
