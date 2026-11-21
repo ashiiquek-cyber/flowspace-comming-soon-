@@ -122,6 +122,9 @@ const PARTS: Part[] = [
   },
 ];
 
+/** How much of each box's tumble it keeps while apart: the composition floats, it never spins */
+const TUMBLE = 0.45;
+
 // The stair winds up round a post from the podium to the slab, a quarter turn short of two
 const STAIR = { steps: 20, axis: [2.0, 1.7] as [number, number], radius: 1.25, from: -1.8 * Math.PI, to: -0.5 * Math.PI, rise: 0.16 };
 
@@ -286,10 +289,12 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
         tmp.x *= spreadX;
         tmp.y += Math.sin(time * 0.5 + i * 1.7) * 0.3;
         part.o.position.lerpVectors(tmp, local, k);
-        const loose = 1 - k;
+        // Boxes face the way the tower faces and only lean a little while apart, so gathering them
+        // is a short settle rather than a turn that grows with however far the tower has spun
+        const loose = (1 - k) * TUMBLE;
         part.o.rotation.set(
-          part.tumble[0] * loose + Math.sin(time * 0.4 + i) * 0.05 * loose,
-          spin * k + part.tumble[1] * loose + time * 0.03 * loose,
+          part.tumble[0] * loose + Math.sin(time * 0.4 + i) * 0.03 * loose,
+          spin + part.tumble[1] * loose,
           part.tumble[2] * loose,
         );
       });
