@@ -7,6 +7,7 @@ import { LandingPage } from './pages/LandingPage';
 import { PROJECTS_DATA, type NavigateTarget, type Page } from './data/projects';
 import { hrefFor } from './components/RouteLink';
 import { RuleDraw } from './lib/useRuleDraw';
+import { markNavigated } from './lib/firstView';
 
 // Only the home page ships in the first bundle; every other page loads on demand
 const loadProjects = () => import('./pages/ProjectsPage');
@@ -131,7 +132,10 @@ function AppContent() {
   // The first page appears as painted (a fade would hold back its largest paint); later routes fade in
   const [initialKey] = useState(routeKey);
   const navigated = useRef(false);
-  if (routeKey !== initialKey) navigated.current = true;
+  if (routeKey !== initialKey) {
+    navigated.current = true;
+    markNavigated(); // titles on later pages may rise on load (components/TextMotion.tsx)
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
