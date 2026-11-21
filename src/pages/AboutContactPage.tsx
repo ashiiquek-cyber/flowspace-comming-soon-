@@ -18,8 +18,8 @@ const PRINCIPLES = [
     body: 'Whatever the scale or type, from a budget home to an eco village, each project starts from its site conditions and the client’s brief, and is a chance to find an approach and a narrative of its own.',
   },
   {
-    title: 'Comfort in the detail',
-    body: 'A fresh, forward-looking aesthetic where comfort and function sit together. We explore new materials and detail them with care down to the smallest element, so spaces answer to the people in them and the place around them.',
+    title: 'Made to be felt',
+    body: 'A fresh, forward-looking aesthetic where comfort, function and well-being sit together. We explore new materials and detail them with care down to the smallest element, so every space has a character of its own and feels right to the people in it.',
   },
 ];
 
@@ -82,7 +82,7 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
               Flowspace Architects is an architecture and design studio founded in 2016 by Chief Architect Ar. Rashid Ali, with studios in Kalpetta, Wayanad (Kerala) and Jayanagar, Bengaluru (Karnataka).
             </p>
             <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
-              We see architecture as more than building: it is a narrative, a response and a reflection. Every space should tell its own story to the people who live and work in it.
+              We see architecture as more than building: it is a narrative, a response and a reflection. What matters is how people feel inside a space, how they meet each other there, and how it connects them to the land, light and air around it.
             </p>
           </div>
         </div>
@@ -107,6 +107,31 @@ export const AboutContactPage: React.FC<AboutContactPageProps> = () => {
           <WordFill className="col-span-12 md:col-start-4 md:col-span-8 lg:col-start-4 lg:col-span-7 prose-serif text-[22px] sm:text-[26px] leading-snug">
             The flowing lines carry the same elements through every plan: air and ventilation, pockets of natural light, courtyards, interactive spaces, water bodies, Vastu and easy access. Each project is also a piece of research, shaped by its microclimate.
           </WordFill>
+        </div>
+      </section>
+
+      <section className="page-x pb-24 md:pb-36" aria-labelledby="vision-heading">
+        <div className="grid-page gap-y-10">
+          <LineRise as="h2" inView id="vision-heading" className="col-span-12 md:col-span-3 display text-[44px] sm:text-[56px]">Vision</LineRise>
+          <div className="col-span-12 md:col-span-9 flex flex-col gap-12">
+            <WordFill className="prose-serif text-[26px] sm:text-[34px] lg:text-[42px] leading-[1.15] max-w-[30ch]">
+              To keep practising and growing as architects, with every project innovative, sustainable and beautiful, and shaped as much by your hopes as by our ideas.
+            </WordFill>
+            <div className="grid md:grid-cols-2 gap-x-10 gap-y-12">
+              <div className="rule rule-ink pt-5">
+                <h3 className="text-[22px] tracking-tight leading-tight">Working together</h3>
+                <p className="text-[15px] leading-relaxed text-ink-muted mt-4">
+                  A home or a place of work is personal, and we treat it that way. We do our best work with clients who want something of their own: we talk openly from the first site walk, make the big decisions together, and stay in touch long after handover.
+                </p>
+              </div>
+              <div className="rule rule-ink pt-5">
+                <h3 className="text-[22px] tracking-tight leading-tight">With thanks</h3>
+                <p className="text-[15px] leading-relaxed text-ink-muted mt-4">
+                  Every project begins with someone trusting us with an idea they care about. That trust is what lets us keep pushing, as architects and as researchers, and we are grateful for it.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

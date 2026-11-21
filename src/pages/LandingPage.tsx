@@ -44,7 +44,7 @@ const TESTIMONIALS = [
 // Positions in months from the first site visit; durations are written as lengths so they never fight the axis
 const PROCESS = [
   { title: 'Site visit and brief', body: 'We walk the plot with you, listen to how your family lives, and agree a budget before a single line is drawn.', duration: '2 weeks', start: 0, end: 0.5 },
-  { title: 'Concept and form', body: 'We find the story the site and your brief suggest, then test it through light, ventilation and circulation studies and 3D massing, presented with material samples.', duration: '4 weeks', start: 0.5, end: 1.5 },
+  { title: 'Concept and form', body: 'We find the story the site and your brief suggest, then shape it around light, ventilation, circulation, water and Vastu, tested in 3D massing and presented with material samples.', duration: '4 weeks', start: 0.5, end: 1.5 },
   { title: 'Detailing and approvals', body: 'Complete structural, electrical, and plumbing documentation alongside municipality clearances in Kerala and Karnataka.', duration: '6 weeks', start: 1.5, end: 3 },
   { title: 'Realization', body: 'Periodic on-site supervision, artisan collaboration, and handover with full post-occupancy care.', duration: '11 months', start: 3, end: 14 },
 ];
@@ -474,7 +474,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               We draw every building as boxes and lines: a box for each part of life, and flowing lines of movement, light and air weaving through them all.
             </WordFill>
             <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
-              Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, working across architecture, interiors, landscape, master planning and research from Wayanad and Bengaluru.
+              Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, working across architecture, interiors, landscape, master planning and research from Wayanad and Bengaluru. Each project is designed around nature, the way people come together, and their well-being.
             </p>
             <a href="#/studio" className="text-link mt-8 text-[15px]">About the studio</a>
           </div>

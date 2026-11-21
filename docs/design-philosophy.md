@@ -25,3 +25,9 @@ At Flowspace Architects, we see architecture as more than just building—it's a
 - **The line principle:** boxes hold the functions, and flowing lines carry movement, light and air through them. It matches the emblem (houses set on contour lines) and is the studio's signature idea.
 - **Narrative, response, reflection:** each project is rooted in its site and its story.
 - **Range:** architecture, interiors, landscape, master planning and research, from budget homes to resorts and eco villages.
+
+## The "About Flow Space" statement
+
+A second source, shared by the user on 2026-11-21. It adds what the board leaves out: harmony with nature, human interaction and spiritual well-being; air, light, interactive courtyards, water bodies, Vastu and accessibility as the elements that flow through every plan; each project as living research shaped by its microclimate; spaces with a soul and an identity of their own; a close, trusting relationship with clients and gratitude for it; and a vision of innovative, sustainable, beautiful work. It closes on "spaces that flow with life."
+
+Where the site uses it: the About page's opening paragraph, the "Made to be felt" principle and the Vision section (Working together, With thanks); the home page studio paragraph and the "Concept and form" process step (water and Vastu); the footer line; the meta description.
