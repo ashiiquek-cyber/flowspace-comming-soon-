@@ -269,11 +269,6 @@ html.lenis, html.lenis body { height: auto; }
   transition: transform 1.3s var(--ease-out-expo) calc(var(--rule-i, 0) * 70ms);
 }
 
-/* Home hero, stage 2: the studio's name drifting behind the gallery */
-@keyframes hero-marquee {
-  to { transform: translateX(-50%); }
-}
-.hero-marquee { animation: hero-marquee 80s linear infinite; }
 
 /* Massing boxes (components/Massing.tsx): solid faces, hairline edges, lit from above */
 .cube { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }

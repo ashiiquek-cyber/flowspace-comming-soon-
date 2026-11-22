@@ -91,17 +91,27 @@ const SectionLabel: React.FC<{ id: string; className?: string; children: React.R
 
 const HEADLINE = ['Spaces that speak', 'for themselves.'];
 
-// The gallery the hero settles into: the tower as the centre box, four projects around it.
-// Phones keep the first two, so the scatter never crowds the centre
+// The gallery the hero settles into: the tower as a tall centre card, four projects clustered round it.
+// Phones keep the first two, so the cluster never crowds the centre
 const HERO_GALLERY = PROJECTS_DATA.slice(0, 4);
-// Desktop boxes are large enough to fill the screen around the centre box, with no wide empty bands
+// A tight cluster running from top left to bottom right. The photos overlap one another, and the two
+// nearest the centre tuck in under the tower's card. Below xl the card takes more of the width, so the
+// cluster spreads out a little to keep the photos clear of it
 const HERO_CARD_LAYOUT = [
-  'left-[6%] top-[11.5%] w-[42%] aspect-[4/3] md:left-[4%] md:top-[14%] md:w-[26%]',
-  'right-[6%] top-[78%] w-[40%] aspect-[4/3] md:right-auto md:left-[9%] md:top-[55%] md:w-[21%] md:aspect-[5/4]',
-  'max-md:hidden left-[69%] top-[12%] w-[23%] aspect-[4/3]',
-  'max-md:hidden left-[70%] top-[49%] w-[26%] aspect-[16/10]',
+  'left-[4%] top-[13%] w-[44%] aspect-[4/3] md:left-[3%] md:top-[26%] md:w-[26%] md:aspect-[8/5] xl:left-[7.5%] xl:top-[27%] xl:w-[20.5%]',
+  'left-[52%] top-[62%] w-[44%] aspect-[4/3] md:left-[19%] md:top-[12%] md:w-[19%] md:aspect-[8/5] xl:left-[25%] xl:top-[11.5%] xl:w-[16%]',
+  'max-md:hidden left-[62%] top-[43%] w-[19%] aspect-[8/5] xl:left-[58.5%] xl:top-[41%] xl:w-[15%]',
+  'max-md:hidden left-[70%] top-[57%] w-[27%] aspect-[8/5] xl:left-[71.5%] xl:top-[56%] xl:w-[20.5%]',
 ];
-const HERO_MARQUEE = 'Flowspace Architects · Wayanad · Bengaluru · ';
+/** The tower's card at the end of step 4, in px within the hero: tall, and a little above centre */
+const heroCard = (W: number, H: number, desktop: boolean) => {
+  if (desktop) {
+    const h = H * 0.54, w = Math.min(h * 0.77, W * 0.3);
+    return { left: (W - w) / 2, top: H * 0.14, w, h };
+  }
+  const w = W * 0.52, h = Math.min(H * 0.44, w * 1.75);
+  return { left: (W - w) / 2, top: H * 0.24, w, h };
+};
 const INTRO = 'Architecture, interiors and landscape from Kalpetta, Wayanad and Jayanagar, Bengaluru. Led by Chief Architect Ar. Rashid Ali.';
 const STUDIO_STATEMENT = 'We draw every building as boxes and lines: a box for each part of life, and flowing lines of movement, light and air weaving through them all.';
 
@@ -166,9 +176,7 @@ const Hero: React.FC = () => {
       const mm = gsap.matchMedia();
       mm.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)' }, (c) => {
         const { desktop } = c.conditions as { desktop: boolean };
-        // The gallery's centre box, which the projects gather around
-        const centre = desktop ? 'inset(14% 34% 16% 34% round 0px)' : 'inset(27% 18% 27% 18% round 0px)';
-        gsap.set('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)' });
+        gsap.set('[data-hero-aperture]', { clipPath: 'inset(0px 0px 0px 0px)' });
         if (navEmblem && navWordmark) gsap.set([navEmblem, navWordmark], { autoAlpha: 0 });
 
         // The dock is played, not scrubbed: the first nudge of the wheel flies the emblem into the bar
@@ -190,7 +198,7 @@ const Hero: React.FC = () => {
 
         // Four scroll steps, in timeline units: 0–1 the tower gathers; 1.1–2.1 the headline is written
         // and the stair climbs; 2.2–3.8 the studio statement is written as the view rises;
-        // 4–5 the frame closes round the tower and the projects gather
+        // 4–5 the tower shrinks into a card and the projects fly in round it
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: root,
@@ -240,14 +248,50 @@ const Hero: React.FC = () => {
           .fromTo('[data-words="studio"]', wordFrom, { ...wordIn, stagger: 0.035 }, 2.55)
           .fromTo(state, { rise: 0 }, { rise: 1, ease: 'power1.inOut', duration: 1.5 }, 2.2);
 
-        // 4. The statement clears, the frame closes round the tower and the projects gather round it,
-        // with the studio's name passing faintly underneath
+        // 4. The statement clears, the full-screen tower closes in to a tall card, and the projects fly
+        // in from the edges to cluster round it
+        const card = () => heroCard(root.clientWidth, root.clientHeight, desktop);
+        const cardClip = () => {
+          const W = root.clientWidth, H = root.clientHeight, c = card();
+          return `inset(${c.top}px ${W - c.left - c.w}px ${H - c.top - c.h}px ${c.left}px)`;
+        };
+
+        // Each project flies in from the edge of the screen nearest to where it lands
+        const away = (el: HTMLElement) => {
+          const W = root.clientWidth, H = root.clientHeight;
+          const { offsetLeft: l, offsetTop: t, offsetWidth: w, offsetHeight: h } = el;
+          const gaps = [l, W - l - w, t, H - t - h];
+          const side = gaps.indexOf(Math.min(...gaps));
+          const far = 1.15;
+          return side === 0 ? { x: -(l + w) * far, y: 0 }
+            : side === 1 ? { x: (W - l) * far, y: 0 }
+            : side === 2 ? { x: 0, y: -(t + h) * far }
+            : { x: 0, y: (H - t) * far };
+        };
+
         const S4 = 4.0;
         tl.fromTo('[data-hero-studio]', { opacity: 1, y: 0 }, { opacity: 0, y: -30, ease: 'power1.in', duration: 0.3, immediateRender: false }, S4)
-          .fromTo('[data-hero-aperture]', { clipPath: 'inset(0% 0% 0% 0% round 0px)', backgroundColor: '#ecebe5' }, { clipPath: centre, backgroundColor: '#e3e2db', ease: 'power2.inOut', duration: 0.65 }, S4)
-          .to('[data-hero-stage]', { opacity: 1, scale: desktop ? 0.82 : 0.62, ease: 'power2.inOut', duration: 0.65 }, S4)
-          .fromTo('[data-hero-marquee]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, S4 + 0.15)
-          .fromTo('[data-hero-card]', { autoAlpha: 0, y: 80, scale: 0.92 }, { autoAlpha: 1, y: 0, scale: 1, ease: 'power3.out', stagger: 0.08, duration: 0.5 }, S4 + 0.25)
+          .fromTo(
+            '[data-hero-aperture]',
+            { clipPath: 'inset(0px 0px 0px 0px)', backgroundColor: '#ecebe5' },
+            { clipPath: cardClip, backgroundColor: '#e3e2db', ease: 'power2.inOut', duration: 0.7 },
+            S4,
+          )
+          // The tower shrinks with its card, keeping to the card's centre
+          .to('[data-hero-stage]', {
+            opacity: 1,
+            y: () => { const c = card(); return c.top + c.h / 2 - root.clientHeight / 2; },
+            scale: desktop ? 0.62 : 0.5,
+            ease: 'power2.inOut',
+            duration: 0.7,
+          }, S4)
+          .fromTo('[data-hero-card]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01, stagger: 0.07 }, S4 + 0.15)
+          .fromTo(
+            '[data-hero-card]',
+            { x: (_i: number, el: HTMLElement) => away(el).x, y: (_i: number, el: HTMLElement) => away(el).y },
+            { x: 0, y: 0, ease: 'power3.out', stagger: 0.07, duration: 0.65 },
+            S4 + 0.15,
+          )
           .fromTo('[data-hero-post]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.3 }, S4 + 0.7);
 
         return () => {
@@ -300,22 +344,15 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={rootRef} className="relative h-[100svh] overflow-hidden bg-lime" aria-label="Introduction">
-      {/* Gallery ground: the studio's name passing faintly under the boxes */}
-      <div data-hero-marquee aria-hidden="true" className="invisible absolute inset-x-0 top-1/2 -translate-y-1/2 overflow-hidden pointer-events-none select-none">
-        <div className="hero-marquee flex w-max whitespace-nowrap display text-ink/[0.06] text-[34vw] md:text-[21vw]">
-          <span className="pr-[0.25em]">{HERO_MARQUEE}</span>
-          <span className="pr-[0.25em]">{HERO_MARQUEE}</span>
-        </div>
-      </div>
-
-      {/* Aperture: the tower, full screen behind the text, then framed as the gallery's centre box */}
-      <div data-hero-aperture className="absolute inset-0 bg-lime will-change-[clip-path]">
+      {/* Aperture: the tower, full screen behind the text, then closed in to the gallery's tall centre
+          card. It sits over the projects nearest it */}
+      <div data-hero-aperture className="absolute z-[6] inset-0 bg-lime will-change-[clip-path]">
         <div data-hero-frame className="absolute inset-0 overflow-hidden">
           <div data-hero-stage className="absolute inset-0 will-change-transform">{tower(false)}</div>
         </div>
       </div>
 
-      {/* Gallery: the projects as boxes around the tower */}
+      {/* Gallery: the projects, flown in from the edges to cluster round the tower */}
       {HERO_GALLERY.map((p, i) => (
         <a
           key={p.id}
@@ -328,19 +365,15 @@ const Hero: React.FC = () => {
             <img
               src={p.image}
               srcSet={srcSet(p.image)}
-              sizes="(max-width: 767px) 42vw, 20vw"
+              sizes="(max-width: 767px) 44vw, 21vw"
               alt=""
               decoding="async"
               style={{ objectPosition: p.focus }}
               className="size-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]"
             />
           </span>
-          <span aria-hidden="true" className="max-md:hidden label block mt-2 text-ink transition-colors group-hover:text-accent">{p.title}</span>
         </a>
       ))}
-      <p data-hero-post className="invisible absolute z-10 left-[18%] md:left-[34%] top-[calc(73%+0.5rem)] md:top-[calc(84%+0.6rem)] label text-ink">
-        The line principle
-      </p>
       <div data-hero-post className="invisible absolute z-10 inset-x-0 bottom-5 md:bottom-8 page-x flex items-baseline justify-between gap-6">
         <p className="label">Selected work. Design visualisations.</p>
         <a href="#/projects" className="text-link text-[15px]">All projects</a>
