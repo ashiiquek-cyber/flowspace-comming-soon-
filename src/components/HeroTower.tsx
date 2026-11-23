@@ -275,7 +275,8 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
     // x/y: where the cursor is, eased towards tx/ty (-1 to 1 across the window).
     // yaw: how far a drag has turned the tower, coasting on `vel` after release.
     // pitch: how far a drag has tipped the view, easing back to pitchTo (0 once let go).
-    const input = { x: 0, y: 0, tx: 0, ty: 0, yaw: 0, vel: 0, pitch: 0, pitchTo: 0 };    const tmp = new THREE.Vector3();
+    const input = { x: 0, y: 0, tx: 0, ty: 0, yaw: 0, vel: 0, pitch: 0, pitchTo: 0 };
+    const tmp = new THREE.Vector3();
     const local = new THREE.Vector3();
     const up = new THREE.Vector3(0, 1, 0);
     const m = new THREE.Matrix4();
