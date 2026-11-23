@@ -124,6 +124,15 @@ const PARTS: Part[] = [
 
 /** How much of each box's tumble it keeps while apart: the composition floats, it never spins */
 const TUMBLE = 0.45;
+/** How far each box turns about its own height while it travels in, in radians */
+const SPIN = Math.PI;
+
+/** Its lean towards the cursor at the window's edge, in radians: about 8° sideways, 5° up and down */
+const TILT_YAW = 0.14;
+const TILT_PITCH = 0.09;
+/** A drag across the full width of the hero turns the tower this far (radians); up and down tips it up to ~12° */
+const DRAG_TURN = 3.0;
+const DRAG_PITCH = 0.21;
 
 // The stair winds up round a post from the podium to the slab, a quarter turn short of two
 const STAIR = { steps: 20, axis: [2.0, 1.7] as [number, number], radius: 1.25, from: -1.8 * Math.PI, to: -0.5 * Math.PI, rise: 0.16 };
@@ -263,7 +272,10 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
     });
 
     const camera = new THREE.PerspectiveCamera(24, 1, 0.5, 300);
-    const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+    // x/y: where the cursor is, eased towards tx/ty (-1 to 1 across the window).
+    // yaw: how far a drag has turned the tower, coasting on `vel` after release.
+    // pitch: how far a drag has tipped the view, easing back to pitchTo (0 once let go).
+    const input = { x: 0, y: 0, tx: 0, ty: 0, yaw: 0, vel: 0, pitch: 0, pitchTo: 0 };
     const tmp = new THREE.Vector3();
     const local = new THREE.Vector3();
     const up = new THREE.Vector3(0, 1, 0);
@@ -274,7 +286,8 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
 
     const layout = (time: number) => {
       const { assemble, stair } = state.current;
-      const spin = -0.6 + (still ? 0 : (time / 90) * Math.PI * 2);
+      // The slow turn, plus whatever the visitor has dragged, plus a lean towards the cursor
+      const spin = -0.6 + (still ? 0 : (time / 90) * Math.PI * 2) + input.yaw + input.x * TILT_YAW;
       turning.rotation.y = spin;
 
       const n = parts.length;
@@ -292,9 +305,11 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
         // Boxes face the way the tower faces and only lean a little while apart, so gathering them
         // is a short settle rather than a turn that grows with however far the tower has spun
         const loose = (1 - k) * TUMBLE;
+        // A half-turn that unwinds on the way in, each box turning its own way
+        const twirl = (1 - k) * SPIN * (i % 2 ? -1 : 1);
         part.o.rotation.set(
           part.tumble[0] * loose + Math.sin(time * 0.4 + i) * 0.03 * loose,
-          spin + part.tumble[1] * loose,
+          spin + part.tumble[1] * loose + twirl,
           part.tumble[2] * loose,
         );
       });
@@ -322,10 +337,11 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
       // Fit the tower's height on wide screens and its width on narrow ones
       const dist = Math.max(41, 28 / aspect);
       const rise = state.current.rise;
-      const el = -0.07 + rise * 0.32 + pointer.y * 0.03;
-      const az = pointer.x * 0.06;
+      // The front tips up towards a cursor above it (the view drops) and down towards one below;
+      // never so low that the view slips under the podium
+      const el = Math.max(-0.16, -0.07 + rise * 0.32 - input.y * TILT_PITCH + input.pitch);
       look.set(-0.1, 5.4 + rise * 0.4, 0);
-      camera.position.set(Math.sin(az) * Math.cos(el) * dist, look.y + Math.sin(el) * dist, Math.cos(az) * Math.cos(el) * dist);
+      camera.position.set(0, look.y + Math.sin(el) * dist, Math.cos(el) * dist);
       camera.lookAt(look);
       camera.updateProjectionMatrix();
     };
@@ -336,13 +352,24 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
     let raf = 0;
     let ready = false;
     const start = performance.now();
+    let last = start;
+    const drag = { id: -1, x: 0, y: 0, t: 0 };
 
     const draw = (now: number) => {
       const { clientWidth: w, clientHeight: h } = mount;
       if (!w || !h) return;
       const time = still ? 0 : (now - start) / 1000;
-      pointer.x += (pointer.tx - pointer.x) * 0.05;
-      pointer.y += (pointer.ty - pointer.y) * 0.05;
+      // Easing is measured in seconds, so it feels the same at any frame rate (and after a pause)
+      const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
+      last = now;
+      const follow = 1 - Math.exp(-dt * 3.5);
+      input.x += (input.tx - input.x) * follow;
+      input.y += (input.ty - input.y) * follow;
+      if (drag.id < 0) {
+        input.yaw += input.vel * dt;
+        input.vel *= Math.exp(-dt * 3.5);
+      }
+      input.pitch += (input.pitchTo - input.pitch) * (1 - Math.exp(-dt * 6));
       layout(time);
       place(w, h);
       renderer.render(scene, camera);
@@ -367,13 +394,66 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
       kick();
     };
 
-    // A slight lean towards the pointer, on devices that have one
+    // The tower leans towards the cursor, on devices that have one, and settles back when it leaves
     const fine = window.matchMedia('(pointer: fine)').matches;
     const onPointer = (ev: PointerEvent) => {
-      pointer.tx = (ev.clientX / window.innerWidth - 0.5) * 2;
-      pointer.ty = -(ev.clientY / window.innerHeight - 0.5) * 2;
+      if (ev.pointerType !== 'mouse') return;
+      input.tx = (ev.clientX / window.innerWidth - 0.5) * 2;
+      input.ty = -(ev.clientY / window.innerHeight - 0.5) * 2;
     };
-    if (fine && !still) window.addEventListener('pointermove', onPointer, { passive: true });
+    const onLeave = (ev: PointerEvent) => {
+      if (!ev.relatedTarget) input.tx = input.ty = 0;
+    };
+
+    // Dragging turns it by hand. Sideways turns the tower and coasts on release; up and down tips the
+    // view, springing back. On touch only sideways drags are taken: up and down still scroll the page
+    const onDown = (ev: PointerEvent) => {
+      if (drag.id >= 0 || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+      if (ev.pointerType === 'mouse') ev.preventDefault();
+      drag.id = ev.pointerId;
+      drag.x = ev.clientX;
+      drag.y = ev.clientY;
+      drag.t = performance.now();
+      input.vel = 0;
+      canvas.setPointerCapture(ev.pointerId);
+      canvas.style.cursor = 'grabbing';
+    };
+    const onDrag = (ev: PointerEvent) => {
+      if (ev.pointerId !== drag.id) return;
+      const now = performance.now();
+      const turn = (ev.clientX - drag.x) * (DRAG_TURN / Math.max(mount.clientWidth, 320));
+      input.yaw += turn;
+      input.vel = input.vel * 0.6 + (turn / Math.max(0.008, (now - drag.t) / 1000)) * 0.4;
+      if (ev.pointerType === 'mouse') {
+        input.pitchTo = Math.min(DRAG_PITCH, Math.max(-DRAG_PITCH * 0.6, input.pitchTo + (ev.clientY - drag.y) * 0.004));
+      }
+      drag.x = ev.clientX;
+      drag.y = ev.clientY;
+      drag.t = now;
+    };
+    const onUp = (ev: PointerEvent) => {
+      if (ev.pointerId !== drag.id) return;
+      // Held still before letting go, or handed to the page's scroll: no coast
+      const idle = performance.now() - drag.t > 90;
+      input.vel = ev.type === 'pointercancel' || idle ? 0 : Math.max(-3, Math.min(3, input.vel));
+      input.pitchTo = 0;
+      drag.id = -1;
+      if (canvas.hasPointerCapture(ev.pointerId)) canvas.releasePointerCapture(ev.pointerId);
+      canvas.style.cursor = 'grab';
+    };
+
+    if (!still) {
+      if (fine) {
+        window.addEventListener('pointermove', onPointer, { passive: true });
+        document.addEventListener('pointerout', onLeave, { passive: true });
+      }
+      canvas.style.cursor = 'grab';
+      canvas.style.touchAction = 'pan-y';
+      canvas.addEventListener('pointerdown', onDown);
+      canvas.addEventListener('pointermove', onDrag, { passive: true });
+      canvas.addEventListener('pointerup', onUp);
+      canvas.addEventListener('pointercancel', onUp);
+    }
 
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
@@ -386,6 +466,11 @@ const HeroTower: React.FC<Props> = ({ state, still = false, onReady, onFail }) =
       ro.disconnect();
       io.disconnect();
       window.removeEventListener('pointermove', onPointer);
+      document.removeEventListener('pointerout', onLeave);
+      canvas.removeEventListener('pointerdown', onDown);
+      canvas.removeEventListener('pointermove', onDrag);
+      canvas.removeEventListener('pointerup', onUp);
+      canvas.removeEventListener('pointercancel', onUp);
       const geometries = new Set<THREE.BufferGeometry>();
       scene.traverse((o) => { const g = (o as THREE.Mesh).geometry; if (g) geometries.add(g); });
       geometries.forEach((g) => g.dispose());
