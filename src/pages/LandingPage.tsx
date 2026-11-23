@@ -361,7 +361,7 @@ const Hero: React.FC = () => {
           aria-label={p.title}
           className={`invisible group absolute z-[5] ${HERO_CARD_LAYOUT[i]}`}
         >
-          <span className="block size-full overflow-hidden bg-stone-1">
+          <span className="block size-full overflow-hidden rounded-lg md:rounded-xl bg-stone-1">
             <img
               src={p.image}
               srcSet={srcSet(p.image)}
