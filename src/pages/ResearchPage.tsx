@@ -1,13 +1,29 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { srcSet } from '../constants/assets';
-import { LineRise } from '../components/TextMotion';
+import { LineRise, WordFill } from '../components/TextMotion';
+import { BoxMarker } from '../components/Massing';
 import { RESEARCH_DATA, type ResearchType } from '../data/research';
+
+const SunStudy = lazy(() => import('../components/SunStudy'));
 
 const FILTERS: ('All' | ResearchType)[] = ['All', 'Study', 'Paper'];
 
 export const ResearchPage: React.FC = () => {
   const [filter, setFilter] = useState<'All' | ResearchType>('All');
   const items = RESEARCH_DATA.filter((r) => filter === 'All' || r.type === filter);
+
+  // The 3D model (and three.js) is fetched only when the visitor gets near it
+  const sunRef = useRef<HTMLDivElement>(null);
+  const [showSun, setShowSun] = useState(false);
+  useEffect(() => {
+    const el = sunRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setShowSun(true); io.disconnect(); }
+    }, { rootMargin: '800px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div className="page-x pt-16 md:pt-24 pb-28 md:pb-44">
@@ -17,6 +33,31 @@ export const ResearchPage: React.FC = () => {
           Papers and field studies from the studio, on climate, materials and the courtyard house.
         </p>
       </div>
+
+      {/* Sun study: a model to turn, under the real sun for Wayanad */}
+      <section className="grid-page gap-y-8 mb-20 md:mb-28" aria-labelledby="sun-heading">
+        <h2 id="sun-heading" className="label flex items-center gap-2.5 self-start col-span-12 md:col-span-2 pt-2">
+          <BoxMarker />
+          Sun study
+        </h2>
+        <div className="col-span-12 md:col-span-10">
+          <WordFill className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12] max-w-[22ch]">
+            Deep eaves and a courtyard, through a day of sun.
+          </WordFill>
+          <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
+            A courtyard house at Wayanad’s latitude. Move the time and the season to see where the shade falls.
+          </p>
+          <div ref={sunRef} className="mt-8 md:mt-10">
+            {showSun ? (
+              <Suspense fallback={<div className="w-full aspect-square sm:aspect-[16/10]" />}>
+                <SunStudy />
+              </Suspense>
+            ) : (
+              <div className="w-full aspect-square sm:aspect-[16/10]" />
+            )}
+          </div>
+        </div>
+      </section>
 
       <div className="flex gap-6 mb-8" role="group" aria-label="Filter research by type">
         {FILTERS.map((f) => (

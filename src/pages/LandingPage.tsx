@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ASSETS, srcSet } from '../constants/assets';
 import { ProjectReel } from '../components/ProjectReel';
@@ -12,7 +12,6 @@ import { BoxMarker, BoxStack } from '../components/Massing';
 import { WordFill } from '../components/TextMotion';
 import { createHeroModelState, type HeroModelState } from '../components/heroModelState';
 
-const SunStudy = lazy(() => import('../components/SunStudy'));
 const HeroTower = lazy(() => import('../components/HeroTower'));
 
 interface LandingPageProps {
@@ -562,19 +561,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const [current, setCurrent] = useState(0);
   const t = TESTIMONIALS[current];
 
-  // The 3D model (and three.js) is fetched only when the visitor gets near it
-  const sunRef = useRef<HTMLDivElement>(null);
-  const [showSun, setShowSun] = useState(false);
-  useEffect(() => {
-    const el = sunRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setShowSun(true); io.disconnect(); }
-    }, { rootMargin: '800px 0px' });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   return (
     // Block layout on purpose: GSAP disables pin spacing when the pinned hero's parent is flex
     <div>
@@ -603,30 +589,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
         {/* Full-screen reel: each project's photo blurred behind a portrait card, the next wiping up as you scroll */}
         <ProjectReel projects={PROJECTS_DATA.slice(0, 4)} />
-      </section>
-
-      {/* Sun study: a model to turn, under the real sun for Wayanad */}
-      <section className={SECTION} aria-labelledby="sun-heading">
-        <div className="grid-page gap-y-8">
-          <SectionLabel id="sun-heading" className="col-span-12 md:col-span-2 pt-2">Sun study</SectionLabel>
-          <div className="col-span-12 md:col-span-10">
-            <WordFill className="prose-serif text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.12] max-w-[22ch]">
-              Deep eaves and a courtyard, through a day of sun.
-            </WordFill>
-            <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
-              A courtyard house at Wayanad’s latitude. Move the time and the season to see where the shade falls.
-            </p>
-            <div ref={sunRef} className="mt-8 md:mt-10">
-              {showSun ? (
-                <Suspense fallback={<div className="w-full aspect-square sm:aspect-[16/10]" />}>
-                  <SunStudy />
-                </Suspense>
-              ) : (
-                <div className="w-full aspect-square sm:aspect-[16/10]" />
-              )}
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Process: a real sequence on a shared axis, with the design months drawn larger */}
