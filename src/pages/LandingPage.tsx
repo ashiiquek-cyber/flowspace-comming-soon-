@@ -512,6 +512,51 @@ const ProcessSequence: React.FC = () => {
 
 /* -------------------------------------------------------------------------- */
 
+const STUDIO_FACTS = [
+  ['Studios', 'Kalpetta, Wayanad and Jayanagar, Bengaluru'],
+  ['Services', 'Architecture, interior design, landscape design, master planning and product design'],
+  ['Project types', 'Homes from budget to weekend retreats, apartments, resorts and eco villages, cafés, breweries and club houses, retail, interiors and furniture'],
+  ['Honours', 'Design & Vision Firm of the Year 2026, South India; Vanitha Veedu Young Architect Award; FOAID Design Week'],
+];
+
+/**
+ * The studio's facts as a table whose rows are written in as they arrive: each term rises first and
+ * its answer follows a beat later, under the row's hairline as that draws. They render finished until
+ * the script takes over, and stay so under reduced motion.
+ */
+const StudioFacts: React.FC = () => {
+  const rootRef = useRef<HTMLDListElement>(null);
+
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root || prefersReducedMotion()) return;
+    const ctx = gsap.context(() => {
+      gsap.utils.toArray<HTMLElement>('[data-fact]', root).forEach((row) => {
+        const [term, desc] = Array.from(row.children);
+        const trigger = { trigger: row, start: 'top 90%', once: true };
+        gsap.fromTo(term, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', scrollTrigger: trigger });
+        gsap.fromTo(desc, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.12, scrollTrigger: trigger });
+      });
+    }, root);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <dl ref={rootRef} className="grid-page gap-y-0 mt-12 md:mt-16 text-[15px]">
+      {STUDIO_FACTS.map(([term, desc]) => (
+        <div key={term} data-fact className="col-span-12 md:col-start-3 md:col-span-10 grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] gap-4 rule py-4">
+          <dt className="text-ink-muted">{term}</dt>
+          <dd>
+            {term === 'Honours' ? <a href="#/press" className="hover:text-accent transition-colors">{desc}</a> : desc}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [current, setCurrent] = useState(0);
@@ -539,28 +584,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       <section className={SECTION} aria-label="About the studio">
         <div className="grid-page gap-y-8">
           <div className="col-span-12 md:col-start-3 md:col-span-10 lg:col-span-9">
-            <p className="max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
+            <WordFill className="max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
               Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, working across architecture, interiors, landscape, master planning and research from Wayanad and Bengaluru. Each project is designed around nature, the way people come together, and their well-being.
-            </p>
+            </WordFill>
             <a href="#/studio" className="text-link mt-8 text-[15px]">About the studio</a>
           </div>
         </div>
 
-        <dl className="grid-page gap-y-0 mt-12 md:mt-16 text-[15px]">
-          {[
-            ['Studios', 'Kalpetta, Wayanad and Jayanagar, Bengaluru'],
-            ['Services', 'Architecture, interior design, landscape design, master planning and product design'],
-            ['Project types', 'Homes from budget to weekend retreats, apartments, resorts and eco villages, cafés, breweries and club houses, retail, interiors and furniture'],
-            ['Honours', 'Design & Vision Firm of the Year 2026, South India; Vanitha Veedu Young Architect Award; FOAID Design Week'],
-          ].map(([term, desc]) => (
-            <div key={term} className="col-span-12 md:col-start-3 md:col-span-10 grid grid-cols-[8.5rem_1fr] sm:grid-cols-[11rem_1fr] gap-4 rule py-4">
-              <dt className="text-ink-muted">{term}</dt>
-              <dd>
-                {term === 'Honours' ? <a href="#/press" className="hover:text-accent transition-colors">{desc}</a> : desc}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <StudioFacts />
       </section>
 
       {/* Selected work */}
