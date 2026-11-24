@@ -93,6 +93,8 @@ const HEADLINE = ['Spaces that speak', 'for themselves.'];
 // The gallery the hero settles into: the tower as a tall centre card, four projects clustered round it.
 // Phones keep the first two, so the cluster never crowds the centre
 const HERO_GALLERY = PROJECTS_DATA.slice(0, 4);
+// Beside the studio intro: a project the hero and the reel don't already show
+const STUDIO_PHOTO = PROJECTS_DATA[4] ?? PROJECTS_DATA[0];
 // A tight cluster running from top left to bottom right. The photos overlap one another, and the two
 // nearest the centre tuck in under the tower's card. Below xl the card takes more of the width, so the
 // cluster spreads out a little to keep the photos clear of it
@@ -569,12 +571,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       {/* Studio: its label and statement are written over the tower in the hero; the detail follows here */}
       <section className={SECTION} aria-label="About the studio">
         <div className="grid-page gap-y-8">
-          <div className="col-span-12 md:col-start-3 md:col-span-10 lg:col-span-9">
+          <div className="col-span-12 md:col-start-3 md:col-span-5 md:self-end">
             <WordFill className="max-w-[52ch] text-[17px] leading-relaxed text-ink-muted">
               Flowspace Architects is an architecture and design studio led by Chief Architect Ar. Rashid Ali, working across architecture, interiors, landscape, master planning and research from Wayanad and Bengaluru. Each project is designed around nature, the way people come together, and their well-being.
             </WordFill>
             <a href="#/studio" className="text-link mt-8 text-[15px]">About the studio</a>
           </div>
+          {/* A built project straight after the hero, so a real place shows up early */}
+          <a href={`#/project/${STUDIO_PHOTO.id}`} className="group col-span-12 md:col-start-9 md:col-span-4 block">
+            <span className="block aspect-[4/5] overflow-hidden rounded-lg md:rounded-xl bg-stone-1">
+              <img
+                src={STUDIO_PHOTO.image}
+                srcSet={srcSet(STUDIO_PHOTO.image)}
+                sizes="(max-width: 767px) 100vw, 33vw"
+                alt={STUDIO_PHOTO.title}
+                loading="lazy"
+                decoding="async"
+                style={{ objectPosition: STUDIO_PHOTO.focus }}
+                className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              />
+            </span>
+            <span className="label mt-3 block">{STUDIO_PHOTO.title}</span>
+          </a>
         </div>
 
         <StudioFacts />
@@ -606,11 +624,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <ProcessSequence />
       </section>
 
-      {/* Client words and where we work share one band */}
-      <div className="bg-plaster page-x py-16 md:py-24 mt-16 md:mt-24">
+      {/* Client words and where we work share one dark band: the page's one deep ground, so the eye has somewhere to land */}
+      <div className="bg-kadappa text-lime [--rule-color:rgb(236_235_229/0.18)] page-x py-20 md:py-32 mt-16 md:mt-24">
         <div className="grid-page gap-y-16">
         <section className="col-span-12 md:col-span-7" aria-labelledby="clients-heading">
-          <SectionLabel id="clients-heading" className="mb-6 md:mb-8">Client words</SectionLabel>
+          <SectionLabel id="clients-heading" className="mb-6 md:mb-8 text-lime/60">Client words</SectionLabel>
           <figure aria-live="polite">
             <blockquote key={current} className="prose-serif text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.18] animate-in">
               “{t.quote}”
@@ -618,10 +636,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             <figcaption className="mt-8 flex flex-wrap items-end justify-between gap-6 rule pt-5">
               <div className="text-[15px]">
                 <p>{t.author}</p>
-                <p className="text-ink-muted">{t.role}</p>
+                <p className="text-lime/60">{t.role}</p>
               </div>
               <div className="flex items-center gap-6 text-[15px]">
-                <span className="text-ink-muted tabular-nums">{current + 1} of {TESTIMONIALS.length}</span>
+                <span className="text-lime/60 tabular-nums">{current + 1} of {TESTIMONIALS.length}</span>
                 <button onClick={() => setCurrent((c) => (c === 0 ? TESTIMONIALS.length - 1 : c - 1))} className="text-link">Previous</button>
                 <button onClick={() => setCurrent((c) => (c + 1) % TESTIMONIALS.length)} className="text-link">Next</button>
               </div>
@@ -630,16 +648,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         </section>
 
         <section className="col-span-12 md:col-start-9 md:col-span-4" aria-labelledby="areas-heading">
-          <SectionLabel id="areas-heading" className="mb-6 md:mb-8">Where we work</SectionLabel>
+          <SectionLabel id="areas-heading" className="mb-6 md:mb-8 text-lime/60">Where we work</SectionLabel>
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-1">
             {([['Wayanad studio, Kalpetta', PLACES.wayanad], ['Bengaluru studio, Jayanagar', PLACES.bengaluru]] as const).map(([title, places]) => (
               <div key={title}>
-                <h3 className="text-[15px] text-ink-muted mb-2">{title}</h3>
+                <h3 className="text-[15px] text-lime/60 mb-2">{title}</h3>
                 <p className="text-[19px] sm:text-[21px] leading-[1.35] tracking-tight font-light">{places.join(', ')}</p>
               </div>
             ))}
           </div>
-          <p className="mt-8 text-[15px] text-ink-muted max-w-[40ch]">
+          <p className="mt-8 text-[15px] text-lime/60 max-w-[40ch]">
             Building somewhere else in Kerala or Karnataka? Ask us. We travel for the right project.
           </p>
         </section>
